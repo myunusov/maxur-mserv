@@ -1,3 +1,11 @@
+*.iml
+
+logs
+sonar.properties
+node_modules
+.*
+_*
+
 target/
 pom.xml.tag
 pom.xml.releaseBackup
@@ -6,4 +14,3 @@ pom.xml.next
 release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
-.mvn/timing.properties
