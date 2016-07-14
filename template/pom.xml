@@ -6,11 +6,44 @@
 
     <parent>
         <groupId>org.maxur</groupId>
-        <artifactId>maxur-microservice</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <artifactId>maxur-mserv-base</artifactId>
+        <version>0.01-SNAPSHOT</version>
     </parent>
 
-    <artifactId>template</artifactId>
+    <artifactId>maxur-mserv</artifactId>
+
+    <properties>
+        <snakeyaml.version>1.17</snakeyaml.version>
+        <hibernate-validator.version>5.2.4.Final</hibernate-validator.version>
+        <javax.el.version>2.2.4</javax.el.version>
+        <snakeyaml.version>1.17</snakeyaml.version>
+    </properties>
+
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>${snakeyaml.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>${hibernate-validator.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.el</groupId>
+            <artifactId>javax.el-api</artifactId>
+            <version>${javax.el.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.web</groupId>
+            <artifactId>javax.el</artifactId>
+            <version>${javax.el.version}</version>
+        </dependency>
+    </dependencies>
 
     
 </project>

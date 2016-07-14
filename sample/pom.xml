@@ -4,34 +4,35 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <properties>
+        <maxur-mserv.version>0.01-SNAPSHOT</maxur-mserv.version>
+        <lombok.version>1.16.8</lombok.version>
+    </properties>
+
     <parent>
         <groupId>org.maxur</groupId>
-        <artifactId>maxur-base</artifactId>
-        <version>0.16-SNAPSHOT</version>
+        <artifactId>maxur-mserv-base</artifactId>
+        <version>0.01-SNAPSHOT</version>
     </parent>
 
-    <properties>
-        <maxur-microservice.version>0.1-SNAPSHOT</maxur-microservice.version>
-        <h2.version>1.4.190</h2.version>
-    </properties>
+    <artifactId>sample</artifactId>
+    <packaging>jar</packaging>
+
 
     <dependencies>
         <dependency>
             <groupId>org.maxur</groupId>
-            <artifactId>maxur-microservice</artifactId>
-            <version>${maxur-microservice.version}</version>
+            <artifactId>maxur-mserv</artifactId>
+            <version>${maxur-mserv.version}</version>
         </dependency>
 
-        <!-- H2 -->
         <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>${h2.version}</version>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
         </dependency>
 
     </dependencies>
 
-    <artifactId>sample</artifactId>
 
-    
 </project>

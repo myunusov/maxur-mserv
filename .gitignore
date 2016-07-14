@@ -1,14 +1,16 @@
+/pubring.gpg
+/secring.gpg
+/settings.xml
+
 *.iml
 
-logs
-sonar.properties
-node_modules
 .*
 _*
 
 target/
 pom.xml.tag
 pom.xml.releaseBackup
+versioneye.properties
 pom.xml.versionsBackup
 pom.xml.next
 release.properties

@@ -1,0 +1,10 @@
+version:  1.0
+released: 2016-07-11
+
+rest:
+  port:   9090
+
+jdbc:
+  url:      jdbc:h2:./data/tasks
+  user:     user
+  password: password
