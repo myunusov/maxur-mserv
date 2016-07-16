@@ -1,9 +1,13 @@
 package org.maxur.mserv;
 
+import org.maxur.mserv.events.CriticalErrorOcurredEvent;
+import org.maxur.mserv.events.ParametersLoadedEvent;
+import org.maxur.mserv.events.ServiceObserver;
+import org.maxur.mserv.events.ServiceStartedEvent;
+import org.maxur.mserv.events.ServiceStopedEvent;
 import org.maxur.mserv.properties.PropertiesFile;
 
-import java.util.function.BiFunction;
-import java.util.function.Function;
+import static java.util.Optional.empty;
 
 /**
  * The type M serv.
@@ -12,17 +16,19 @@ import java.util.function.Function;
  * @version 1.0
  * @since <pre>14.07.2016</pre>
  */
-public final class MServ {
+public abstract class MServ {
 
-    private Function<MServ, Result> hookOnStart = this::nop;
+    private ServiceObserver observer = ServiceObserver.defaut();
 
-    private Function<MServ, Result> hookOnStop = this::nop;
+    private Object properties;
 
-    private BiFunction<MServ, RuntimeException, Result> hookOnError = this::nop;
+    private boolean isTerminated = false;
 
-    private PropertiesFile propertiesFile;
 
-    private MServ() {
+    /**
+     * Instantiates a new M serv.
+     */
+    protected MServ() {
     }
 
     /**
@@ -30,8 +36,20 @@ public final class MServ {
      *
      * @return the m serv
      */
-    public static MServ create() {
-        return new MServ();
+    public static MServ restService() {
+        return new MRestServ();
+    }
+
+    /**
+     * Read properties from properties file.
+     *
+     * @param properties the properties
+     * @return the Child
+     */
+    public MServ loadPropertiesFrom(final Object properties) {
+        this.properties = properties;
+        observer.apply(new ParametersLoadedEvent(this, properties));
+        return this;
     }
 
     /**
@@ -41,15 +59,18 @@ public final class MServ {
      * @return the Child
      */
     public PropertiesFileBinder loadPropertiesFrom(final PropertiesFile propertiesFile) {
-        this.propertiesFile = propertiesFile;
-        return wrap(propertiesFile);
+        return propertiesClass -> bindProperties(propertiesFile, propertiesClass);
     }
 
-    private PropertiesFileBinder wrap(final PropertiesFile propertiesFile) {
-        return propertiesClass -> {
-            propertiesFile.bindPropertiesClass(propertiesClass);
-            return MServ.this;
-        };
+    private MServ bindProperties(final PropertiesFile propertiesFile, final Class<?> propertiesClass) {
+        try {
+            properties = propertiesFile.bindPropertiesClass(propertiesClass);
+            observer.apply(new ParametersLoadedEvent(this, properties));
+        } catch (RuntimeException e) {
+            properties = empty();
+            observer.apply(new CriticalErrorOcurredEvent(this, e));
+        }
+        return MServ.this;
     }
 
     /**
@@ -67,55 +88,50 @@ public final class MServ {
      */
     public void run() {
         try {
-            propertiesFile.load();
-            hookOnStart.apply(this);
-            hookOnStop.apply(this);
+            if (isTerminated) {
+                return;
+            }
+            observer.apply(new ServiceStartedEvent(this));
+            observer.apply(new ServiceStopedEvent(this));
         } catch (RuntimeException e) {
-            hookOnError.apply(this, e);
+            observer.apply(new CriticalErrorOcurredEvent(this, e));
         }
     }
 
+
     /**
-     * Hook on start m serv.
+     * Add observer m serv.
      *
-     * @param hook the hook
+     * @param observer the observer
      * @return the m serv
      */
-    public MServ hookOnStart(Function<MServ, Result> hook) {
-        hookOnStart = hook;
+    public MServ addObserver(final ServiceObserver observer) {
+        this.observer = observer;
         return this;
     }
 
     /**
-     * Hook on stop m serv.
-     *
-     * @param hook the hook
-     * @return the m serv
+     * Terminate.
      */
-    public MServ hookOnStop(Function<MServ, Result> hook) {
-        hookOnStop = hook;
-        return this;
+    public void terminate() {
+        isTerminated = true;
     }
+
 
     /**
-     * Hook on error m serv.
-     *
-     * @param hook the hook
-     * @return the m serv
+     * The interface Properties file binder.
+     * <p>
+     * The interface Properties file binder.
      */
-    public MServ hookOnError(BiFunction<MServ, RuntimeException, Result> hook) {
-        hookOnError = hook;
-        return this;
-    }
-
-    private Result nop(MServ mServ) {
-        // TODO
-        return null;
-    }
-
-    private Result nop(MServ mServ, RuntimeException e) {
-        // TODO
-        return null;
+    @FunctionalInterface
+    public interface PropertiesFileBinder {
+        /**
+         * To m serv.
+         *
+         * @param propertiesClass the properties class
+         * @return the m serv
+         */
+        MServ to(Class<?> propertiesClass);
     }
 
 }

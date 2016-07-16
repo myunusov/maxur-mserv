@@ -19,9 +19,6 @@ public class UserConfig {
     @NotNull
     private String version;
 
-    @NotNull
-    private String sample;
-
     private RestConfig rest;
 
     @NotNull

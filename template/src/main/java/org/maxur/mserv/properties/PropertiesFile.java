@@ -1,5 +1,10 @@
 package org.maxur.mserv.properties;
 
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.introspector.PropertyUtils;
+import org.yaml.snakeyaml.representer.Representer;
+
 /**
  * The type Properties file.
  *
@@ -8,8 +13,6 @@ package org.maxur.mserv.properties;
  * @since <pre>14.07.2016</pre>
  */
 public abstract class PropertiesFile {
-
-    private Class<?> propertiesClass;
 
     /**
      * Yaml file properties file.
@@ -21,13 +24,32 @@ public abstract class PropertiesFile {
         return new YamlPropertiesFile(path);
     }
 
-    public void bindPropertiesClass(Class<?> propertiesClass) {
-        this.propertiesClass = propertiesClass;
+    public static String asYaml(final Object data) {
+        PropertyUtils propUtils = new PropertyUtils();
+        propUtils.setAllowReadOnlyProperties(true);
+        Representer repr = new Representer();
+        repr.setPropertyUtils(propUtils);
+        Yaml yaml = new Yaml(new Constructor(), repr);
+        return yaml.dump(data);
     }
 
-    Class<?> propertiesClass() {
-        return propertiesClass;
+    /**
+     * Bind properties class t.
+     *
+     * @param <T>             the type parameter
+     * @param propertiesClass the properties class
+     * @return the t
+     */
+    public <T> T bindPropertiesClass(Class<T> propertiesClass) {
+        return load(propertiesClass);
     }
 
-    public abstract <T> T load();
+    /**
+     * Load t.
+     *
+     * @param <T>             the type parameter
+     * @param propertiesClass the properties class
+     * @return the t
+     */
+    protected abstract <T> T load(Class<T> propertiesClass);
 }

@@ -40,19 +40,20 @@ class YamlPropertiesFile extends PropertiesFile {
      * Load t.
      *
      * @param <T> the type parameter
+     * @param propertiesClass the class of properties object
      * @return the t
      */
     @Override
-    public <T> T load() {
+    protected <T> T load(final Class<T> propertiesClass) {
         final Yaml yaml = new Yaml();
         final T config;
         try (InputStream in = Files.newInputStream(Paths.get(path))) {
-            config = (T) yaml.loadAs(in, propertiesClass());
+            config = yaml.loadAs(in, propertiesClass);
             final ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
             final Validator validator = validatorFactory.getValidator();
             Set<ConstraintViolation<T>> constraintViolation = validator.validate(config);
             if (!constraintViolation.isEmpty()) {
-                throw new IllegalArgumentException(
+                throw new PropertyLoadException(
                     format(
                         "User configuration error:\n %s",
                         constraintViolation.stream()
@@ -62,7 +63,7 @@ class YamlPropertiesFile extends PropertiesFile {
                 );
             }
         } catch (IOException e) {
-            throw new IllegalArgumentException("Config file '" + path +"' is not accessible", e);
+            throw new PropertyLoadException("Config file '" + path +"' is not accessible", e);
         }
         return config;
     }
