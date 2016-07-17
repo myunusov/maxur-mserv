@@ -12,19 +12,21 @@ public class PropertyLoadException extends IllegalStateException {
     /**
      * Instantiates a new Property load exception.
      *
-     * @param s the s
+     * @param message the message
+     * @param args    the args
      */
-    public PropertyLoadException(final String s) {
-        super(s);
+    public PropertyLoadException(final String message, final Object... args) {
+        super(message);
     }
 
     /**
      * Instantiates a new Property load exception.
      *
-     * @param message the message
      * @param cause   the cause
+     * @param message the message
+     * @param args    the args
      */
-    public PropertyLoadException(final String message, final Throwable cause) {
-        super(message, cause);
+    public PropertyLoadException(final Throwable cause, final String message, final Object... args) {
+        super(String.format(message, args), cause);
     }
 }

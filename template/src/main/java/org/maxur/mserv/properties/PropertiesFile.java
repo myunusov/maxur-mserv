@@ -24,6 +24,12 @@ public abstract class PropertiesFile {
         return new YamlPropertiesFile(path);
     }
 
+    /**
+     * As yaml string.
+     *
+     * @param data the data
+     * @return the string
+     */
     public static String asYaml(final Object data) {
         PropertyUtils propUtils = new PropertyUtils();
         propUtils.setAllowReadOnlyProperties(true);

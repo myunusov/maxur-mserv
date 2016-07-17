@@ -6,6 +6,7 @@ import org.maxur.mserv.events.ServiceObserver;
 import org.maxur.mserv.events.ServiceStartedEvent;
 import org.maxur.mserv.events.ServiceStopedEvent;
 import org.maxur.mserv.properties.PropertiesFile;
+import org.maxur.mserv.properties.PropertyLoadException;
 
 import static java.util.Optional.empty;
 
@@ -41,7 +42,29 @@ public abstract class MServ {
     }
 
     /**
-     * Read properties from properties file.
+     * Read properties from properties class.
+     *
+     * @param propertiesClass the properties Class
+     * @return the Child
+     */
+    public MServ loadPropertiesFrom(final Class<?> propertiesClass) {
+        try {
+            this.properties = propertiesClass.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            final PropertyLoadException exception =
+                new PropertyLoadException(
+                    e,
+                    "Properties class '%s' is not accessible", propertiesClass.getSimpleName()
+                );
+            observer.apply(new CriticalErrorOcurredEvent(this, exception));
+        }
+        observer.apply(new ParametersLoadedEvent(this, properties));
+        return this;
+    }
+
+
+    /**
+     * Read properties from properties object.
      *
      * @param properties the properties
      * @return the Child

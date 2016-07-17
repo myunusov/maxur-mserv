@@ -11,7 +11,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Set;
-import java.util.function.Function;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
@@ -54,22 +53,24 @@ class YamlPropertiesFile extends PropertiesFile {
             Set<ConstraintViolation<T>> constraintViolation = validator.validate(config);
             if (!constraintViolation.isEmpty()) {
                 throw new PropertyLoadException(
-                    format(
                         "User configuration error:\n %s",
-                        constraintViolation.stream()
-                            .map(validationMessageFrom())
-                            .collect(joining(";\n"))
-                    )
+                    allValidationMessagesFrom(constraintViolation)
                 );
             }
         } catch (IOException e) {
-            throw new PropertyLoadException("Config file '" + path +"' is not accessible", e);
+            throw new PropertyLoadException(e, "Config file '%s' is not accessible", path);
         }
         return config;
     }
 
-    private <T> Function<ConstraintViolation<T>, String> validationMessageFrom() {
-        return cv -> format(
+    private <T> String allValidationMessagesFrom(Set<ConstraintViolation<T>> constraintViolation) {
+        return constraintViolation.stream()
+            .map(this::validationMessageFrom)
+            .collect(joining(";\n"));
+    }
+
+    private <T> String validationMessageFrom(ConstraintViolation<T> cv) {
+        return format(
             "Field '%s.%s' %s",
             cv.getLeafBean().getClass().getSimpleName(),
             cv.getPropertyPath(),
