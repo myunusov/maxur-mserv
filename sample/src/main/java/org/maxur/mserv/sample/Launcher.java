@@ -4,15 +4,16 @@ package org.maxur.mserv.sample;
 import lombok.extern.slf4j.Slf4j;
 import org.maxur.mserv.Condition;
 import org.maxur.mserv.MServ;
+import org.maxur.mserv.Menu;
 import org.maxur.mserv.events.CriticalErrorOcurredEvent;
-import org.maxur.mserv.events.ParametersLoadedEvent;
+import org.maxur.mserv.events.PropertiesLoadedEvent;
 import org.maxur.mserv.events.ServiceObserver;
 import org.maxur.mserv.events.ServiceStartedEvent;
 import org.maxur.mserv.events.ServiceStopedEvent;
 import org.maxur.mserv.properties.PropertyLoadException;
 import org.maxur.mserv.sample.conf.UserConfig;
 
-import static org.maxur.mserv.MServ.restService;
+import static org.maxur.mserv.MServ.service;
 import static org.maxur.mserv.properties.PropertiesFile.asYaml;
 import static org.maxur.mserv.properties.PropertiesFile.yamlFile;
 
@@ -36,12 +37,12 @@ public final class Launcher implements ServiceObserver {
      *
      * @param args the input arguments
      */
-    public static void main(String[] args) {
-        restService()
-            .addObserver(new Launcher())
+    public static void main(final String[] args) {
+        service()
+            .observeWith(new Launcher())
             .loadPropertiesFrom(yamlFile(CONFIG_YAML)).to(UserConfig.class)
             .loadConfigFrom(SampleSysConfig.class)
-            .run();
+            .execute(Menu.commandBy(args));
     }
 
     @SuppressWarnings("unused")
@@ -50,7 +51,7 @@ public final class Launcher implements ServiceObserver {
     }
 
     @SuppressWarnings("unused")
-    public void on(final ParametersLoadedEvent event) {
+    public void on(final PropertiesLoadedEvent event) {
         log.debug("properties was loaded. \n" + asYaml(event.properties()));
     }
 

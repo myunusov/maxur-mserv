@@ -7,7 +7,7 @@ package org.maxur.mserv.events;
  * @version 1.0
  * @since <pre>16.07.2016</pre>
  */
-public class ParametersLoadedEvent extends Event {
+public class PropertiesLoadedEvent extends Event {
 
     private final Object properties;
 
@@ -17,7 +17,7 @@ public class ParametersLoadedEvent extends Event {
      * @param entity     the entity
      * @param properties user properties
      */
-    public ParametersLoadedEvent(final Object entity, final Object properties) {
+    public PropertiesLoadedEvent(final Object entity, final Object properties) {
         super(entity);
         this.properties = properties;
     }

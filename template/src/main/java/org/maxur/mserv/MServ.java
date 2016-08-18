@@ -1,7 +1,7 @@
 package org.maxur.mserv;
 
 import org.maxur.mserv.events.CriticalErrorOcurredEvent;
-import org.maxur.mserv.events.ParametersLoadedEvent;
+import org.maxur.mserv.events.PropertiesLoadedEvent;
 import org.maxur.mserv.events.ServiceObserver;
 import org.maxur.mserv.events.ServiceStartedEvent;
 import org.maxur.mserv.events.ServiceStopedEvent;
@@ -37,7 +37,7 @@ public abstract class MServ {
      *
      * @return the m serv
      */
-    public static MServ restService() {
+    public static MServ service() {
         return new MRestServ();
     }
 
@@ -58,7 +58,7 @@ public abstract class MServ {
                 );
             observer.apply(new CriticalErrorOcurredEvent(this, exception));
         }
-        observer.apply(new ParametersLoadedEvent(this, properties));
+        observer.apply(new PropertiesLoadedEvent(this, properties));
         return this;
     }
 
@@ -71,7 +71,7 @@ public abstract class MServ {
      */
     public MServ loadPropertiesFrom(final Object properties) {
         this.properties = properties;
-        observer.apply(new ParametersLoadedEvent(this, properties));
+        observer.apply(new PropertiesLoadedEvent(this, properties));
         return this;
     }
 
@@ -88,7 +88,7 @@ public abstract class MServ {
     private MServ bindProperties(final PropertiesFile propertiesFile, final Class<?> propertiesClass) {
         try {
             properties = propertiesFile.bindPropertiesClass(propertiesClass);
-            observer.apply(new ParametersLoadedEvent(this, properties));
+            observer.apply(new PropertiesLoadedEvent(this, properties));
         } catch (RuntimeException e) {
             properties = empty();
             observer.apply(new CriticalErrorOcurredEvent(this, e));
@@ -107,14 +107,17 @@ public abstract class MServ {
     }
 
     /**
-     * Run.
+     * Execute command.
+     *
+     * @param command the Command
      */
-    public void run() {
+    public void execute(final Command command) {
         try {
             if (isTerminated) {
                 return;
             }
             observer.apply(new ServiceStartedEvent(this));
+            command.execute();
             observer.apply(new ServiceStopedEvent(this));
         } catch (RuntimeException e) {
             observer.apply(new CriticalErrorOcurredEvent(this, e));
@@ -128,7 +131,7 @@ public abstract class MServ {
      * @param observer the observer
      * @return the m serv
      */
-    public MServ addObserver(final ServiceObserver observer) {
+    public MServ observeWith(final ServiceObserver observer) {
         this.observer = observer;
         return this;
     }
