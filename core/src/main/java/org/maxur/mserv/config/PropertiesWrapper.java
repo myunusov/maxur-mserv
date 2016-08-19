@@ -1,5 +1,6 @@
 package org.maxur.mserv.config;
 
+import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.maxur.mserv.core.annotation.Key;
 import org.maxur.mserv.reflection.ClassUtils;
@@ -19,11 +20,21 @@ import static java.lang.String.format;
  * @since <pre>8/19/2016</pre>
  */
 @Slf4j
-public abstract class Config {
+public class PropertiesWrapper {
 
+    @Delegate
+    private final Object properties;
 
-    private Map<String, Object> properties;
+    private final Map<String, Object> map = new HashMap<>();
 
+    private PropertiesWrapper(final Object properties) {
+        this.properties = properties;
+        parse(properties);
+    }
+    
+    public static PropertiesWrapper wrap(Object properties) {
+        return new PropertiesWrapper(properties);
+    }
 
     /**
      * Returns value by key.
@@ -34,15 +45,7 @@ public abstract class Config {
      */
     public <T> T valueBy(String key) {
         //noinspection unchecked
-        return (T) asMap().get(key);
-    }
-
-    private Map<String, Object> asMap() {
-        if (properties == null) {
-            properties = new HashMap<>();
-            parse(this);
-        }
-        return properties;
+        return (T) map.get(key);
     }
 
     /**
@@ -56,13 +59,13 @@ public abstract class Config {
                 log.debug(format("%s - %s - %s", field.getName(), field.getType(), field.get(config)));
                 if (isComposedObject(field)) {
                     if (field.isAnnotationPresent(Key.class)) {
-                        properties.put(field.getAnnotation(Key.class).value(), field.get(config));
+                        map.put(field.getAnnotation(Key.class).value(), field.get(config));
                         continue;
                     } else {
                         parse(field.get(config));
                     }
                 }
-                properties.put(field.getName(), field.get(config));
+                map.put(field.getName(), field.get(config));
             } catch (IllegalAccessException e) {
                 log.error(e.getMessage(), e);
                 throw new IllegalStateException(e);

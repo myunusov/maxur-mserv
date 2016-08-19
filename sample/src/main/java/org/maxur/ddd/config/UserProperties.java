@@ -1,10 +1,9 @@
 package org.maxur.ddd.config;
 
 import lombok.Data;
-import org.maxur.mserv.config.Config;
-import org.maxur.mserv.core.annotation.Configuration;
 import org.maxur.mserv.core.annotation.Key;
-import org.maxur.mserv.web.WebConfig;
+import org.maxur.mserv.core.annotation.Properties;
+import org.maxur.mserv.web.WebProperties;
 
 import javax.validation.constraints.NotNull;
 import java.util.Date;
@@ -17,8 +16,8 @@ import java.util.Date;
  * @since <pre>12.07.2016</pre>
  */
 @Data
-@Configuration(fileName = "./conf/tddd.yaml")
-public class UserConfig extends Config {
+@Properties(fileName = "./conf/tddd.yaml")
+public class UserProperties {
 
     @NotNull
     private Date released;
@@ -27,9 +26,9 @@ public class UserConfig extends Config {
     private String version;
 
     @Key("web")
-    private WebConfig web;
+    private WebProperties web;
 
     @NotNull
     @Key("jdbc")
-    private JdbcConfig jdbc;
+    private JdbcProperties jdbc;
 }

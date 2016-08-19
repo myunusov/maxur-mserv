@@ -4,7 +4,6 @@ import org.glassfish.hk2.api.InjectionResolver;
 import org.glassfish.hk2.api.InterceptionService;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.jvnet.hk2.annotations.Service;
 import org.maxur.mserv.aop.hk2.HK2InterceptionService;
 import org.maxur.mserv.bus.Bus;
 import org.maxur.mserv.bus.guava.BusGuavaImpl;
@@ -13,7 +12,7 @@ import org.maxur.mserv.config.ConfigResolver;
 import org.maxur.mserv.config.hk2.ConfigurationInjectionResolver;
 import org.maxur.mserv.config.yaml.YamlConfigFileFactory;
 import org.maxur.mserv.core.annotation.Param;
-import org.maxur.mserv.ioc.IoC;
+import org.maxur.mserv.ioc.Framework;
 import org.maxur.mserv.ioc.ServiceLocator;
 import org.maxur.mserv.microservice.MicroService;
 import org.maxur.mserv.microservice.base.MicroServiceRestImpl;
@@ -29,9 +28,17 @@ import static org.maxur.mserv.reflection.ClassUtils.createClassInstance;
 /**
  * The type Hk 2 system.
  */
-public class IoCHK2 implements IoC {
+public class DefaultRestService implements Framework {
 
     private ServiceLocator locator;
+
+
+    private DefaultRestService() {
+    }
+
+    public static DefaultRestService restService() {
+        return new DefaultRestService();
+    }
 
     /**
      * Init.
@@ -39,7 +46,7 @@ public class IoCHK2 implements IoC {
      * @param binders the binders
      */
     @Override
-    public void init(final List<Class<?>> binders) {
+    public void configWith(final List<Class<?>> binders) {
         final List<AbstractBinder> list = binders(binders);
         locator = ServiceLocatorFactoryHk2Impl.locator(list.toArray(new AbstractBinder[list.size()]));
     }
@@ -63,7 +70,7 @@ public class IoCHK2 implements IoC {
      */
     @Override
     public <T> T instanceOf(final Class<T> clazz) {
-        return clazz.isAnnotationPresent(Service.class) ?
+        return clazz.isAnnotationPresent(org.jvnet.hk2.annotations.Service.class) ?
             locator.bean(clazz) :
             createClassInstance(clazz);
     }

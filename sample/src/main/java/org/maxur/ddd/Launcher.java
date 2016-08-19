@@ -15,7 +15,8 @@
 package org.maxur.ddd;
 
 import org.maxur.mserv.MaxurSystem;
-import org.maxur.mserv.ioc.hk2.IoCHK2;
+
+import static org.maxur.mserv.ioc.hk2.DefaultRestService.restService;
 
 /**
  * The Application Launcher.
@@ -39,9 +40,9 @@ public final class Launcher {
      * @param args - arguments of command.
      */
     public static void main(String[] args) {
-        MaxurSystem.system("DDD Tutorial", new IoCHK2())
-                .withAopInPackages("org.maxur.ddd")   // TODO Should be default
-                .start("rest.service");
+        MaxurSystem.system("DDD Tutorial", restService())
+                .scanForConfig("org.maxur.ddd")
+                .startAs("rest.service");
     }
 
 }

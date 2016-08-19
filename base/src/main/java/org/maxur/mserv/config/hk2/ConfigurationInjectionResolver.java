@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.glassfish.hk2.api.Injectee;
 import org.glassfish.hk2.api.InjectionResolver;
 import org.glassfish.hk2.api.ServiceHandle;
-import org.maxur.mserv.config.Config;
+import org.maxur.mserv.config.PropertiesWrapper;
 import org.maxur.mserv.config.ConfigResolver;
 import org.maxur.mserv.core.annotation.Param;
 
@@ -32,14 +32,14 @@ import static java.lang.String.format;
 @Slf4j
 public class ConfigurationInjectionResolver implements ConfigResolver, InjectionResolver<Param> {
 
-    private Config config;
+    private PropertiesWrapper properties;
 
     @Override
     public Object resolve(final Injectee injectee, final ServiceHandle<?> root) {
         final Param annotation = injectee.getParent().getAnnotation(Param.class);
         final String key = annotation.key();
         final boolean optional = annotation.optional();
-        final Object result = config.valueBy(key);
+        final Object result = properties.valueBy(key);
         if (Objects.isNull(result) && !optional) {
             log.error(format("Property '%s' is not found", key));
         }
@@ -59,11 +59,10 @@ public class ConfigurationInjectionResolver implements ConfigResolver, Injection
     /**
      * Sets config.
      *
-     * @param config the config
+     * @param properties the config
      */
-    @Override
-    public void setConfig(final Config config) {
-        this.config = config;
+    public void setProperties(final PropertiesWrapper properties) {
+        this.properties = properties;
     }
 
 

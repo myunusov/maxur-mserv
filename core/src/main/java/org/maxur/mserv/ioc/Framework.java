@@ -11,14 +11,14 @@ import java.util.List;
  * @version 1.0
  * @since <pre>8/19/2016</pre>
  */
-public interface IoC {
+public interface Framework {
 
     /**
      * Init.
      *
      * @param binders the binders
      */
-    void init(List<Class<?>> binders);
+    void configWith(List<Class<?>> binders);
 
     /**
      * Config resolver config resolver.

@@ -2,13 +2,13 @@ package org.maxur.mserv;
 
 import lombok.extern.slf4j.Slf4j;
 import org.maxur.mserv.bus.Bus;
-import org.maxur.mserv.config.Config;
+import org.maxur.mserv.config.PropertiesWrapper;
 import org.maxur.mserv.config.ConfigFile;
 import org.maxur.mserv.config.ConfigFileFactory;
-import org.maxur.mserv.core.annotation.Binder;
 import org.maxur.mserv.core.annotation.Configuration;
+import org.maxur.mserv.core.annotation.Properties;
 import org.maxur.mserv.core.annotation.Observer;
-import org.maxur.mserv.ioc.IoC;
+import org.maxur.mserv.ioc.Framework;
 import org.maxur.mserv.microservice.MicroService;
 import org.maxur.mserv.reflection.ClassRepository;
 
@@ -31,28 +31,28 @@ public class MaxurSystem {
 
     private final String name;
 
-    private final List<Class<?>> binders = new ArrayList<>();
+    private final List<Class<?>> configurations = new ArrayList<>();
 
     private final List<Class<?>> observers = new ArrayList<>();
 
-    private final List<Class<?>> configurations = new ArrayList<>();
+    private final List<Class<?>> properties = new ArrayList<>();
 
-    private final IoC ioc;
+    private final Framework framework;
 
-    private MaxurSystem(final String name, final IoC ioc) {
+    private MaxurSystem(final String name, final Framework framework) {
         this.name = name;
-        this.ioc = ioc;
+        this.framework = framework;
     }
 
     /**
      * System maxur system.
      *
      * @param name the name
-     * @param ioc Ioc  TODO should be default case
+     * @param framework Service framework
      * @return the maxur system
      */
-    public static MaxurSystem system(final String name, final IoC ioc) {
-        return new MaxurSystem(name, ioc);
+    public static MaxurSystem system(final String name, final Framework framework) {
+        return new MaxurSystem(name, framework);
     }
 
     /**
@@ -61,21 +61,21 @@ public class MaxurSystem {
      * @param packageNames the package names
      * @return the maxur system
      */
-    public MaxurSystem withAopInPackages(final String... packageNames) {
+    public MaxurSystem scanForConfig(final String... packageNames) {
         final ClassRepository classRepository = byPackages(packageNames);
         classRepository.addRule(Observer.class, this::collectObserverBy);
-        classRepository.addRule(Binder.class, this::collectBinderBy);
-        classRepository.addRule(Configuration.class, this::collectConfigurationBy);
+        classRepository.addRule(Configuration.class, this::collectBinderBy);
+        classRepository.addRule(Properties.class, this::collectPropertiesBy);
         classRepository.scanPackage();
         return this;
     }
 
     private void collectBinderBy(final Class<?> aClass) {
-        binders.add(aClass);
+        configurations.add(aClass);
     }
 
-    private void collectConfigurationBy(final Class<?> aClass) {
-        configurations.add(aClass);
+    private void collectPropertiesBy(final Class<?> aClass) {
+        properties.add(aClass);
     }
 
     private void collectObserverBy(final Class<?> aClass) {
@@ -85,13 +85,21 @@ public class MaxurSystem {
     /**
      * Start.
      *
-     * @param serviceName the service name
+     * @param beanName the service name
      */
-    public void start(final String serviceName) {
-        ioc.init(binders);
-        config();
+    public void startAs(final String beanName) {
+        init();
+        start(beanName);
+    }
+
+    private void init() {
+        framework.configWith(configurations);
+        setup();
         addObservers();
-        ioc.locator().bean(MicroService.class, serviceName)
+    }
+
+    private void start(final String serviceName) {
+        framework.locator().bean(MicroService.class, serviceName)
                 .withName(name)
                 .start();
     }
@@ -101,41 +109,35 @@ public class MaxurSystem {
     }
 
     private void registerObserverBy(final Class<?> clazz) {
-        ioc.locator().bean(Bus.class, "event.bus").register(ioc.instanceOf(clazz));
+        framework.locator().bean(Bus.class, "event.bus").register(framework.instanceOf(clazz));
     }
 
-    private void config() {
-        switch (configurations.size()) {
+    private void setup() {
+        switch (properties.size()) {
             case 0:
                 log.warn("Configuration class (with 'Configuration' annotation) is not found");
                 break;
             case 1:
-                final Class<?> configClass = configurations.get(0);
-                if (!Config.class.isAssignableFrom(configClass)) {
-                    log.error("Configuration class must be org.maxur.mserv.config.Config type");
-                } else {
-                    //noinspection unchecked
-                    makeConfigurationBy((Class<Config>) configClass);
-                }
+                makeConfigurationBy(properties.get(0));
                 break;
             default:
                 log.error("More than one configuration class (with 'Configuration' annotation) is found");
         }
     }
 
-    private void makeConfigurationBy(final Class<Config> clazz) {
-        final Configuration clazzAnnotation = clazz.getAnnotation(Configuration.class);
+    private void makeConfigurationBy(final Class<?> clazz) {
+        final Properties clazzAnnotation = clazz.getAnnotation(Properties.class);
         final String fileName = clazzAnnotation.fileName();
-        final Config config = isNullOrEmpty(fileName) ?
-                ioc.instanceOf(clazz) :
+        final Object object = isNullOrEmpty(fileName) ?
+                framework.instanceOf(clazz) :
                 loadConfig(fileName, clazz);
-        ioc.configResolver().setConfig(config);
+        framework.configResolver().setProperties(PropertiesWrapper.wrap(object));
     }
 
-    private Config loadConfig(final String fileName, final Class<Config> clazz) {
-        final ConfigFile configFile = ioc.locator().bean(ConfigFileFactory.class).make(fileName);
+    private Object loadConfig(final String fileName, final Class<?> clazz) {
+        final ConfigFile configFile = framework.locator().bean(ConfigFileFactory.class).make(fileName);
         try {
-            final Config result = configFile.bindTo(clazz);
+            final Object result = configFile.bindTo(clazz);
             log.debug(format("Config file '%s' is loaded. %n %s", fileName, ConfigFile.asYaml(result)));
             return result;
         } catch (RuntimeException e) {

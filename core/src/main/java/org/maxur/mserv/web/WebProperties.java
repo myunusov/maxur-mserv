@@ -12,7 +12,7 @@ import java.util.Map;
  * @version 1.0
  * @since <pre>12.07.2016</pre>
  */
-public class WebConfig {
+public class WebProperties {
 
     @Setter
     private String url = "http://localhost:8080";

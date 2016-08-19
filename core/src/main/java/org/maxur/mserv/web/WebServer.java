@@ -30,7 +30,7 @@ public abstract class WebServer {
     private final Bus bus;
 
     @Param(key = "web")
-    private WebConfig webConfig;
+    private WebProperties webProperties;
 
 
     /**
@@ -76,8 +76,8 @@ public abstract class WebServer {
      *
      * @return the web config
      */
-    public WebConfig webConfig() {
-        return webConfig;
+    public WebProperties webConfig() {
+        return webProperties;
     }
 
 }

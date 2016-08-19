@@ -2,14 +2,14 @@ package org.maxur.ddd.service;
 
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.maxur.mserv.core.annotation.Binder;
+import org.maxur.mserv.core.annotation.Configuration;
 
 /**
  * @author Maxim Yunusov
  * @version 1.0
  * @since <pre>8/18/2016</pre>
  */
-@Binder
+@Configuration
 public class UowBinder extends AbstractBinder {
 
     @Override

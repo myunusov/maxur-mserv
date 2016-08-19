@@ -10,7 +10,7 @@ import lombok.Setter;
  * @version 1.0
  * @since <pre>12.07.2016</pre>
  */
-public class JdbcConfig {
+public class JdbcProperties {
 
     @Getter
     @Setter
