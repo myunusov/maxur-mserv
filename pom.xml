@@ -18,6 +18,7 @@
         <module>template</module>
         <module>sample</module>
         <module>core</module>
+        <module>base</module>
     </modules>
 
     <url>https://github.com/myunusov/maxur-mserv</url>

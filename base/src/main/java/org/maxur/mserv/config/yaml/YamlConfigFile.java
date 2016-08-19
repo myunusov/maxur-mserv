@@ -24,7 +24,7 @@ import static java.util.stream.Collectors.joining;
  * @version 1.0
  * @since <pre>15.07.2016</pre>
  */
-public class YamlConfigFile extends ConfigFile {
+class YamlConfigFile extends ConfigFile {
 
     private final String path;
 
@@ -33,7 +33,7 @@ public class YamlConfigFile extends ConfigFile {
      *
      * @param path the path
      */
-    public YamlConfigFile(final String path) {
+    YamlConfigFile(final String path) {
         this.path = path;
     }
 

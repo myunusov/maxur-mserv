@@ -1,6 +1,5 @@
 package org.maxur.mserv.config;
 
-import org.maxur.mserv.config.yaml.YamlConfigFile;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.introspector.PropertyUtils;
@@ -14,16 +13,6 @@ import org.yaml.snakeyaml.representer.Representer;
  * @since <pre>14.07.2016</pre>
  */
 public abstract class ConfigFile {
-
-    /**
-     * Yaml file properties file.
-     *
-     * @param path the path
-     * @return the properties file
-     */
-    public static ConfigFile yamlFile(final String path) {
-        return new YamlConfigFile(path);
-    }
 
     /**
      * As yaml string.

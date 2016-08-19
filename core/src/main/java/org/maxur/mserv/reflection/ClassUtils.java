@@ -28,10 +28,10 @@ public final class ClassUtils {
      * @return the object
      */
     @NotNull
-    public static Object createClassInstance(final Class<?> clazz) {
+    public static <T> T createClassInstance(final Class<T> clazz) {
         try {
             final Constructor<?> ctor = clazz.getConstructor();
-            return ctor.newInstance();
+            return (T) ctor.newInstance();
         } catch (InstantiationException | InvocationTargetException e) {
             log.error("Error on create observer: ", e);
             throw new IllegalStateException(e.getMessage(), e);

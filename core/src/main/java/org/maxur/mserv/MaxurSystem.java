@@ -2,12 +2,13 @@ package org.maxur.mserv;
 
 import lombok.extern.slf4j.Slf4j;
 import org.maxur.mserv.bus.Bus;
+import org.maxur.mserv.config.Config;
 import org.maxur.mserv.config.ConfigFile;
+import org.maxur.mserv.config.ConfigFileFactory;
 import org.maxur.mserv.core.annotation.Binder;
 import org.maxur.mserv.core.annotation.Configuration;
 import org.maxur.mserv.core.annotation.Observer;
-import org.maxur.mserv.ioc.ServiceLocator;
-import org.maxur.mserv.ioc.hk2.Hk2System;
+import org.maxur.mserv.ioc.IoC;
 import org.maxur.mserv.microservice.MicroService;
 import org.maxur.mserv.reflection.ClassRepository;
 
@@ -36,20 +37,22 @@ public class MaxurSystem {
 
     private final List<Class<?>> configurations = new ArrayList<>();
 
-    private final Hk2System diSystem = new Hk2System();
+    private final IoC ioc;
 
-    private MaxurSystem(final String name) {
+    private MaxurSystem(final String name, final IoC ioc) {
         this.name = name;
+        this.ioc = ioc;
     }
 
     /**
      * System maxur system.
      *
      * @param name the name
+     * @param ioc Ioc  TODO should be default case
      * @return the maxur system
      */
-    public static MaxurSystem system(final String name) {
-        return new MaxurSystem(name);
+    public static MaxurSystem system(final String name, final IoC ioc) {
+        return new MaxurSystem(name, ioc);
     }
 
     /**
@@ -85,18 +88,20 @@ public class MaxurSystem {
      * @param serviceName the service name
      */
     public void start(final String serviceName) {
-
-        diSystem.init(binders);
-
+        ioc.init(binders);
         config();
         addObservers();
-        locator().bean(MicroService.class, serviceName)
+        ioc.locator().bean(MicroService.class, serviceName)
                 .withName(name)
                 .start();
     }
 
     private void addObservers() {
-        observers.forEach(this::makeObserverBy);
+        observers.forEach(this::registerObserverBy);
+    }
+
+    private void registerObserverBy(final Class<?> clazz) {
+        ioc.locator().bean(Bus.class, "event.bus").register(ioc.instanceOf(clazz));
     }
 
     private void config() {
@@ -105,26 +110,32 @@ public class MaxurSystem {
                 log.warn("Configuration class (with 'Configuration' annotation) is not found");
                 break;
             case 1:
-                makeConfigurationBy(configurations.get(0));
+                final Class<?> configClass = configurations.get(0);
+                if (!Config.class.isAssignableFrom(configClass)) {
+                    log.error("Configuration class must be org.maxur.mserv.config.Config type");
+                } else {
+                    //noinspection unchecked
+                    makeConfigurationBy((Class<Config>) configClass);
+                }
                 break;
             default:
                 log.error("More than one configuration class (with 'Configuration' annotation) is found");
         }
     }
 
-    private void makeConfigurationBy(final Class<?> clazz) {
+    private void makeConfigurationBy(final Class<Config> clazz) {
         final Configuration clazzAnnotation = clazz.getAnnotation(Configuration.class);
         final String fileName = clazzAnnotation.fileName();
-        final Object config = isNullOrEmpty(fileName) ?
-                diSystem.instanceOf(clazz) :
+        final Config config = isNullOrEmpty(fileName) ?
+                ioc.instanceOf(clazz) :
                 loadConfig(fileName, clazz);
-        diSystem.configResolver().setConfig(config);
+        ioc.configResolver().setConfig(config);
     }
 
-    private Object loadConfig(final String fileName, final Class<?> clazz) {
-        final ConfigFile configFile = ConfigFile.yamlFile(fileName);
+    private Config loadConfig(final String fileName, final Class<Config> clazz) {
+        final ConfigFile configFile = ioc.locator().bean(ConfigFileFactory.class).make(fileName);
         try {
-            final Object result = configFile.bindTo(clazz);
+            final Config result = configFile.bindTo(clazz);
             log.debug(format("Config file '%s' is loaded. %n %s", fileName, ConfigFile.asYaml(result)));
             return result;
         } catch (RuntimeException e) {
@@ -134,11 +145,5 @@ public class MaxurSystem {
         }
     }
 
-    private void makeObserverBy(final Class<?> clazz) {
-        locator().bean(Bus.class, "event.bus").register(diSystem.instanceOf(clazz));
-    }
 
-    private ServiceLocator locator() {
-        return diSystem.locator();
-    }
 }

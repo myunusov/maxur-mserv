@@ -14,6 +14,6 @@ public interface ConfigResolver {
      *
      * @param config the config
      */
-    void setConfig(Object config);
+    void setConfig(Config config);
 
 }

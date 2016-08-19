@@ -1,6 +1,7 @@
 package org.maxur.ddd.config;
 
 import lombok.Data;
+import org.maxur.mserv.config.Config;
 import org.maxur.mserv.core.annotation.Configuration;
 import org.maxur.mserv.core.annotation.Key;
 import org.maxur.mserv.web.WebConfig;
@@ -17,7 +18,7 @@ import java.util.Date;
  */
 @Data
 @Configuration(fileName = "./conf/tddd.yaml")
-public class UserConfig {
+public class UserConfig extends Config {
 
     @NotNull
     private Date released;
