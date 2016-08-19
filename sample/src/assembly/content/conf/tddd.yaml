@@ -1,0 +1,15 @@
+version:  1.0
+released: 2016-07-11
+
+web:
+  url:   http://localhost:8080
+
+  rest:  api
+
+  content:
+      webapp: api-docs
+
+jdbc:
+  url:      jdbc:h2:./data/tasks
+  user:     user
+  password: password

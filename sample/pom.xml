@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
-    <properties>
-        <maxur-mserv.version>0.01-SNAPSHOT</maxur-mserv.version>
-        <lombok.version>1.16.10</lombok.version>
-    </properties>
 
     <parent>
         <groupId>org.maxur</groupId>
@@ -15,15 +10,103 @@
         <version>0.01-SNAPSHOT</version>
     </parent>
 
-    <artifactId>sample</artifactId>
-    <packaging>jar</packaging>
+    <artifactId>maxur-usrv-smpl</artifactId>
 
+    <description>Maxur Micro-service Sample</description>
+
+    <properties>
+        <sonar.tests>src/test/groovy</sonar.tests>
+
+        <handlebars.version>4.0.6</handlebars.version>
+
+        <hk2.version>2.4.0-b34</hk2.version>
+        <jooq.version>3.8.4</jooq.version>
+        <h2.version>1.4.192</h2.version>
+        <HikariCP.version>2.4.7</HikariCP.version>
+
+        <lombok.version>1.16.10</lombok.version>
+
+        <speed4j.version>0.18</speed4j.version>
+
+        <swagger.version>1.5.9</swagger.version>
+        <spock-reports.version>1.2.12</spock-reports.version>
+        <pegdown-doclet.version>1.3</pegdown-doclet.version>
+
+        <coveralls-maven-plugin.version>4.1.0</coveralls-maven-plugin.version>
+        <swagger-maven-plugin.version>3.1.1</swagger-maven-plugin.version>
+        <flyway-maven-plugin.version>4.0.3</flyway-maven-plugin.version>
+    </properties>
+
+
+    <profiles>
+        <profile>
+            <id>windows-profile</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <file>
+                    <exists>${java.home}/lib/tools.jar</exists>
+                </file>
+            </activation>
+            <properties>
+                <toolsjar>${java.home}/lib/tools.jar</toolsjar>
+            </properties>
+        </profile>
+        <profile>
+            <id>mac-profile</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <exists>${java.home}/../lib/tools.jar</exists>
+                </file>
+            </activation>
+            <properties>
+                <toolsjar>${java.home}/../lib/tools.jar</toolsjar>
+            </properties>
+        </profile>
+    </profiles>
 
     <dependencies>
+
         <dependency>
             <groupId>org.maxur</groupId>
-            <artifactId>maxur-mserv</artifactId>
-            <version>${maxur-mserv.version}</version>
+            <artifactId>maxur-usrv-core</artifactId>
+            <version>0.01-SNAPSHOT</version>
+        </dependency>
+
+        <!-- JDK -->
+        <dependency>
+            <groupId>jdk.tools</groupId>
+            <artifactId>jdk.tools</artifactId>
+            <version>jdk1.8.0</version>
+            <scope>system</scope>
+            <systemPath>${toolsjar}</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.jknack</groupId>
+            <artifactId>handlebars</artifactId>
+            <version>${handlebars.version}</version>
+        </dependency>
+
+
+        <!-- DbC -->
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+        </dependency>
+
+        <!-- Logs -->
+        <dependency>
+            <groupId>com.ecyrd.speed4j</groupId>
+            <artifactId>speed4j</artifactId>
+            <version>${speed4j.version}</version>
+        </dependency>
+
+        <!-- Libs -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>19.0</version>
         </dependency>
 
         <dependency>
@@ -32,7 +115,396 @@
             <version>${lombok.version}</version>
         </dependency>
 
+
+        <!-- DB -->
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq</artifactId>
+            <version>${jooq.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>${HikariCP.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+        </dependency>
+
+
+        <!-- Swagger -->
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-jaxrs</artifactId>
+            <version>${swagger.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jackson-dataformat-yaml</artifactId>
+                    <groupId>com.fasterxml.jackson.dataformat</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-dataformat-xml</artifactId>
+                    <groupId>com.fasterxml.jackson.dataformat</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-annotations</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-databind</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-datatype-joda</artifactId>
+                    <groupId>com.fasterxml.jackson.datatype</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-core</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-jaxrs-json-provider</artifactId>
+                    <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>commons-lang3</artifactId>
+                    <groupId>org.apache.commons</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>${swagger.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-jersey2-jaxrs</artifactId>
+            <version>${swagger.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jersey-container-servlet-core</artifactId>
+                    <groupId>org.glassfish.jersey.containers</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jersey-server</artifactId>
+                    <groupId>org.glassfish.jersey.core</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>javax.inject</artifactId>
+                    <groupId>org.glassfish.hk2.external</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+
+        <dependency>
+            <groupId>com.athaydes</groupId>
+            <artifactId>spock-reports</artifactId>
+            <version>${spock-reports.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>groovy-all</artifactId>
+                    <groupId>org.codehaus.groovy</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>spock-core</artifactId>
+                    <groupId>org.spockframework</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
     </dependencies>
 
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dir</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>${project.basedir}/src/assembly/dev.xml</descriptor>
+                            </descriptors>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <attach>false</attach>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.eluder.coveralls</groupId>
+                <artifactId>coveralls-maven-plugin</artifactId>
+                <version>${coveralls-maven-plugin.version}</version>
+                <configuration>
+                    <!--suppress MavenModelInspection -->
+                    <repoToken>${env.coveralls_repo_token}</repoToken>
+                    <jacocoReports>
+                        <jacocoReport>${project.reporting.outputDirectory}/jacoco-ut/jacoco.xml</jacocoReport>
+                        <jacocoReport>${project.reporting.outputDirectory}/jacoco-it/jacoco.xml</jacocoReport>
+                    </jacocoReports>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>com.github.kongchen</groupId>
+                <artifactId>swagger-maven-plugin</artifactId>
+                <version>${swagger-maven-plugin.version}</version>
+                <configuration>
+                    <apiSources>
+                        <apiSource>
+                            <springmvc>false</springmvc>
+                            <locations>org.maxur.ddd.ui</locations>
+                            <schemes>http</schemes>
+                            <host>baseurl</host>
+                            <basePath>/api</basePath>
+                            <info>
+                                <title>T-DDD</title>
+                                <version>V0.1</version>
+                                <description>DDD Tutorial Project</description>
+                                <termsOfService>
+                                    https://github.com/myunusov/tutor-ddd
+                                </termsOfService>
+                                <contact>
+                                    <email>myunusov@maxur.org</email>
+                                    <name>Maxim Yunusov</name>
+                                    <url>http://www.maxur.org</url>
+                                </contact>
+                                <license>
+                                    <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+                                    <name>Apache 2.0</name>
+                                </license>
+                            </info>
+                            <!-- Support classpath or file absolute path here.
+                            1) classpath e.g: "classpath:/markdown.hbs", "classpath:/templates/hello.html"
+                            2) file e.g: "${basedir}/src/main/resources/markdown.hbs",
+                                "${basedir}/src/main/resources/template/hello.html" -->
+                            <templatePath>${basedir}/src/site/resources/strapdown.html.hbs</templatePath>
+                            <outputPath>${basedir}/target/site/swagger/document.html</outputPath>
+                            <swaggerDirectory>${basedir}/target/classes</swaggerDirectory>
+                            <swaggerApiReader>com.wordnik.swagger.jaxrs.reader.DefaultJaxrsApiReader</swaggerApiReader>
+                        </apiSource>
+                    </apiSources>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>swagger-generate</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <doclet>org.maxur.ldoc.LivingDocumentation</doclet>
+                    <docletArtifact>
+                        <groupId>org.maxur</groupId>
+                        <artifactId>tutor-ddd</artifactId>
+                        <version>0.1-SNAPSHOT</version>
+                    </docletArtifact>
+                    <useStandardDocletOptions>false</useStandardDocletOptions>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>${flyway-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>migrate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <driver>org.h2.Driver</driver>
+                    <url>jdbc:h2:./data/tasks</url>
+                    <user>user</user>
+                    <password>password</password>
+                    <schemas>
+                        <schema>public</schema>
+                    </schemas>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.h2database</groupId>
+                        <artifactId>h2</artifactId>
+                        <version>${h2.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jooq</groupId>
+                <artifactId>jooq-codegen-maven</artifactId>
+                <version>${jooq.version}</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <jdbc>
+                        <driver>org.h2.Driver</driver>
+                        <url>jdbc:h2:./data/tasks</url>
+                        <user>user</user>
+                        <password>password</password>
+                    </jdbc>
+                    <generator>
+                        <name>org.jooq.util.DefaultGenerator</name>
+                        <database>
+                            <name>org.jooq.util.h2.H2Database</name>
+                            <inputSchema>public</inputSchema>
+                            <includes>.*</includes>
+                            <excludes/>
+                        </database>
+                        <generate>
+                            <relations>true</relations>
+                            <deprecated>false</deprecated>
+                        </generate>
+                        <target>
+                            <packageName>org.maxur.ddd.data.sql</packageName>
+                            <directory>target/generated-sources/jooq</directory>
+                        </target>
+                    </generator>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.h2database</groupId>
+                        <artifactId>h2</artifactId>
+                        <version>${h2.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+            <plugin>
+                <groupId>org.glassfish.hk2</groupId>
+                <artifactId>hk2-inhabitant-generator</artifactId>
+                <version>${hk2.version}</version>
+                <configuration>
+                    <verbose>true</verbose>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate-inhabitants</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.12</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/vendor/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <!--
+                API documentation builder. It will produce documentation
+                which is then to be used in site:site. It will be
+                located at target/site/apidocs.
+                -->
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven-javadoc-plugin.version}</version>
+                <configuration>
+                    <doclet>ch.raffael.doclets.pegdown.PegdownDoclet</doclet>
+                    <docletArtifact>
+                        <groupId>ch.raffael.pegdown-doclet</groupId>
+                        <artifactId>pegdown-doclet</artifactId>
+                        <version>${pegdown-doclet.version}</version>
+                    </docletArtifact>
+                    <useStandardDocletOptions>true</useStandardDocletOptions>
+
+                    <failOnError>true</failOnError>
+                    <detectLinks>true</detectLinks>
+                    <tags>
+                        <!--
+                        Here we instruct plugin to use custom tag
+                        @link http://maven.apache.org/plugins/maven-javadoc-plugin/examples/tag-configuration.html
+                        -->
+                        <tag>
+                            <name>todo</name>
+                            <placement>a</placement>
+                            <head>To do:</head>
+                        </tag>
+                        <tag>
+                            <name>checkstyle</name>
+                            <placement>a</placement>
+                            <head>Suppressed Checkstyle violations:</head>
+                        </tag>
+                    </tags>
+
+                    <source>${project.source.compile}</source>
+                    <encoding>${project.source.encoding}</encoding>
+                    <charset>${project.source.encoding}</charset>
+                    <docencoding>${project.source.encoding}</docencoding>
+                    <breakiterator>true</breakiterator>
+                    <version>true</version>
+                    <author>true</author>
+                    <keywords>true</keywords>
+
+                    <detectLinks>false</detectLinks>
+                    <linksource>true</linksource>
+                    <excludePackageNames>*.it,*.test</excludePackageNames>
+                    <aggregate>true</aggregate>
+
+                    <additionalparam>
+                        -quiet
+                        -version
+                        -author
+                    </additionalparam>
+
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </reporting>
 
 </project>

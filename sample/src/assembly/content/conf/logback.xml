@@ -1,0 +1,44 @@
+<configuration>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="TDDDFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>./log/tddd.log</file>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./log/arch/tddd.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="PERFFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>./log/tddd-perf.log</file>
+        <encoder>
+            <pattern>%m%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./log/arch/tddd-perf.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <logger name="org.maxur.ddd" level="INFO" additivity="false">
+        <appender-ref ref="TDDDFILE"/>
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <logger name="org.maxur.ddd.perf" level="INFO" additivity="false">
+        <appender-ref ref="PERFFILE"/>
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <root level="WARN">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

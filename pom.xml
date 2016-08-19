@@ -17,7 +17,27 @@
     <modules>
         <module>template</module>
         <module>sample</module>
+        <module>core</module>
     </modules>
+
+    <url>https://github.com/myunusov/maxur-mserv</url>
+
+    <scm>
+        <connection>scm:git:git@github.com:myunusov/maxur-mserv.git</connection>
+        <developerConnection>scm:git:git@github.com:myunusov/maxur-mserv.git</developerConnection>
+        <url>git@github.com:myunusov/maxur-mserv.git</url>
+    </scm>
+
+    <issueManagement>
+        <system>GitHub Social Coding</system>
+        <url>https://github.com/myunusov/maxur-mserv/issues</url>
+    </issueManagement>
+
+    <ciManagement>
+        <system>Travis</system>
+        <url>https://travis-ci.org/myunusov/maxur-mserv/</url>
+        <notifiers/>
+    </ciManagement>
 
 
 </project>
