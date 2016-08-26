@@ -6,7 +6,7 @@
 
     <parent>
         <groupId>org.maxur</groupId>
-        <artifactId>maxur-mserv-base</artifactId>
+        <artifactId>maxur-usrv-tmpl</artifactId>
         <version>0.01-SNAPSHOT</version>
     </parent>
 
@@ -75,7 +75,7 @@
 
         <dependency>
             <groupId>org.maxur</groupId>
-            <artifactId>maxur-usrv-base</artifactId>
+            <artifactId>maxur-usrv-rest</artifactId>
             <version>0.01-SNAPSHOT</version>
         </dependency>
 

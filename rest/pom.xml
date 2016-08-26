@@ -6,11 +6,11 @@
 
     <parent>
         <groupId>org.maxur</groupId>
-        <artifactId>maxur-mserv-base</artifactId>
+        <artifactId>maxur-usrv-base</artifactId>
         <version>0.01-SNAPSHOT</version>
     </parent>
 
-    <artifactId>maxur-usrv-base</artifactId>
+    <artifactId>maxur-usrv-rest</artifactId>
 
     <description>Maxur Micro-service Base Implementation</description>
 

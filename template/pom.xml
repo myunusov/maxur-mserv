@@ -6,11 +6,12 @@
 
     <parent>
         <groupId>org.maxur</groupId>
-        <artifactId>maxur-mserv-base</artifactId>
+        <artifactId>maxur-usrv-base</artifactId>
         <version>0.01-SNAPSHOT</version>
     </parent>
 
     <artifactId>maxur-usrv-tmpl</artifactId>
+    <packaging>pom</packaging>
 
     <description>Maxur Micro-service Template</description>
 

@@ -4,21 +4,21 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>maxur-mserv-base</artifactId>
-    <version>0.01-SNAPSHOT</version>
-    <packaging>pom</packaging>
-
     <parent>
         <groupId>org.maxur</groupId>
         <artifactId>maxur-base</artifactId>
         <version>0.20</version>
     </parent>
 
+    <artifactId>maxur-usrv-base</artifactId>
+    <version>0.01-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
     <modules>
         <module>template</module>
         <module>sample</module>
         <module>core</module>
-        <module>base</module>
+        <module>rest</module>
     </modules>
 
     <url>https://github.com/myunusov/maxur-mserv</url>
