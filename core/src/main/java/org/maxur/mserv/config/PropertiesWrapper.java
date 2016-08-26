@@ -31,7 +31,13 @@ public class PropertiesWrapper {
         this.properties = properties;
         parse(properties);
     }
-    
+
+    /**
+     * Wrap properties wrapper.
+     *
+     * @param properties the properties
+     * @return the properties wrapper
+     */
     public static PropertiesWrapper wrap(Object properties) {
         return new PropertiesWrapper(properties);
     }
@@ -43,8 +49,9 @@ public class PropertiesWrapper {
      * @param key the key
      * @return the value by key
      */
+
+    @SuppressWarnings("unchecked")
     public <T> T valueBy(String key) {
-        //noinspection unchecked
         return (T) map.get(key);
     }
 

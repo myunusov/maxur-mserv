@@ -10,4 +10,5 @@ package org.maxur.mserv.core;
 // TODO
 public class ValidationException extends Exception {
 
+    private static final long serialVersionUID = 7586928031316296905L;
 }

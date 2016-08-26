@@ -8,6 +8,7 @@
         <groupId>org.maxur</groupId>
         <artifactId>maxur-usrv-tmpl</artifactId>
         <version>0.01-SNAPSHOT</version>
+        <relativePath>../template</relativePath>
     </parent>
 
     <artifactId>maxur-usrv-smpl</artifactId>
@@ -35,35 +36,8 @@
         <coveralls-maven-plugin.version>4.1.0</coveralls-maven-plugin.version>
         <swagger-maven-plugin.version>3.1.1</swagger-maven-plugin.version>
         <flyway-maven-plugin.version>4.0.3</flyway-maven-plugin.version>
+        <maxur-ldoc.version>0.01-SNAPSHOT</maxur-ldoc.version>
     </properties>
-
-
-    <profiles>
-        <profile>
-            <id>windows-profile</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-                <file>
-                    <exists>${java.home}/lib/tools.jar</exists>
-                </file>
-            </activation>
-            <properties>
-                <toolsjar>${java.home}/lib/tools.jar</toolsjar>
-            </properties>
-        </profile>
-        <profile>
-            <id>mac-profile</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <file>
-                    <exists>${java.home}/../lib/tools.jar</exists>
-                </file>
-            </activation>
-            <properties>
-                <toolsjar>${java.home}/../lib/tools.jar</toolsjar>
-            </properties>
-        </profile>
-    </profiles>
 
     <dependencies>
 
@@ -79,21 +53,11 @@
             <version>0.01-SNAPSHOT</version>
         </dependency>
 
-        <!-- JDK -->
         <dependency>
-            <groupId>jdk.tools</groupId>
-            <artifactId>jdk.tools</artifactId>
-            <version>jdk1.8.0</version>
-            <scope>system</scope>
-            <systemPath>${toolsjar}</systemPath>
+            <groupId>org.maxur</groupId>
+            <artifactId>maxur-ldoc</artifactId>
+            <version>${maxur-ldoc.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>com.github.jknack</groupId>
-            <artifactId>handlebars</artifactId>
-            <version>${handlebars.version}</version>
-        </dependency>
-
 
         <!-- DbC -->
         <dependency>
@@ -279,16 +243,16 @@
                     <apiSources>
                         <apiSource>
                             <springmvc>false</springmvc>
-                            <locations>org.maxur.ddd.ui</locations>
+                            <locations>org.maxur.usrv.smpl.ui</locations>
                             <schemes>http</schemes>
                             <host>baseurl</host>
                             <basePath>/api</basePath>
                             <info>
-                                <title>T-DDD</title>
+                                <title>Maxur Micro-service Sample</title>
                                 <version>V0.1</version>
-                                <description>DDD Tutorial Project</description>
+                                <description>Maxur Micro-service Sample</description>
                                 <termsOfService>
-                                    https://github.com/myunusov/tutor-ddd
+                                    https://github.com/myunusov/micro-service
                                 </termsOfService>
                                 <contact>
                                     <email>myunusov@maxur.org</email>
@@ -324,15 +288,28 @@
 
             <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <doclet>org.maxur.ldoc.LivingDocumentation</doclet>
-                    <docletArtifact>
-                        <groupId>org.maxur</groupId>
-                        <artifactId>tutor-ddd</artifactId>
-                        <version>0.1-SNAPSHOT</version>
-                    </docletArtifact>
-                    <useStandardDocletOptions>false</useStandardDocletOptions>
-                </configuration>
+                <executions>
+                    <execution>
+                        <id>ldoc</id>
+                        <phase>post-integration-test</phase>
+                        <configuration>
+                            <doclet>org.maxur.ldoc.LivingDocumentation</doclet>
+                            <docletArtifact>
+                                <groupId>org.maxur</groupId>
+                                <artifactId>maxur-ldoc</artifactId>
+                                <version>${maxur-ldoc.version}</version>
+                            </docletArtifact>
+                            <useStandardDocletOptions>false</useStandardDocletOptions>
+                            <additionalparam>
+                                -basedir ${project.basedir}/src/site/resources
+                            </additionalparam>
+                        </configuration>
+                        <goals>
+                            <goal>javadoc</goal>
+                        </goals>
+                    </execution>
+
+                </executions>
             </plugin>
 
             <plugin>

@@ -9,6 +9,8 @@ package org.maxur.mserv.config;
  */
 public class ConfigLoadException extends IllegalStateException {
 
+    private static final long serialVersionUID = -3224807317532494538L;
+
     /**
      * Instantiates a new Property load exception.
      *

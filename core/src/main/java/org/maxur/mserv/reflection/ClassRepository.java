@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -70,10 +71,12 @@ public class ClassRepository {
                 }).accept(ClassUtils.getClassByName(className));
             }
 
-            @SuppressWarnings("unchecked")
             @Override
             public Class<? extends Annotation>[] annotations() {
-                return rules.keySet().toArray(new Class[rules.size()]);
+                @SuppressWarnings("unchecked")
+                final Class<? extends Annotation>[] array =
+                    (Class[]) Array.newInstance(Class.class, rules.size());
+                return rules.keySet().toArray(array);
             }
 
         };

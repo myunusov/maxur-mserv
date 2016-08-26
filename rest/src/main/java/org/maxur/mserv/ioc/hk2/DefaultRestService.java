@@ -3,6 +3,7 @@ package org.maxur.mserv.ioc.hk2;
 import org.glassfish.hk2.api.InjectionResolver;
 import org.glassfish.hk2.api.InterceptionService;
 import org.glassfish.hk2.api.TypeLiteral;
+import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.maxur.mserv.aop.hk2.HK2InterceptionService;
 import org.maxur.mserv.bus.Bus;
@@ -36,6 +37,11 @@ public class DefaultRestService implements Framework {
     private DefaultRestService() {
     }
 
+    /**
+     * Rest service default rest service.
+     *
+     * @return the default rest service
+     */
     public static DefaultRestService restService() {
         return new DefaultRestService();
     }
@@ -48,7 +54,8 @@ public class DefaultRestService implements Framework {
     @Override
     public void configWith(final List<Class<?>> binders) {
         final List<AbstractBinder> list = binders(binders);
-        locator = ServiceLocatorFactoryHk2Impl.locator(list.toArray(new AbstractBinder[list.size()]));
+        Binder[] bindersArray = list.toArray(new AbstractBinder[list.size()]);
+        locator = ServiceLocatorFactoryHk2Impl.locator(bindersArray);
     }
 
     /**

@@ -28,6 +28,7 @@ public final class ClassUtils {
      * @return the object
      */
     @NotNull
+    @SuppressWarnings("unchecked")
     public static <T> T createClassInstance(final Class<T> clazz) {
         try {
             final Constructor<?> ctor = clazz.getConstructor();

@@ -15,10 +15,11 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>template</module>
-        <module>sample</module>
         <module>core</module>
         <module>rest</module>
+        <module>ldoc</module>
+        <module>template</module>
+        <module>sample</module>
     </modules>
 
     <url>https://github.com/myunusov/maxur-mserv</url>

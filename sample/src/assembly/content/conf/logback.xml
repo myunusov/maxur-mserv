@@ -6,7 +6,7 @@
         </encoder>
     </appender>
 
-    <appender name="TDDDFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="LOGFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>./log/tddd.log</file>
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
@@ -28,12 +28,12 @@
         </rollingPolicy>
     </appender>
 
-    <logger name="org.maxur.ddd" level="INFO" additivity="false">
-        <appender-ref ref="TDDDFILE"/>
+    <logger name="org.maxur.usrv" level="DEBUG" additivity="false">
+        <appender-ref ref="LOGFILE"/>
         <appender-ref ref="STDOUT" />
     </logger>
 
-    <logger name="org.maxur.ddd.perf" level="INFO" additivity="false">
+    <logger name="org.maxur.usrv.perf" level="INFO" additivity="false">
         <appender-ref ref="PERFFILE"/>
         <appender-ref ref="STDOUT" />
     </logger>
