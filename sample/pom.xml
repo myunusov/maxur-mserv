@@ -301,6 +301,8 @@
                             </docletArtifact>
                             <useStandardDocletOptions>false</useStandardDocletOptions>
                             <additionalparam>
+                                -glossary
+                                -contextMap
                                 -basedir ${project.basedir}/src/site/resources
                             </additionalparam>
                         </configuration>

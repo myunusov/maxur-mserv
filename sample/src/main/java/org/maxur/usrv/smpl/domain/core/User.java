@@ -1,6 +1,6 @@
 package org.maxur.usrv.smpl.domain.core;
 
-import org.maxur.ldoc.Concept;
+import org.maxur.ldoc.annotation.Concept;
 
 /**
  * @author myunusov

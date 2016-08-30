@@ -27,5 +27,5 @@
 @Link(related = "common")
 package org.maxur.usrv.smpl.domain.auth;
 
-import org.maxur.ldoc.BusinessDomain;
-import org.maxur.ldoc.Link;
+import org.maxur.ldoc.annotation.BusinessDomain;
+import org.maxur.ldoc.annotation.Link;

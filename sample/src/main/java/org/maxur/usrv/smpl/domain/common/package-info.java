@@ -26,5 +26,5 @@
 @Link(related = "core", label = "Анти-коррупционный слой")
 package org.maxur.usrv.smpl.domain.common;
 
-import org.maxur.ldoc.BusinessDomain;
-import org.maxur.ldoc.Link;
+import org.maxur.ldoc.annotation.BusinessDomain;
+import org.maxur.ldoc.annotation.Link;

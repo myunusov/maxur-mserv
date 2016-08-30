@@ -26,5 +26,5 @@
 @Link(related = "common", label = "acl")
 package org.maxur.usrv.smpl.domain.core;
 
-import org.maxur.ldoc.BusinessDomain;
-import org.maxur.ldoc.Link;
+import org.maxur.ldoc.annotation.BusinessDomain;
+import org.maxur.ldoc.annotation.Link;

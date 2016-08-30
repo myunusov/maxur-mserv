@@ -2,7 +2,7 @@ package org.maxur.usrv.smpl.domain.auth;
 
 import lombok.Getter;
 import org.maxur.usrv.smpl.domain.core.User;
-import org.maxur.ldoc.Concept;
+import org.maxur.ldoc.annotation.Concept;
 
 /**
  * @author Maxim Yunusov

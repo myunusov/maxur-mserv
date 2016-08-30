@@ -17,7 +17,6 @@
     <modules>
         <module>core</module>
         <module>rest</module>
-        <module>ldoc</module>
         <module>template</module>
         <module>sample</module>
     </modules>
