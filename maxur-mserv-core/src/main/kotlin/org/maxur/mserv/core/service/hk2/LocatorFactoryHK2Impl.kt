@@ -23,6 +23,8 @@ import javax.inject.Singleton
  */
 class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
 
+
+    var packages: List<String> = emptyList()
     val binders = ArrayList<Binder>()
 
     init {
@@ -31,11 +33,7 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
     }
 
     val locator: ServiceLocator by lazy {
-        // TODO hardcode of packages 
-        HK2RuntimeInitializer
-                .init("mserv-locator", true
-                        //,*arrayOf("org.maxur")
-                )
+        HK2RuntimeInitializer.init("mserv-locator", true, *packages.toTypedArray())
     }
 
     fun make(): Locator {
@@ -83,8 +81,10 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
                     .`in`(Singleton::class.java)
         }
 
+
     }
     class LocatorBinder : AbstractBinder() {
+
         override fun configure() {
             bind(LocatorHK2Impl::class.java)
                     .to(Locator::class.java)

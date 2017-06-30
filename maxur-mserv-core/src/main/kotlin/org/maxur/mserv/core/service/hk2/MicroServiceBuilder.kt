@@ -24,12 +24,18 @@ class MicroServiceBuilder() {
     private var locatorHolder: LocatorHolder = LocatorHolder()
     private var observersHolder: ObserversHolder? = null
     private var titleHolder: Holder<String> = Holder.string("Anonymous")
+    private var packagesHolder: List<String> = emptyList()
     private var propertiesHolder: PropertiesHolder = PropertiesHolder()
     private var servicesHolder: ServicesHolder = ServicesHolder()
 
     var title: String = "Anonymous"
         set(value) {
             titleHolder = Holder.string(value)
+        }
+
+    var packages: String = ""
+        set(value) {
+            packagesHolder = value.split("\\s*,\\s*")
         }
 
     fun binders(init: LocatorHolder.() -> Unit) {
@@ -50,6 +56,7 @@ class MicroServiceBuilder() {
 
     fun build(): MicroService {
         val locator = LocatorFactoryHK2Impl {
+            this.packages = packagesHolder
             bind(*locatorHolder.binders)
             bind(propertiesHolder::build, PropertiesService::class.java)
             bind({ locator -> BaseMicroService(servicesHolder.build(locator), locator) }, MicroService::class.java)

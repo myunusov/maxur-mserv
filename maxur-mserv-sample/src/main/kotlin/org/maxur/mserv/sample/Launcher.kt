@@ -25,6 +25,7 @@ object Launcher {
     @JvmStatic fun main(args: Array<String>)  {
         DSL.service {
             title = ":name"
+            packages = "org.maxur.mserv.sample"
             observers {
                 beforeStart = this@Launcher::beforeStart
                 afterStop = this@Launcher::afterStop
