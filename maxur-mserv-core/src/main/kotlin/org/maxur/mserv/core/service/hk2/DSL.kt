@@ -11,6 +11,7 @@ object DSL {
                 .build()
         } catch (e: Exception) {
             return object: MicroService {
+                override val version: String = ""
                 override var name: String  = "noname"
                 override fun <T> bean(clazz: Class<T>): T? = throw UnsupportedOperationException()
                 override fun start() = Unit

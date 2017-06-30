@@ -6,9 +6,15 @@ import org.maxur.mserv.core.embedded.EmbeddedService
 import java.util.concurrent.Executors
 
 
+
+
 interface MicroService {
 
     var name: String
+
+    val version: String
+
+
 
     fun <T> bean(clazz: Class<T>): T?
     /**
@@ -87,6 +93,8 @@ class BaseMicroService constructor(
     }
 
     override var name: String = "Anonymous microService"
+    override val version: String = MicroService::class.java.`package`.implementationVersion ?: ""
+
     var beforeStart: ((BaseMicroService) -> Unit)? = null
     var afterStop: ((BaseMicroService) -> Unit)? = null
     var onError: ((BaseMicroService, Exception) -> Unit)? = null

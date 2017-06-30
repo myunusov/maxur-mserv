@@ -11,8 +11,8 @@
     </parent>
 
     <artifactId>maxur-mserv-core</artifactId>
-	<name>maxur-mserv-core</name>
-	<description>Maxur Microservice Framework</description>	
+    <name>maxur-mserv-core</name>
+    <description>Maxur Microservice Framework</description>
 
     <properties>
         <env>dev</env>
@@ -55,10 +55,11 @@
         <junit-platform.version>1.0.0-M4</junit-platform.version>
         <expekt.version>0.5.0</expekt.version>
         <objenesis.version>2.6</objenesis.version>
-        
+
         <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
         <maven-compiler-plugin.version>3.5.1</maven-compiler-plugin.version>
         <build-helper-maven-plugin.version>3.0.0</build-helper-maven-plugin.version>
+        <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
     </properties>
 
     <profiles>
@@ -136,7 +137,7 @@
             <artifactId>config</artifactId>
             <version>${hocon.config.version}</version>
         </dependency>
-        
+
         <!-- Jersey -->
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
@@ -256,7 +257,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
+
 
         <!-- hk2 -->
         <dependency>
@@ -583,7 +584,7 @@
             <version>${objenesis.version}</version>
             <scope>test</scope>
         </dependency>
-         <dependency>
+        <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-test</artifactId>
             <version>${kotlin.version}</version>
@@ -716,7 +717,9 @@
                                 </java>
                             </target>
                         </configuration>
-                        <goals><goal>run</goal></goals>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
                     </execution>
                     <execution>
                         <id>ktlint-format</id>
@@ -730,7 +733,9 @@
                                 </java>
                             </target>
                         </configuration>
-                        <goals><goal>run</goal></goals>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
                     </execution>
                 </executions>
                 <dependencies>
@@ -793,7 +798,45 @@
                     </sourceDirectories>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <version>1.4</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <revisionOnScmFailure>true</revisionOnScmFailure>
+                    <format>Build: #{0} ({1,date})</format>
+                    <items>
+                        <item>buildNumber\d*</item>
+                        <item>timestamp</item>
+                    </items>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven-jar-plugin.version}</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <implementation-version>${project.version}</implementation-version>
+                            <implementation-build>${buildNumber}</implementation-build>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
         </plugins>
+
+
     </build>
 
     <pluginRepositories>

@@ -63,7 +63,7 @@ class ServiceResource @Inject constructor(val service: MicroService) {
 class ServiceView(service: MicroService) {
 
     @ApiModelProperty(value = "Service name")
-    val name: String = service.name
+    val name: String = "${service.name}: ${service.version}"
 
     @Link
     var self: HALLink = HALLink.Builder(URI("service")).build()
