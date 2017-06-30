@@ -1,6 +1,7 @@
 package org.maxur.mserv.core.service.hk2
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import gov.va.oia.HK2Utilities.HK2RuntimeInitializer
 import org.glassfish.hk2.api.Factory
 import org.glassfish.hk2.api.InjectionResolver
 import org.glassfish.hk2.api.ServiceLocator
@@ -12,6 +13,8 @@ import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.annotation.Value
 import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
 import javax.inject.Singleton
+
+
 
 /**
  * @author myunusov
@@ -28,7 +31,11 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
     }
 
     val locator: ServiceLocator by lazy {
-        ServiceLocatorUtilities.createAndPopulateServiceLocator()
+        // TODO hardcode of packages 
+        HK2RuntimeInitializer
+                .init("mserv-locator", true
+                        //,*arrayOf("org.maxur")
+                )
     }
 
     fun make(): Locator {
