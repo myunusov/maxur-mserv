@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extensions>
+    <extension>
+        <groupId>io.takari.maven</groupId>
+        <artifactId>takari-smart-builder</artifactId>
+        <version>0.5.0</version>
+    </extension>
+    <extension>
+        <groupId>io.takari.maven</groupId>
+        <artifactId>maven-timeline</artifactId>
+        <version>1.6</version>
+    </extension>
+</extensions>

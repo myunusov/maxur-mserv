@@ -1,0 +1,28 @@
+<component>
+    <fileSets>
+
+        <fileSet>
+            <directory>src/assembly/content</directory>
+            <outputDirectory>./</outputDirectory>
+            <fileMode>0644</fileMode>
+            <directoryMode>0755</directoryMode>
+        </fileSet>
+
+        <fileSet>
+            <directory>src/vendor/swagger-ui</directory>
+            <outputDirectory>./webapp</outputDirectory>
+            <filtered>true</filtered>
+        </fileSet>
+
+    </fileSets>
+
+    <dependencySets>
+
+        <dependencySet>
+            <outputDirectory>lib</outputDirectory>
+            <fileMode>0644</fileMode>
+            <directoryMode>0755</directoryMode>
+        </dependencySet>
+
+    </dependencySets>
+</component>

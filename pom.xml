@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.maxur</groupId>
+    <artifactId>maxur-mserv-base</artifactId>
+    <version>0.01-SNAPSHOT</version>
+    <packaging>pom</packaging>
+	<name>maxur-mserv-base</name>
+	<description>Maxur Microservice Base POM</description>
+
+    <properties>
+        <maxur-mserv.root.path>${basedir}</maxur-mserv.root.path>
+        <project.source.encoding>UTF-8</project.source.encoding>
+        <project.build.sourceEncoding>${project.source.encoding}</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>${project.source.encoding}</project.reporting.outputEncoding>
+        <!--
+        ISO 8601, see http://en.wikipedia.org/wiki/ISO_8601. This
+        property is defined in order to give us an ability to use ${maven.build.timestamp}
+        later in the file
+        -->
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+        <github.global.server>github</github.global.server>
+
+        <maven-compiler-plugin.version>3.5.1</maven-compiler-plugin.version>
+        <maven-surefire-plugin.version>2.19.1</maven-surefire-plugin.version>
+        <maven-failsafe-plugin.version>2.19.1</maven-failsafe-plugin.version>
+    </properties>
+
+    <url>https://github.com/myunusov/maxur-mserv.git</url>
+
+    <scm>
+        <url>https://github.com/myunusov/maxur-mserv</url>
+        <connection>scm:git@github.com:maxurtutor/maxur-mserv.git</connection>
+        <developerConnection>scm:git@github.com:maxurtutor/maxur-mserv.git</developerConnection>
+    </scm>
+
+    <issueManagement>
+        <system>GitHub Social Coding</system>
+        <url>https://github.com/myunusov/maxur-mserv.git/issues</url>
+    </issueManagement>
+
+    <ciManagement>
+        <system>Travis</system>
+        <url>https://travis-ci.org/myunusov/maxur-mserv.git/</url>
+        <notifiers/>
+    </ciManagement>
+
+    <modules>
+        <module>maxur-mserv-core</module>
+        <module>maxur-mserv-sample</module>
+    </modules>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven-surefire-plugin.version}</version>
+                    <configuration>
+                        <useFile>false</useFile>
+                        <runOrder>random</runOrder>
+                        <trimStackTrace>false</trimStackTrace>
+                        <failIfNoTests>false</failIfNoTests>
+                        <failIfNoSpecifiedTests>true</failIfNoSpecifiedTests>
+                        <parallel>all</parallel>
+                        <parallelTestsTimeoutInSeconds>0</parallelTestsTimeoutInSeconds>
+                        <parallelTestsTimeoutForcedInSeconds>0</parallelTestsTimeoutForcedInSeconds>
+                        <perCoreThreadCount>true</perCoreThreadCount>
+                        <threadCount>4</threadCount>
+                        <excludes>
+                            <exclude>**/IT*.java</exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>${maven-failsafe-plugin.version}</version>
+                    <configuration>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                        <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
+                        <parallel>all</parallel>
+                        <parallelTestsTimeoutInSeconds>0</parallelTestsTimeoutInSeconds>
+                        <parallelTestsTimeoutForcedInSeconds>0</parallelTestsTimeoutForcedInSeconds>
+                        <perCoreThreadCount>true</perCoreThreadCount>
+                        <threadCount>4</threadCount>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>integration-test</id>
+                            <goals>
+                                <goal>integration-test</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>verify</id>
+                            <goals>
+                                <goal>verify</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+
+
+</project>
