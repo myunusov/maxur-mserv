@@ -32,7 +32,7 @@ object Launcher {
                 onError = this@Launcher::onError
             }
             properties {
-                format = "Hocon"
+                format = "hocon"
             }
             services {
                rest {}
