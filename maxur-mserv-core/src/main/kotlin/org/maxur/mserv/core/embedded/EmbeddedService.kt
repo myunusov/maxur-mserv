@@ -16,5 +16,4 @@ abstract class EmbeddedService {
      */
     abstract fun stop()
 
-
 }

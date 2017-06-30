@@ -21,6 +21,7 @@ class MicroServiceBuilderSpec : Spek({
                 }
                 service.should.be.not.`null`
                 service.start()
+                service.stop()
             }
         }
 
@@ -31,6 +32,7 @@ class MicroServiceBuilderSpec : Spek({
                 }
                 service.should.be.not.`null`
                 service.start()
+                service.stop()
             }
         }
     }

@@ -5,39 +5,41 @@ package org.maxur.mserv.core
 import org.maxur.mserv.core.embedded.EmbeddedService
 import java.util.concurrent.Executors
 
-
-
-
 interface MicroService {
-
+    /**
+     * The service name
+     */
     var name: String
-
+    /**
+     * The service version
+     */
     val version: String
-
-
-
+    /**
+     * The bean from service IoC by it's name
+     * @param clazz Class of bean
+     * @param <T> type of bean
+     */
     fun <T> bean(clazz: Class<T>): T?
     /**
-     * Start Service
+     * Start this Service
      */
     fun start()
-
     /**
-     * Stop Service
+     * Stop this Service
      */
     fun deferredStop()
-
+    /**
+     * Immediately shuts down this Service.
+     */
     fun stop()
     /**
-     * Restart Service
+     * Restart this Service
      */
     fun deferredRestart()
-
     /**
      * Represent State of micro-service
      */
     enum class State {
-
         /**
          *  Running application
          */
@@ -54,7 +56,6 @@ interface MicroService {
         RESTART;
 
         companion object {
-
             fun from(value: String): MicroService.State {
                 val case = value.toUpperCase()
                 if (case in State::class.java.enumConstants.map { e -> e.name }) {
@@ -64,7 +65,6 @@ interface MicroService {
                 }
             }
         }
-
     }
 }
 
@@ -101,9 +101,6 @@ class BaseMicroService constructor(
 
     override fun <T> bean(clazz: Class<T>): T? = locator.service(clazz)
 
-    /**
-     * Start Service
-     */
     override fun start() {
         if (state == MicroService.State.START) return
         try {
@@ -115,15 +112,13 @@ class BaseMicroService constructor(
         }
     }
 
-    /**
-     * Stop Service
-     */
     override fun deferredStop() {
         if (state == MicroService.State.STOP) return
         try {
             postpone({
                 service.stop()
                 afterStop?.invoke(this)
+                locator.shutdown()
                 state = MicroService.State.STOP
             })
         } catch(e: Exception) {
@@ -136,21 +131,20 @@ class BaseMicroService constructor(
         try {
             service.stop()
             afterStop?.invoke(this)
+            locator.shutdown()
             state = MicroService.State.STOP
         } catch(e: Exception) {
             error(e)
         }
     }
 
-    /**
-     * Restart Service
-     */
     override fun deferredRestart() {
         if (state == MicroService.State.STOP) return
         try {
             postpone({
                 service.stop()
                 afterStop?.invoke(this)
+                locator.shutdown()
                 state = MicroService.State.STOP
                 beforeStart?.invoke(this)
                 service.start()
@@ -165,7 +159,6 @@ class BaseMicroService constructor(
         onError?.invoke(this, exception)
     }
 
-
     private fun postpone(func: () -> Unit) {
         val pool = Executors.newSingleThreadExecutor { runnable ->
             val thread = Executors.defaultThreadFactory().newThread(runnable)
@@ -178,7 +171,6 @@ class BaseMicroService constructor(
         }
         pool.shutdown()
     }
-
 
 }
 

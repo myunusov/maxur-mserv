@@ -14,8 +14,6 @@ import org.maxur.mserv.core.annotation.Value
 import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
 import javax.inject.Singleton
 
-
-
 /**
  * @author myunusov
  * @version 1.0
@@ -33,7 +31,15 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
     }
 
     val locator: ServiceLocator by lazy {
-        HK2RuntimeInitializer.init("mserv-locator", true, *packages.toTypedArray())
+        if (packages.isNotEmpty()) {
+            HK2RuntimeInitializer.init(
+                "locator-1",
+                false,
+                *packages.toTypedArray(), "org.maxur.mserv.core"
+            )
+        } else {
+            HK2RuntimeInitializer.init("mserv-locator", false)
+        }
     }
 
     fun make(): Locator {

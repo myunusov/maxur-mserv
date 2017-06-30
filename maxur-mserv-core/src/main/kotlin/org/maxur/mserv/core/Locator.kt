@@ -17,6 +17,8 @@ interface Locator {
 
     fun <R> properties(key: String, clazz: Class<R>): R?
 
+    fun shutdown()
+
     fun <T> implementation(): T
 
 }

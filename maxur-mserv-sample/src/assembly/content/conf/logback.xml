@@ -10,24 +10,24 @@
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>./log/safarc.log</file>
+        <file>./log/mserv-sample.log</file>
         <encoder>
             <charset>utf-8</charset>
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5p %c{1} - %m%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>./log/arch/safarc.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <fileNamePattern>./log/arch/mserv-sample.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
             <maxHistory>7</maxHistory>
         </rollingPolicy>
     </appender>
 
     <appender name="PERF" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>./log/safarc-perf.log</file>
+        <file>./log/mserv-sample-perf.log</file>
         <encoder>
             <pattern>%msg%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>./log/arch/safarc-perf.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <fileNamePattern>./log/arch/mserv-sample-perf.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
             <maxHistory>7</maxHistory>
         </rollingPolicy>
     </appender>
