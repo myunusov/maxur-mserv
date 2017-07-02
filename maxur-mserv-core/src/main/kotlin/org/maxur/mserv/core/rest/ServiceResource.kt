@@ -3,11 +3,22 @@ package org.maxur.mserv.core.rest
 import dk.nykredit.jackson.dataformat.hal.HALLink
 import dk.nykredit.jackson.dataformat.hal.annotation.Link
 import dk.nykredit.jackson.dataformat.hal.annotation.Resource
-import io.swagger.annotations.*
+import io.swagger.annotations.Api
+import io.swagger.annotations.ApiModel
+import io.swagger.annotations.ApiModelProperty
+import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.ApiParam
+import io.swagger.annotations.ApiResponse
+import io.swagger.annotations.ApiResponses
 import org.maxur.mserv.core.MicroService
 import java.net.URI
 import javax.inject.Inject
-import javax.ws.rs.*
+import javax.ws.rs.Consumes
+import javax.ws.rs.GET
+import javax.ws.rs.PUT
+import javax.ws.rs.Path
+import javax.ws.rs.PathParam
+import javax.ws.rs.Produces
 import javax.ws.rs.core.MediaType
 
 
@@ -43,18 +54,18 @@ class ServiceResource @Inject constructor(val service: MicroService) {
     )
     @ApiResponses(value = *arrayOf(
             ApiResponse(code = 204, message = "Successful operation"),
+            ApiResponse(code = 400, message = "On invalid command"),
             ApiResponse(code = 500, message = "Internal server error")
         )
     )
     fun state(
             @ApiParam(name = "state", value = "New service state", required = true, allowableValues="stop, restart")
-            @PathParam("state") state: String
-    ) = when (MicroService.State.from(state)) {
-        MicroService.State.STOP -> service.deferredStop()
-        MicroService.State.RESTART -> service.deferredRestart()
-        MicroService.State.START -> {}
+            @PathParam("state") command: String
+    ) = when (command.toUpperCase()) {
+        "STOP" -> service.deferredStop()
+        "RESTART" -> service.deferredRestart()
+        else -> throw IllegalArgumentException("Command '${command}' unknown")
     }
-
 }
 
 @Suppress("unused")

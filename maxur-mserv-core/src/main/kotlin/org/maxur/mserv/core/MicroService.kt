@@ -1,163 +1,35 @@
-@file:Suppress("unused")
-
 package org.maxur.mserv.core
 
+import org.maxur.mserv.core.domain.Service
 import org.maxur.mserv.core.embedded.EmbeddedService
 import java.util.concurrent.Executors
 
-interface MicroService {
-    /**
-     * The service name
-     */
-    var name: String
+/**
+ * This class represents the Microservice.
+ */
+abstract class MicroService : Service() {
+
     /**
      * The service version
      */
-    val version: String
+    abstract val version: String
+
     /**
      * The bean from service IoC by it's name
      * @param clazz Class of bean
      * @param <T> type of bean
      */
-    fun <T> bean(clazz: Class<T>): T?
-    /**
-     * Start this Service
-     */
-    fun start()
+    abstract fun <T> bean(clazz: Class<T>): T?
+
     /**
      * Stop this Service
      */
-    fun deferredStop()
-    /**
-     * Immediately shuts down this Service.
-     */
-    fun stop()
+    fun deferredStop() = postpone({ state.stop(this) })
+
     /**
      * Restart this Service
      */
-    fun deferredRestart()
-    /**
-     * Represent State of micro-service
-     */
-    enum class State {
-        /**
-         *  Running application
-         */
-        START,
-
-        /**
-         * Stop application
-         */
-        STOP,
-
-        /**
-         * Restart application
-         */
-        RESTART;
-
-        companion object {
-            fun from(value: String): MicroService.State {
-                val case = value.toUpperCase()
-                if (case in State::class.java.enumConstants.map { e -> e.name }) {
-                    return State.valueOf(case)
-                } else {
-                    throw IllegalArgumentException("The '$value' is not acceptable Application State")
-                }
-            }
-        }
-    }
-}
-
-/**
- * The micro-service
- *
- * @param service Embedded service (may be composite)
- *
- * @author myunusov
- * @version 1.0
- * @since <pre>12.06.2017</pre>
- */
-class BaseMicroService constructor(
-    val service: EmbeddedService,
-    val locator: Locator
-) : MicroService {
-
-    private var state: MicroService.State = MicroService.State.STOP
-
-    init {
-        Runtime.getRuntime().addShutdownHook(object : Thread() {
-            override fun run() {
-                this@BaseMicroService.stop()
-            }
-        })
-    }
-
-    override var name: String = "Anonymous microService"
-    override val version: String = MicroService::class.java.`package`.implementationVersion ?: ""
-
-    var beforeStart: ((BaseMicroService) -> Unit)? = null
-    var afterStop: ((BaseMicroService) -> Unit)? = null
-    var onError: ((BaseMicroService, Exception) -> Unit)? = null
-
-    override fun <T> bean(clazz: Class<T>): T? = locator.service(clazz)
-
-    override fun start() {
-        if (state == MicroService.State.START) return
-        try {
-            beforeStart?.invoke(this)
-            service.start()
-            state = MicroService.State.START
-        } catch(e: Exception) {
-            error(e)
-        }
-    }
-
-    override fun deferredStop() {
-        if (state == MicroService.State.STOP) return
-        try {
-            postpone({
-                service.stop()
-                afterStop?.invoke(this)
-                locator.shutdown()
-                state = MicroService.State.STOP
-            })
-        } catch(e: Exception) {
-            error(e)
-        }
-    }
-
-    override fun stop() {
-        if (state == MicroService.State.STOP) return
-        try {
-            service.stop()
-            afterStop?.invoke(this)
-            locator.shutdown()
-            state = MicroService.State.STOP
-        } catch(e: Exception) {
-            error(e)
-        }
-    }
-
-    override fun deferredRestart() {
-        if (state == MicroService.State.STOP) return
-        try {
-            postpone({
-                service.stop()
-                afterStop?.invoke(this)
-                locator.shutdown()
-                state = MicroService.State.STOP
-                beforeStart?.invoke(this)
-                service.start()
-                state = MicroService.State.START
-            })
-        } catch(e: Exception) {
-            error(e)
-        }
-    }
-
-    private fun error(exception: Exception) {
-        onError?.invoke(this, exception)
-    }
+    fun deferredRestart() = postpone({ state.restart(this) })
 
     private fun postpone(func: () -> Unit) {
         val pool = Executors.newSingleThreadExecutor { runnable ->
@@ -170,6 +42,59 @@ class BaseMicroService constructor(
             func.invoke()
         }
         pool.shutdown()
+    }
+
+}
+
+/**
+ * The micro-service
+ *
+ * @param embeddedService Embedded service (may be composite)
+ *
+ * @author myunusov
+ * @version 1.0
+ * @since <pre>12.06.2017</pre>
+ */
+class BaseMicroService constructor(
+    val embeddedService: EmbeddedService,
+    val locator: Locator
+) : MicroService() {
+
+    init {
+        Runtime.getRuntime().addShutdownHook(object : Thread() {
+            override fun run() {
+                this@BaseMicroService.stop()
+            }
+        })
+    }
+
+    override var name: String = "Anonymous microService"
+
+    override val version: String = MicroService::class.java.`package`.implementationVersion ?: ""
+
+    override fun <T> bean(clazz: Class<T>): T? = locator.service(clazz)
+
+
+
+    override fun launch() {
+        catchError {
+            embeddedService.start()
+      }
+    }
+
+    override fun shutdown() {
+        catchError {
+            embeddedService.stop()
+            locator.shutdown()
+        }
+    }
+
+    private fun catchError(function: () -> Unit) {
+        try {
+            function.invoke()
+        } catch(e: Exception) {
+            onError.forEach { it.invoke(this, e) }
+        }
     }
 
 }

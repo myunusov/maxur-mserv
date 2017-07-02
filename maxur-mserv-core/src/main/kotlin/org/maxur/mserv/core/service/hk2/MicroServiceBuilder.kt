@@ -7,6 +7,7 @@ import org.maxur.mserv.core.BaseMicroService
 import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.MicroService
 import org.maxur.mserv.core.domain.Holder
+import org.maxur.mserv.core.domain.Service
 import org.maxur.mserv.core.embedded.EmbeddedService
 import org.maxur.mserv.core.embedded.EmbeddedServiceFactory
 import org.maxur.mserv.core.service.properties.PropertiesService
@@ -67,9 +68,11 @@ class MicroServiceBuilder() {
 
         if (service is BaseMicroService) {
             service.name = titleHolder.get(locator)!!
-            service.beforeStart = observersHolder?.beforeStart
-            service.afterStop = observersHolder?.afterStop
-            service.onError = observersHolder?.onError
+            observersHolder?.let {
+                service.beforeStart.addAll(it.beforeStartHolder)
+                service.afterStop.addAll(it.afterStopHolder)
+                service.onError.addAll(it.onErrorHolder)
+            }
         }
         return service
     }
@@ -174,9 +177,24 @@ class ServiceHolder {
 }
 
 class ObserversHolder {
-    var beforeStart: ((MicroService) -> Unit)? = null
-    var afterStop: ((MicroService) -> Unit)? = null
-    var onError: ((MicroService, Exception) -> Unit)? = null
+    var beforeStartHolder: MutableList<(Service) -> Unit> = ArrayList()
+    var afterStopHolder: MutableList<(Service) -> Unit> = ArrayList()
+    var onErrorHolder: MutableList<(Service, Exception) -> Unit> = ArrayList()
+
+    var beforeStart: ((Service) -> Unit)? = null
+        set(value) {
+            value?.let { beforeStartHolder.add(value) }
+        }
+
+    var afterStop: ((Service) -> Unit)? = null
+        set(value) {
+            value?.let { afterStopHolder.add(value) }
+        }
+
+    var onError: ((Service, Exception) -> Unit)? = null
+        set(value) {
+            value?.let { onErrorHolder.add(value) }
+        }
 }
 
 class PropertiesHolder {

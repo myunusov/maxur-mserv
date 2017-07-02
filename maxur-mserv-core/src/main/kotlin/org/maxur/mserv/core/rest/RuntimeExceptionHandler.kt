@@ -2,7 +2,6 @@ package org.maxur.mserv.core.rest
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import sun.security.timestamp.TSResponse.BAD_REQUEST
 import javax.ws.rs.WebApplicationException
 import javax.ws.rs.core.GenericEntity
 import javax.ws.rs.core.MediaType.APPLICATION_JSON
@@ -48,7 +47,7 @@ class RuntimeExceptionHandler : ExceptionMapper<RuntimeException> {
     private fun onIllegalArgument(exception: IllegalArgumentException): Response {
         log.warn(exception.message)
         log.debug(exception.message, exception)
-        return status(BAD_REQUEST)
+        return status(Status.BAD_REQUEST)
                 .type(APPLICATION_JSON)
                 .entity(makeUserErrorEntity(exception))
                 .build()
