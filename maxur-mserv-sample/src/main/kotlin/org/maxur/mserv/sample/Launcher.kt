@@ -1,6 +1,7 @@
 package org.maxur.mserv.sample
 
 import org.maxur.mserv.core.MicroService
+import org.maxur.mserv.core.domain.Service
 import org.maxur.mserv.core.service.hk2.DSL
 import org.maxur.mserv.sample.params.ConfigParams
 import org.slf4j.LoggerFactory
@@ -40,16 +41,16 @@ object Launcher {
         }.start()
     }
     
-    fun beforeStart(service: MicroService) {
-        (service.bean(ConfigParams::class.java))!!.log()
+    fun beforeStart(service: Service) {
+        ((service as MicroService).bean(ConfigParams::class.java))!!.log()
         log().info("${service.name} is started")
     }
     
-    fun afterStop(service: MicroService) {
+    fun afterStop(service: Service) {
         log().info("${service.name} is stopped")
     }
 
-    fun onError(@Suppress("UNUSED_PARAMETER") service: MicroService, exception: Exception) {
+    fun onError(@Suppress("UNUSED_PARAMETER") service: Service, exception: Exception) {
         log().error(exception.message, exception)
     }
     

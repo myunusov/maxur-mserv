@@ -10,14 +10,12 @@ object DSL {
             return MicroServiceBuilder(init)
                 .build()
         } catch (e: Exception) {
-            return object: MicroService {
+            return object: MicroService() {
+                override fun shutdown() = Unit
+                override fun launch() = Unit
                 override val version: String = ""
                 override var name: String  = "noname"
                 override fun <T> bean(clazz: Class<T>): T? = throw UnsupportedOperationException()
-                override fun start() = Unit
-                override fun deferredStop() = Unit
-                override fun stop()  = Unit
-                override fun deferredRestart() = Unit
             }
         }
     }
