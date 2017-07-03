@@ -5,7 +5,7 @@ import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.describe
 import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
-import org.maxur.mserv.core.service.hk2.DSL
+import org.maxur.mserv.core.service.msbuilder.Kotlin
 
 class MicroServiceBuilderSpec : Spek({
 
@@ -14,7 +14,7 @@ class MicroServiceBuilderSpec : Spek({
         on("Build empty micro-service") {
 
             it("should return new micro-service") {
-                val service = DSL.service {
+                val service = Kotlin.service {
                     properties {
                         none()
                     }
@@ -28,7 +28,7 @@ class MicroServiceBuilderSpec : Spek({
         on("Build empty micro-service with default properties") {
 
             it("should return new micro-service") {
-                val service = DSL.service {
+                val service = Kotlin.service {
                 }
                 service.should.be.not.`null`
                 service.start()

@@ -2,7 +2,7 @@ package org.maxur.mserv.sample
 
 import org.maxur.mserv.core.MicroService
 import org.maxur.mserv.core.domain.Service
-import org.maxur.mserv.core.service.hk2.DSL
+import org.maxur.mserv.core.service.msbuilder.Kotlin
 import org.maxur.mserv.sample.params.ConfigParams
 import org.slf4j.LoggerFactory
 
@@ -24,7 +24,7 @@ object Launcher {
      * @param args - arguments of command.
      */
     @JvmStatic fun main(args: Array<String>)  {
-        DSL.service {
+        Kotlin.service {
             title = ":name"
             packages = "org.maxur.mserv.sample"
             observers {

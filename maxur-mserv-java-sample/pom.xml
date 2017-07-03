@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.maxur</groupId>
+        <artifactId>maxur-mserv-base</artifactId>
+        <version>0.01-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>maxur-mserv-java-sample</artifactId>
+    <version>0.01-SNAPSHOT</version>
+    <name>maxur-mserv-sample</name>
+    <description>Maxur Sample Microservice</description>
+
+    <properties>
+        <maxur-mserv.root.path>${basedir}/..</maxur-mserv.root.path>
+        <project.jdk>1.8</project.jdk>
+        <project.source.compile>${project.jdk}</project.source.compile>
+        <project.target.compile>${project.jdk}</project.target.compile>
+        <project.source.encoding>UTF-8</project.source.encoding>
+        <project.build.sourceEncoding>${project.source.encoding}</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>${project.source.encoding}</project.reporting.outputEncoding>
+        <!--
+        ISO 8601, see http://en.wikipedia.org/wiki/ISO_8601. This
+        property is defined in order to give us an ability to use ${maven.build.timestamp}
+        later in the file
+        -->
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+
+        <maven-compiler-plugin.version>3.5.1</maven-compiler-plugin.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.maxur</groupId>
+            <artifactId>maxur-mserv-core</artifactId>
+            <version>0.01-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <source>${project.source.compile}</source>
+                    <target>${project.target.compile}</target>
+                    <encoding>${project.source.encoding}</encoding>
+                    <optimize>true</optimize>
+                    <showWarnings>true</showWarnings>
+                    <showDeprecation>true</showDeprecation>
+                    <compilerArgs>
+                        <arg>-Xlint</arg>
+                        <!--<arg>-Werror</arg>-->
+                        <arg>-Xlint:-path</arg>
+                        <!-- @see https://blogs.oracle.com/darcy/entry/bootclasspath_older_source -->
+                        <arg>-Xlint:-options</arg>
+                        <!-- @see http://netbeans.org/bugzilla/show_bug.cgi?format=multiple&id=208666 -->
+                        <!-- this is to avoid a problem with ANTLR and JDK7 -->
+                        <arg>-Xlint:-classfile</arg>
+                        <!-- ignore APT warnings -->
+                        <arg>-Xlint:-processing</arg>
+                    </compilerArgs>
+                    <testExcludes>
+                        <exclude>**/package-info.java</exclude>
+                    </testExcludes>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dir</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>${project.basedir}/src/assembly/dev.xml</descriptor>
+                            </descriptors>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <attach>false</attach>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -51,6 +51,7 @@
     <modules>
         <module>maxur-mserv-core</module>
         <module>maxur-mserv-sample</module>
+        <module>maxur-mserv-java-sample</module>
     </modules>
 
     <build>
