@@ -1,10 +1,15 @@
 package org.maxur.mserv.core.domain
 
-abstract class Service {
+import org.maxur.mserv.core.Locator
+import kotlin.reflect.KFunction
+import kotlin.reflect.jvm.javaType
 
-    var beforeStart: MutableList<(Service) -> Unit> = ArrayList()
-    var afterStop: MutableList<(Service) -> Unit> = ArrayList()
-    var onError: MutableList<(Service, Exception) -> Unit> = ArrayList()
+
+abstract class Service(val locator: Locator) {
+
+    var beforeStart: MutableList<KFunction<Any>> = ArrayList()
+    var afterStop: MutableList<KFunction<Any>> = ArrayList()
+    var onError: MutableList<KFunction<Any>> = ArrayList()
 
     protected var state: Service.State = Service.State.STOPPED
     private set
@@ -17,12 +22,12 @@ abstract class Service {
     /**
      * Start this Service
      */
-    fun start() = state.start(this)
+    fun start() = state.start(this, locator)
 
     /**
      * Immediately shuts down this Service.
      */
-    fun stop() = state.stop(this)
+    fun stop() = state.stop(this, locator)
 
     /**
      * shutdown this service.
@@ -42,11 +47,11 @@ abstract class Service {
          *  Running application
          */
         STARTED {
-            override fun start(service: Service) = Unit
-            override fun stop(service: Service) = shutdown(service)
-            override fun restart(service: Service) {
-                shutdown(service)
-                launch(service)
+            override fun start(service: Service, locator: Locator) = Unit
+            override fun stop(service: Service, locator: Locator) = shutdown(service, locator)
+            override fun restart(service: Service, locator: Locator) {
+                shutdown(service, locator)
+                launch(service, locator)
 
             }
         },
@@ -54,24 +59,52 @@ abstract class Service {
          * Stop application
          */
         STOPPED {
-            override fun start(service: Service) = launch(service)
-            override fun stop(service: Service) = Unit
-            override fun restart(service: Service) = launch(service)
+            override fun start(service: Service, locator: Locator) = launch(service, locator)
+            override fun stop(service: Service, locator: Locator) = Unit
+            override fun restart(service: Service, locator: Locator) = launch(service, locator)
         };
-        abstract fun start(service: Service)
-        abstract fun stop(service: Service)
-        abstract fun restart(service: Service)
+        abstract fun start(service: Service, locator: Locator)
+        abstract fun stop(service: Service, locator: Locator)
+        abstract fun restart(service: Service, locator: Locator)
 
-        protected fun shutdown(service: Service) {
-            service.shutdown()
-            service.state = Service.State.STOPPED
-            service.afterStop.forEach { it.invoke(service) }
+        protected fun shutdown(service: Service, locator: Locator) {
+            try {
+                service.shutdown()
+                service.state = Service.State.STOPPED
+                service.afterStop.forEach { call(it, locator) }
+            } catch(e: Exception) {
+                service.onError.forEach { error(it, locator, e) }
+            }
         }
-        protected fun launch(service: Service) {
-            service.beforeStart.forEach { it.invoke(service) }
-            service.launch()
-            service.state = Service.State.STARTED
+        protected fun launch(service: Service, locator: Locator) {
+            try {
+                service.beforeStart.forEach { call(it, locator) }
+                service.launch()
+                service.state = Service.State.STARTED
+            } catch(e: Exception) {
+                service.onError.forEach { error(it, locator, e) }
+            }
         }
+
+        private fun call(func: KFunction<Any>, locator: Locator) {
+            val params = func.parameters.map {
+                param ->
+                locator.service(param.type.javaType as Class<*>)
+            }
+            func.call(*params.toTypedArray())
+        }
+
+        private fun error(func: KFunction<Any>, locator: Locator, exception: Exception) {
+            val params = func.parameters.map {
+                param ->
+                when {
+                    param.type.javaType == Exception::class.java -> exception
+                    else ->  locator.service(param.type.javaType as Class<*>)
+                }
+            }
+            func.call(*params.toTypedArray())
+        }
+
     }
 
 }

@@ -11,7 +11,7 @@ import java.util.concurrent.Executors
  * @version 1.0
  * @since <pre>12.06.2017</pre>
  */
-abstract class MicroService : Service() {
+abstract class MicroService(locator: Locator) : Service(locator) {
 
     /**
      * The service version
@@ -28,12 +28,12 @@ abstract class MicroService : Service() {
     /**
      * Stop this Service
      */
-    fun deferredStop() = postpone({ state.stop(this) })
+    fun deferredStop() = postpone({ state.stop(this, locator) })
 
     /**
      * Restart this Service
      */
-    fun deferredRestart() = postpone({ state.restart(this) })
+    fun deferredRestart() = postpone({ state.restart(this, locator) })
 
     private fun postpone(func: () -> Unit) {
         val pool = Executors.newSingleThreadExecutor { runnable ->
@@ -52,13 +52,13 @@ abstract class MicroService : Service() {
 
 
 /**
-  * @param embeddedService Embedded service (may be composite)
-  * @param locator Service Locator
+ * @param embeddedService Embedded service (may be composite)
+ * @param locator Service Locator
  */
 class BaseMicroService constructor(
-    val embeddedService: EmbeddedService,
-    val locator: Locator
-) : MicroService() {
+        val embeddedService: EmbeddedService,
+        locator: Locator
+) : MicroService(locator) {
 
     init {
         Runtime.getRuntime().addShutdownHook(object : Thread() {
@@ -74,27 +74,13 @@ class BaseMicroService constructor(
 
     override fun <T> bean(clazz: Class<T>): T? = locator.service(clazz)
 
-
-
     override fun launch() {
-        catchError {
-            embeddedService.start()
-      }
+        embeddedService.start()
     }
 
     override fun shutdown() {
-        catchError {
-            embeddedService.stop()
-            locator.shutdown()
-        }
-    }
-
-    private fun catchError(function: () -> Unit) {
-        try {
-            function.invoke()
-        } catch(e: Exception) {
-            onError.forEach { it.invoke(this, e) }
-        }
+        embeddedService.stop()
+        locator.shutdown()
     }
 
 }

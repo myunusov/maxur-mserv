@@ -28,7 +28,7 @@ object Launcher {
             title = ":name"
             packages = "org.maxur.mserv.sample"
             observers {
-                beforeStart = { this@Launcher.beforeStart(it as MicroService) }
+                beforeStart =  this@Launcher::beforeStart
                 afterStop = this@Launcher::afterStop
                 onError = this@Launcher::onError
             }
@@ -41,8 +41,8 @@ object Launcher {
         }.start()
     }
     
-    fun beforeStart(service: MicroService) {
-        service.bean(ConfigParams::class.java) !!.log()
+    fun beforeStart(service: MicroService, configParams: ConfigParams) {
+        configParams.log()
         log().info("${service.name} is started")
     }
     
@@ -50,7 +50,7 @@ object Launcher {
         log().info("${service.name} is stopped")
     }
 
-    fun onError(@Suppress("UNUSED_PARAMETER") service: Service, exception: Exception) {
+    fun onError(exception: Exception) {
         log().error(exception.message, exception)
     }
     

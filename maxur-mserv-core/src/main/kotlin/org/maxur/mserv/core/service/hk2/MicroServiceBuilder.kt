@@ -7,7 +7,6 @@ import org.maxur.mserv.core.BaseMicroService
 import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.MicroService
 import org.maxur.mserv.core.domain.Holder
-import org.maxur.mserv.core.domain.Service
 import org.maxur.mserv.core.embedded.EmbeddedService
 import org.maxur.mserv.core.embedded.EmbeddedServiceFactory
 import org.maxur.mserv.core.service.properties.PropertiesService
@@ -15,6 +14,7 @@ import org.maxur.mserv.core.service.properties.PropertiesServiceFactory
 import org.maxur.mserv.core.service.properties.PropertiesSource
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import kotlin.reflect.KFunction
 
 class MicroServiceBuilder() {
 
@@ -177,21 +177,21 @@ class ServiceHolder {
 }
 
 class ObserversHolder {
-    var beforeStartHolder: MutableList<(Service) -> Unit> = ArrayList()
-    var afterStopHolder: MutableList<(Service) -> Unit> = ArrayList()
-    var onErrorHolder: MutableList<(Service, Exception) -> Unit> = ArrayList()
+    var beforeStartHolder: MutableList<KFunction<Any>> = ArrayList()
+    var afterStopHolder: MutableList<KFunction<Any>> = ArrayList()
+    var onErrorHolder: MutableList<KFunction<Any>> = ArrayList()
 
-    var beforeStart: ((Service) -> Unit)? = null
+    var beforeStart: KFunction<Any>? = null
         set(value) {
             value?.let { beforeStartHolder.add(value) }
         }
 
-    var afterStop: ((Service) -> Unit)? = null
+    var afterStop: KFunction<Any>? = null
         set(value) {
             value?.let { afterStopHolder.add(value) }
         }
 
-    var onError: ((Service, Exception) -> Unit)? = null
+    var onError: KFunction<Any>?  = null
         set(value) {
             value?.let { onErrorHolder.add(value) }
         }
