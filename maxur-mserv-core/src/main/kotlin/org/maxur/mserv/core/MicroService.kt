@@ -5,7 +5,11 @@ import org.maxur.mserv.core.embedded.EmbeddedService
 import java.util.concurrent.Executors
 
 /**
- * This class represents the Microservice.
+ * The micro-service
+ *
+ * @author myunusov
+ * @version 1.0
+ * @since <pre>12.06.2017</pre>
  */
 abstract class MicroService : Service() {
 
@@ -46,14 +50,10 @@ abstract class MicroService : Service() {
 
 }
 
+
 /**
- * The micro-service
- *
- * @param embeddedService Embedded service (may be composite)
- *
- * @author myunusov
- * @version 1.0
- * @since <pre>12.06.2017</pre>
+  * @param embeddedService Embedded service (may be composite)
+  * @param locator Service Locator
  */
 class BaseMicroService constructor(
     val embeddedService: EmbeddedService,

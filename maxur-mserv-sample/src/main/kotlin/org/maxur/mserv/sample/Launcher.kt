@@ -41,8 +41,8 @@ object Launcher {
         }.start()
     }
     
-    fun beforeStart(service: Service) {
-        ((service as MicroService).bean(ConfigParams::class.java))!!.log()
+    fun beforeStart(service: MicroService) {
+        service.bean(ConfigParams::class.java) !!.log()
         log().info("${service.name} is started")
     }
     
