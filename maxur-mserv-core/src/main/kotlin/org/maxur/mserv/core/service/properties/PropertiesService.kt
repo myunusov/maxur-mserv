@@ -61,4 +61,9 @@ interface PropertiesService {
      * @return properties by key
      */
     fun <P> read(key: String, clazz: Class<P>): P?
+
+    /**
+     * Service name
+     */
+    val name: String
 }

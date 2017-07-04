@@ -1,6 +1,6 @@
 package org.maxur.mserv.core
 
-import org.maxur.mserv.core.domain.Service
+import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.embedded.EmbeddedService
 import java.util.concurrent.Executors
 
@@ -11,7 +11,7 @@ import java.util.concurrent.Executors
  * @version 1.0
  * @since <pre>12.06.2017</pre>
  */
-abstract class MicroService(locator: Locator) : Service(locator) {
+abstract class MicroService(locator: Locator) : BaseService(locator) {
 
     /**
      * The service version

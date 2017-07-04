@@ -1,7 +1,8 @@
 package org.maxur.mserv.sample
 
-import org.maxur.mserv.core.MicroService
+import org.maxur.mserv.core.embedded.WebServer
 import org.maxur.mserv.core.service.msbuilder.Kotlin
+import org.maxur.mserv.core.service.properties.PropertiesService
 import org.maxur.mserv.sample.params.ConfigParams
 import org.slf4j.LoggerFactory
 
@@ -31,18 +32,26 @@ object Launcher {
                 format = "hocon"
             }
 
-            services += rest {}
+            services += rest {
+                afterStart += this@Launcher::afterWebServiceStart
+            }
 
             beforeStart += this@Launcher::beforeStart
-            afterStop += { log().info("Service is stopped") }
+            afterStart += { service ->  log().info("${service.name} is started") }
+            afterStop += { _ ->  log().info("Microservice is stopped") }
             onError += { exception ->  log().error(exception.message, exception) }
 
         }.start()
     }
 
-    fun beforeStart(service: MicroService, configParams: ConfigParams) {
+    fun beforeStart(configParams: ConfigParams, propertiesService: PropertiesService) {
+        log().info("Properties Source is '${propertiesService.name}'\n")
         configParams.log()
-        log().info("${service.name} is started")
+    }
+
+    fun afterWebServiceStart(service: WebServer) {
+        log().info("${service.name} is started on ${service.baseUri}\"")
+        log().info(service.entries().toString())
     }
 
 

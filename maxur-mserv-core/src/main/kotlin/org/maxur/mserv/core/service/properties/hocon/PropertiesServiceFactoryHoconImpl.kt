@@ -32,7 +32,7 @@ class PropertiesServiceFactoryHoconImpl : PropertiesServiceFactory() {
 
     override fun make(source: PropertiesSource): PropertiesService? {
         try {
-            return PropertiesServiceHoconImpl(ConfigFactory.load().getConfig(source.rootKey))
+            return PropertiesServiceHoconImpl(ConfigFactory.load().getConfig(source.rootKey), name)
         } catch(e: ConfigException.Missing) {
             log.warn(
                 "The '${source.rootKey}' config not found. " +
@@ -42,7 +42,7 @@ class PropertiesServiceFactoryHoconImpl : PropertiesServiceFactory() {
         }
     }
 
-    class PropertiesServiceHoconImpl(val config: Config) : PropertiesService {
+    class PropertiesServiceHoconImpl(val config: Config, override val name: String) : PropertiesService {
 
         private val objectMapper = ObjectMapper(HoconFactory())
 
