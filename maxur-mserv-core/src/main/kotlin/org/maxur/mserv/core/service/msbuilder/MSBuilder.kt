@@ -35,7 +35,16 @@ abstract class MSBuilder {
     protected var propertiesHolder: PropertiesHolder = PropertiesHolder()
 
     protected var servicesHolder: ServicesHolder = ServicesHolder()
-    protected var observersHolder: ObserversHolder? = null
+
+    protected val observersHolder: ObserversHolder = ObserversHolder()
+
+    val observer = Observer()
+
+    init {
+        observersHolder.beforeStartHolder.add(observer::beforeStart)
+        observersHolder.afterStopHolder.add(observer::afterStop)
+        observersHolder.onErrorHolder.add(observer::onError)
+    }
 
     open fun build(): MicroService {
         val locator = LocatorFactoryHK2Impl {
@@ -50,7 +59,7 @@ abstract class MSBuilder {
 
         if (service is BaseMicroService) {
             service.name = titleHolder.get(locator)!!
-            observersHolder?.let {
+            observersHolder.let {
                 service.beforeStart.addAll(it.beforeStartHolder)
                 service.afterStop.addAll(it.afterStopHolder)
                 service.onError.addAll(it.onErrorHolder)
@@ -129,27 +138,6 @@ class ServiceHolder {
 
 }
 
-class ObserversHolder {
-    var beforeStartHolder: MutableList<KFunction<Any>> = ArrayList()
-    var afterStopHolder: MutableList<KFunction<Any>> = ArrayList()
-    var onErrorHolder: MutableList<KFunction<Any>> = ArrayList()
-
-    var beforeStart: KFunction<Any>? = null
-        set(value) {
-            value?.let { beforeStartHolder.add(value) }
-        }
-
-    var afterStop: KFunction<Any>? = null
-        set(value) {
-            value?.let { afterStopHolder.add(value) }
-        }
-
-    var onError: KFunction<Any>?  = null
-        set(value) {
-            value?.let { onErrorHolder.add(value) }
-        }
-}
-
 class PropertiesHolder {
 
     companion object {
@@ -177,5 +165,37 @@ class PropertiesHolder {
     }
 
 }
+
+class ObserversHolder {
+    var beforeStartHolder: MutableList<KFunction<Any>> = ArrayList()
+    var afterStopHolder: MutableList<KFunction<Any>> = ArrayList()
+    var onErrorHolder: MutableList<KFunction<Any>> = ArrayList()
+
+    var beforeStart: KFunction<Any>? = null
+        set(value) {
+            value?.let { beforeStartHolder.add(value) }
+        }
+
+    var afterStop: KFunction<Any>? = null
+        set(value) {
+            value?.let { afterStopHolder.add(value) }
+        }
+
+    var onError: KFunction<Any>?  = null
+        set(value) {
+            value?.let { onErrorHolder.add(value) }
+        }
+}
+
+class Observer {
+    val beforeStartHolder = ArrayList<Function0<Unit>>()
+    val afterStopHolder = ArrayList<Function0<Unit>>()
+    val onErrorHolder = ArrayList<Function1<Exception, Unit>>()
+
+    fun beforeStart() = beforeStartHolder.forEach { it.invoke() }
+    fun afterStop() = afterStopHolder.forEach { it.invoke() }
+    fun onError(exception: Exception) = onErrorHolder.forEach { it.invoke(exception) }
+}
+
 
 

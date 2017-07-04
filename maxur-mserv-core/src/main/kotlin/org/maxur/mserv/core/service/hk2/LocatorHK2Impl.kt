@@ -7,13 +7,9 @@ import javax.inject.Inject
 
 
 class LocatorHK2Impl @Inject constructor(val locator: ServiceLocator) : Locator {
-    companion object {
-        lateinit var  current: Locator
-            private set
-    }
 
     init {
-        current = this
+        Locator.current = this
     }
 
     @Suppress("UNCHECKED_CAST")

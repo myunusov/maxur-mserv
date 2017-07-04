@@ -2,6 +2,10 @@ package org.maxur.mserv.core
 
 interface Locator {
 
+    companion object {
+        lateinit var  current: Locator
+    }
+
     fun <T> locate(name: String, clazz: Class<T>): T = service(clazz, name) ?:
             throw IllegalStateException(
                     "Service '$name' is not supported. Try one from this list: ${names(clazz)}"

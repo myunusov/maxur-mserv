@@ -34,7 +34,7 @@ class KBuilder(): MSBuilder() {
     }
 
     fun observers(init: ObserversHolder.() -> Unit) {
-        observersHolder = ObserversHolder().apply { init() }
+        observersHolder.apply { init() }
     }
 
     fun properties(init: PropertiesHolder.() -> Unit) {

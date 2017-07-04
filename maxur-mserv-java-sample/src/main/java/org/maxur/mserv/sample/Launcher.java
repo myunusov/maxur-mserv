@@ -1,7 +1,7 @@
 package org.maxur.mserv.sample;
 
+import org.maxur.mserv.core.Locator;
 import org.maxur.mserv.core.MicroService;
-import org.maxur.mserv.core.domain.Service;
 import org.maxur.mserv.core.service.msbuilder.Java;
 import org.maxur.mserv.sample.params.ConfigParams;
 import org.slf4j.Logger;
@@ -25,44 +25,28 @@ public final class Launcher {
      * @param args - arguments of command.
      */
     public static void main(String[] args) {
-/*
-        DSL.service {
-            title = ":name"
-            packages = "org.maxur.mserv.sample"
-            observers {
-                beforeStart = this @Launcher::beforeStart
-                    afterStop = this @Launcher::afterStop
-                    onError = this @Launcher::onError
-            }
-            properties {
-                format = "hocon"
-            }
-            services {
-                rest {
-                }
-            }
-        }.start()
-*/
+
         Java.dsl.service()
             .title(":name")
             .packages("org.maxur.mserv.sample")
             .properties("hocon")
-            .service("grizzly", ":webapp")
-            .build()
+            .rest()
+            .beforeStart(Launcher::beforeStart)
+            .afterStop( () -> log.info("Service is stopped"))
+            .onError((exception) -> log.error(exception.getMessage(), exception) )
             .start();
     }
-
-    public void beforeStart(MicroService service, ConfigParams configParams) {
-        configParams.log();
-        log.info("${service.name} is started");
-    }
-
-    public void afterStop(Service service) {
-        log.info("${service.name} is stopped");
-    }
-
-    public void onError(Exception exception) {
-        log.error(exception.getMessage(), exception);
+    
+    private static void beforeStart() {
+        final Locator locator = Locator.Companion.getCurrent();
+        final MicroService service = locator.service(MicroService.class);
+        final ConfigParams configParams = locator.service(ConfigParams.class);
+        if (configParams != null) {
+            configParams.log();
+        }
+        if (service != null) {
+            log.info("{} is started", service.getName());
+        }
     }
 
 }

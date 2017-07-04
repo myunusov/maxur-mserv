@@ -66,7 +66,7 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
     }
 
     private class ServiceProvider<T>(val func: (Locator) -> T): Factory<T> {
-        val locator: Locator by lazy { LocatorHK2Impl.current }
+        val locator: Locator by lazy { Locator.current }
         val result: T by lazy { func.invoke(locator) }
         override fun dispose(instance: T) = Unit
         override fun provide(): T = result
