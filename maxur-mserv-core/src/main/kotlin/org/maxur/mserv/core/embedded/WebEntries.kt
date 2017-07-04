@@ -8,7 +8,6 @@ class WebEntries(val url: URI) {
 
     override fun toString(): String = "\n---Entries---\n" + entries.map{ "$url$it" }.joinToString("\n")
 
-
     fun add(path: String, pattern: String, startUrl: String) {
         entries.add(WebEntry(path, pattern, startUrl))
     }

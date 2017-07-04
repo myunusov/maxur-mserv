@@ -1,6 +1,7 @@
 package org.maxur.mserv.core.service.msbuilder
 
 import org.maxur.mserv.core.MicroService
+import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.domain.Holder
 import java.util.function.Consumer
 
@@ -66,26 +67,34 @@ open class JBuilder: MSBuilder() {
         return this
     }
 
-    fun beforeStart(func: Runnable): JBuilder {
+    fun beforeStart(func: Consumer<in BaseService>): JBuilder {
         beforeStart.plusAssign(unitFunc(func))
         return this
     }
-    fun afterStop(func: Runnable): JBuilder {
+    fun afterStop(func: Consumer<in BaseService>): JBuilder {
         afterStop.plusAssign(unitFunc(func))
         return this
     }
+    fun beforeStop(func: Consumer<in BaseService>): JBuilder {
+        beforeStop.plusAssign(unitFunc(func))
+        return this
+    }
+    fun afterStart(func: Consumer<in BaseService>): JBuilder {
+        afterStart.plusAssign(unitFunc(func))
+        return this
+    }
     fun onError(func: Consumer<Exception>): JBuilder {
-        onError.plusAssign(unitFunc(func))
+        onError.plusAssign(errorFunc(func))
         return this
     }
 
-    private fun unitFunc(func: Runnable): Function0<Unit> {
-        return object : Function0<Unit> {
-            override fun invoke() = func.run()
+    private fun unitFunc(func: Consumer<in BaseService>): Function1<BaseService, Unit> {
+        return object : Function1<BaseService, Unit> {
+            override fun invoke(service: BaseService) = func.accept(service)
         }
     }
 
-    private fun unitFunc(func: Consumer<Exception>): Function1<Exception, Unit> {
+    private fun errorFunc(func: Consumer<Exception>): Function1<Exception, Unit> {
         return object : Function1<Exception, Unit> {
             override fun invoke(e: Exception) = func.accept(e)
         }

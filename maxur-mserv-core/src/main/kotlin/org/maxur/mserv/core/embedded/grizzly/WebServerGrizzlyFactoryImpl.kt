@@ -101,8 +101,8 @@ class WebServerGrizzlyFactoryImpl @Inject constructor(val locator: Locator) : Em
 
 open class WebServerGrizzlyImpl(
         private val config: RestAppConfig,
-        private val locator: Locator
-) : WebServer() {
+        locator: Locator
+) : org.maxur.mserv.core.domain.BaseService(locator), WebServer {
 
     fun ServerConfiguration.title(): String = "$name '$httpServerName-$httpServerVersion'"
 
@@ -110,7 +110,8 @@ open class WebServerGrizzlyImpl(
 
     override val baseUri: URI get() = config.url
 
-    override val name: String get() = httpServer.serverConfiguration.title()
+    override var name: String = "Unknown web service"
+        get() = httpServer.serverConfiguration.title()
 
     override fun launch() {
         val result = httpServer()

@@ -10,6 +10,7 @@ class PropertiesServiceFactoryNullImpl : PropertiesServiceFactory() {
 
     override fun make(source: PropertiesSource): PropertiesService? =
             object : PropertiesService {
+                override val name: String = "None"
                 override fun asString(key: String): String? = error(key)
                 override fun asLong(key: String): Long? = error(key)
                 override fun asInteger(key: String): Int? = error(key)

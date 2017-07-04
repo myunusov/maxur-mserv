@@ -1,8 +1,9 @@
 package org.maxur.mserv.sample;
 
 import org.maxur.mserv.core.Locator;
-import org.maxur.mserv.core.MicroService;
+import org.maxur.mserv.core.domain.BaseService;
 import org.maxur.mserv.core.service.msbuilder.Java;
+import org.maxur.mserv.core.service.properties.PropertiesService;
 import org.maxur.mserv.sample.params.ConfigParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,21 +33,22 @@ public final class Launcher {
             .properties("hocon")
             .rest()
             .beforeStart(Launcher::beforeStart)
-            .afterStop( () -> log.info("Service is stopped"))
+            .afterStop( (service) -> log.info("Service is stopped"))
             .onError((exception) -> log.error(exception.getMessage(), exception) )
             .start();
     }
     
-    private static void beforeStart() {
-        final Locator locator = Locator.Companion.getCurrent();
-        final MicroService service = locator.service(MicroService.class);
-        final ConfigParams configParams = locator.service(ConfigParams.class);
-        if (configParams != null) {
-            configParams.log();
+    private static void beforeStart(final BaseService service) {
+        final Locator locator = service.getLocator();
+        final PropertiesService propertiesService  = locator.service(PropertiesService.class);
+        if (propertiesService != null) {
+            log.info("Properties Source is '{}'", propertiesService.getName());
+            final ConfigParams configParams = locator.service(ConfigParams.class);
+            if (configParams != null) {
+                configParams.log();
+            }
         }
-        if (service != null) {
-            log.info("{} is started", service.getName());
-        }
+        log.info("{} is started", service.getName());
     }
 
 }
