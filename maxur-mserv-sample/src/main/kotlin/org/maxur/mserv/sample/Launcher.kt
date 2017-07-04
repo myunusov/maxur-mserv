@@ -1,7 +1,6 @@
 package org.maxur.mserv.sample
 
 import org.maxur.mserv.core.MicroService
-import org.maxur.mserv.core.domain.Service
 import org.maxur.mserv.core.service.msbuilder.Kotlin
 import org.maxur.mserv.sample.params.ConfigParams
 import org.slf4j.LoggerFactory
@@ -23,37 +22,29 @@ object Launcher {
      *
      * @param args - arguments of command.
      */
-    @JvmStatic fun main(args: Array<String>)  {
+    @JvmStatic fun main(args: Array<String>) {
         Kotlin.service {
             title = ":name"
             packages = "org.maxur.mserv.sample"
-            observers {
-                beforeStart =  this@Launcher::beforeStart
-                afterStop = this@Launcher::afterStop
-                onError = this@Launcher::onError
-            }
+
             properties {
                 format = "hocon"
             }
-            services {
-               rest {}
-            }
+
+            services += rest {}
+
+            beforeStart += this@Launcher::beforeStart
+            afterStop += { log().info("Service is stopped") }
+            onError += { exception ->  log().error(exception.message, exception) }
+
         }.start()
     }
-    
+
     fun beforeStart(service: MicroService, configParams: ConfigParams) {
         configParams.log()
         log().info("${service.name} is started")
     }
-    
-    fun afterStop(service: Service) {
-        log().info("${service.name} is stopped")
-    }
 
-    fun onError(exception: Exception) {
-        log().error(exception.message, exception)
-    }
-    
 
 }
 

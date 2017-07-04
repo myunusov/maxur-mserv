@@ -33,31 +33,17 @@ class KBuilder(): MSBuilder() {
         init()
     }
 
-    fun observers(init: ObserversHolder.() -> Unit) {
-        observersHolder.apply { init() }
-    }
-
     fun properties(init: PropertiesHolder.() -> Unit) {
         propertiesHolder = PropertiesHolder().apply { init() }
     }
 
-    fun services(init: KServicesHolder.() -> Unit) {
-        servicesHolder =  KServicesHolder().apply { init() }
-    }
+    fun service(init: ServiceHolder.() -> Unit) = ServiceHolder().apply { init() }
 
+    fun rest(init: ServiceHolder.() -> Unit) = ServiceHolder().apply {
+        type = "Grizzly"
+        properties = ":webapp"
+        init()
+    }    
 }
 
-class KServicesHolder: ServicesHolder() {
 
-    fun service(init: ServiceHolder.() -> Unit) {
-        serviceHolder.add(ServiceHolder().apply { init() })
-    }
-
-    fun rest(init: ServiceHolder.() -> Unit) {
-        serviceHolder.add(ServiceHolder().apply {
-            type = "Grizzly"
-            properties = ":webapp"
-            init()
-        })
-    }
-}

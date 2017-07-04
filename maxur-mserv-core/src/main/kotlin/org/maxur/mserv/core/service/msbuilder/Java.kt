@@ -57,34 +57,25 @@ open class JBuilder: MSBuilder() {
         val holder = ServiceHolder()
         holder.type = type
         holder.properties = properties
-        servicesHolder.add(holder)
+        services.add(holder)
         return this
     }
 
     fun rest(): JBuilder {
-        val holder = ServiceHolder()
-        holder.type = "grizzly"
-        holder.properties = ":webapp"
-        servicesHolder.add(holder)
+        service( "grizzly", ":webapp")
         return this
     }
 
     fun beforeStart(func: Runnable): JBuilder {
-        observer.beforeStartHolder.add(unitFunc(func))
+        beforeStart.plusAssign(unitFunc(func))
         return this
     }
     fun afterStop(func: Runnable): JBuilder {
-        observer.afterStopHolder.add(unitFunc(func))
-        ObserversHolder().apply {
-            afterStop = observer::afterStop
-        }
+        afterStop.plusAssign(unitFunc(func))
         return this
     }
     fun onError(func: Consumer<Exception>): JBuilder {
-        observer.onErrorHolder.add(unitFunc(func))
-        ObserversHolder().apply {
-            afterStop = observer::afterStop
-        }
+        onError.plusAssign(unitFunc(func))
         return this
     }
 

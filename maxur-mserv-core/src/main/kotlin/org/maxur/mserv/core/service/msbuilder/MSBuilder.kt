@@ -34,24 +34,17 @@ abstract class MSBuilder {
 
     protected var propertiesHolder: PropertiesHolder = PropertiesHolder()
 
-    protected var servicesHolder: ServicesHolder = ServicesHolder()
-
-    protected val observersHolder: ObserversHolder = ObserversHolder()
-
-    val observer = Observer()
-
-    init {
-        observersHolder.beforeStartHolder.add(observer::beforeStart)
-        observersHolder.afterStopHolder.add(observer::afterStop)
-        observersHolder.onErrorHolder.add(observer::onError)
-    }
+    val services: ServicesHolder = ServicesHolder()
+    val beforeStart = FunctionHolder()
+    var afterStop = FunctionHolder()
+    var onError = ErrorFunctionHolder()
 
     open fun build(): MicroService {
         val locator = LocatorFactoryHK2Impl {
             this.packages = packagesHolder
             bind(*bindersHolder.toTypedArray())
             bind(propertiesHolder::build, PropertiesService::class.java)
-            bind({ locator -> BaseMicroService(servicesHolder.build(locator), locator) }, MicroService::class.java)
+            bind({ locator -> BaseMicroService(services.build(locator), locator) }, MicroService::class.java)
         }.make()
 
         val service = locator.service(MicroService::class.java) ?:
@@ -59,24 +52,26 @@ abstract class MSBuilder {
 
         if (service is BaseMicroService) {
             service.name = titleHolder.get(locator)!!
-            observersHolder.let {
-                service.beforeStart.addAll(it.beforeStartHolder)
-                service.afterStop.addAll(it.afterStopHolder)
-                service.onError.addAll(it.onErrorHolder)
-            }
+            service.beforeStart.addAll(beforeStart.list)
+            service.afterStop.addAll(afterStop.list)
+            service.onError.addAll(onError.list)
         }
         return service
     }
 }
 
 open class ServicesHolder {
-    protected var serviceHolder: ArrayList<ServiceHolder> = ArrayList()
+    protected var list: ArrayList<ServiceHolder> = ArrayList()
 
     fun add(value: ServiceHolder) {
-        serviceHolder.add(value)
+        list.add(value)
     }
 
-    fun build(locator: Locator): EmbeddedService = CompositeService(serviceHolder.map { it.build(locator)!! })
+    operator fun plusAssign(value: ServiceHolder) {
+        list.add(value)
+    }
+
+    fun build(locator: Locator): EmbeddedService = CompositeService(list.map { it.build(locator)!! })
 }
 
 class ServiceHolder {
@@ -166,36 +161,34 @@ class PropertiesHolder {
 
 }
 
-class ObserversHolder {
-    var beforeStartHolder: MutableList<KFunction<Any>> = ArrayList()
-    var afterStopHolder: MutableList<KFunction<Any>> = ArrayList()
-    var onErrorHolder: MutableList<KFunction<Any>> = ArrayList()
+class FunctionHolder {
 
-    var beforeStart: KFunction<Any>? = null
-        set(value) {
-            value?.let { beforeStartHolder.add(value) }
-        }
+    val list: MutableList<KFunction<Any>> = ArrayList()
 
-    var afterStop: KFunction<Any>? = null
-        set(value) {
-            value?.let { afterStopHolder.add(value) }
+    operator fun plusAssign(value: KFunction<Any>) {
+        list.add(value)
+    }
+    operator fun plusAssign(value: () -> Unit) {
+        val observer = object {
+            fun invoke() = value.invoke()
         }
-
-    var onError: KFunction<Any>?  = null
-        set(value) {
-            value?.let { onErrorHolder.add(value) }
-        }
+        list.add(observer::invoke)
+    }
 }
 
-class Observer {
-    val beforeStartHolder = ArrayList<Function0<Unit>>()
-    val afterStopHolder = ArrayList<Function0<Unit>>()
-    val onErrorHolder = ArrayList<Function1<Exception, Unit>>()
+class ErrorFunctionHolder {
 
-    fun beforeStart() = beforeStartHolder.forEach { it.invoke() }
-    fun afterStop() = afterStopHolder.forEach { it.invoke() }
-    fun onError(exception: Exception) = onErrorHolder.forEach { it.invoke(exception) }
+    val list: MutableList<KFunction<Any>> = ArrayList()
+
+    operator fun plusAssign(value: KFunction<Any>) {
+        list.add(value)
+    }
+    operator fun plusAssign(value: (Exception) -> Unit) {
+        val observer = object {
+            fun invoke(e: Exception) = value.invoke(e)
+        }
+        list.add(observer::invoke)
+    }
 }
-
 
 
