@@ -80,7 +80,7 @@ open class ServicesHolder {
         val holder = ServiceHolder()
         holder.ref = value
         list.add(holder)
-    }    
+    }
 
     fun build(locator: Locator): EmbeddedService = CompositeService(list.map { it.build(locator)!! })
 }
