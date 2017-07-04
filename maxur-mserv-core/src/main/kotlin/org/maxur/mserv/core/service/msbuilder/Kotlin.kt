@@ -34,7 +34,7 @@ class KBuilder(): MSBuilder() {
     }
 
     fun properties(init: PropertiesHolder.() -> Unit) {
-        propertiesHolder = PropertiesHolder().apply { init() }
+        propertiesHolder.apply { init() }
     }
 
     fun service(init: ServiceHolder.() -> Unit) = ServiceHolder().apply { init() }

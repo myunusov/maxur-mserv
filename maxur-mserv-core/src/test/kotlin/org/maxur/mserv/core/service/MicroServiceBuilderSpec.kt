@@ -6,6 +6,7 @@ import org.jetbrains.spek.api.dsl.describe
 import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.maxur.mserv.core.service.msbuilder.Kotlin
+import org.maxur.mserv.core.service.properties.PropertiesService
 
 class MicroServiceBuilderSpec : Spek({
 
@@ -21,6 +22,9 @@ class MicroServiceBuilderSpec : Spek({
                 }
                 service.should.be.not.`null`
                 service.start()
+                val propertiesService = service.locator.service(PropertiesService::class.java)
+                propertiesService.should.be.not.`null`
+                propertiesService!!.name.should.be.equal("None")
                 service.stop()
             }
         }
