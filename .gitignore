@@ -2,6 +2,7 @@
 !.gitignore
 !.tgitconfig
 !.travis.yml
+!.codecov.yml
 !/.mvn
 /.mvn/timing.properties
 log
