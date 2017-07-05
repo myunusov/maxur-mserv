@@ -1,6 +1,6 @@
 language: java
 
-sudo: false
+sudo: false # faster builds
 
 cache:
   directories:
@@ -18,7 +18,10 @@ before_install:
  - chmod +x ./mvnw
 
 script:
-  - mvn clean verify -Denv=dev -Pdebug
+  - mvn clean verify -Denv=dev -Pdebug,dep-jacoco
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
 
 notifications:
   slack: maxur:bIyYFLYJ0n1toR66dIr5OSbD
