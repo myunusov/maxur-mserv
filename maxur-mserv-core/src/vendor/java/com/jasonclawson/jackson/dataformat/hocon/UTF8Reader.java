@@ -6,8 +6,8 @@ import java.lang.ref.SoftReference;
 
 /**
  * This code was poached from jackson-dataformat-yaml. https://github.com/FasterXML/jackson-dataformat-yaml
- *  com.fasterxml.jackson.dataformat.yaml.UTF8Reader
- * 
+ * com.fasterxml.jackson.dataformat.yaml.UTF8Reader
+ * <p>
  * Optimized Reader that reads UTF-8 encoded content from an input stream.
  * In addition to doing (hopefully) optimal conversion, it can also take
  * array of "pre-read" (leftover) bytes; this is necessary when preliminary
@@ -17,20 +17,26 @@ public final class UTF8Reader
     extends Reader
 {
     private final static int DEFAULT_BUFFER_SIZE = 8000;
-    
+
     /**
-     * This <code>ThreadLocal</code> contains a {@link java.lang.ref.SoftRerefence}
+     * This <code>ThreadLocal</code> contains a {@link java.lang.ref.SoftReference}
      * to a byte array used for holding content to decode
      */
     final protected static ThreadLocal<SoftReference<byte[][]>> _bufferRecycler
         = new ThreadLocal<SoftReference<byte[][]>>();
 
+    /**
+     * The Buffer holder.
+     */
     protected final byte[][] _bufferHolder;
     
     private InputStream _inputSource;
 
     private final boolean _autoClose;
-    
+
+    /**
+     * The Input buffer.
+     */
     protected byte[] _inputBuffer;
 
     /**
@@ -49,7 +55,7 @@ public final class UTF8Reader
      * Decoded first character of a surrogate pair, if one needs to be buffered
      */
     protected int _surrogate = -1;
-    
+
     /**
      * Total read character count; used for error reporting purposes
      */
@@ -65,7 +71,13 @@ public final class UTF8Reader
     /* Life-cycle
     /**********************************************************************
      */
-    
+
+    /**
+     * Instantiates a new Utf 8 reader.
+     *
+     * @param in        the in
+     * @param autoClose the auto close
+     */
     public UTF8Reader(InputStream in, boolean autoClose)
     {
         super(in);
@@ -81,6 +93,14 @@ public final class UTF8Reader
         _autoClose = autoClose;
     }
 
+    /**
+     * Instantiates a new Utf 8 reader.
+     *
+     * @param buf       the buf
+     * @param ptr       the ptr
+     * @param len       the len
+     * @param autoClose the auto close
+     */
     public UTF8Reader(byte[] buf, int ptr, int len, boolean autoClose)
     {
         super(bogusStream());
@@ -326,11 +346,19 @@ public final class UTF8Reader
     /**********************************************************************
      */
 
+    /**
+     * Gets stream.
+     *
+     * @return the stream
+     */
     protected final InputStream getStream() { return _inputSource; }
 
     /**
      * Method for reading as many bytes from the underlying stream as possible
      * (that fit in the buffer), to the beginning of the buffer.
+     *
+     * @return the int
+     * @throws IOException the io exception
      */
     protected final int readBytes()
         throws IOException
@@ -351,8 +379,9 @@ public final class UTF8Reader
      * Method for reading as many bytes from the underlying stream as possible
      * (that fit in the buffer considering offset), to the specified offset.
      *
-     * @return Number of bytes read, if any; -1 to indicate none available
-     *  (that is, end of input)
+     * @param offset the offset
+     * @return Number of bytes read, if any; -1 to indicate none available  (that is, end of input)
+     * @throws IOException the io exception
      */
     protected final int readBytesAt(int offset)
         throws IOException
@@ -514,10 +543,23 @@ public final class UTF8Reader
         return true;
     }
 
+    /**
+     * Report bounds.
+     *
+     * @param cbuf  the cbuf
+     * @param start the start
+     * @param len   the len
+     * @throws IOException the io exception
+     */
     protected void reportBounds(char[] cbuf, int start, int len) throws IOException {
         throw new ArrayIndexOutOfBoundsException("read(buf,"+start+","+len+"), cbuf["+cbuf.length+"]");
     }
 
+    /**
+     * Report strange stream.
+     *
+     * @throws IOException the io exception
+     */
     protected void reportStrangeStream() throws IOException {
         throw new IOException("Strange I/O stream, returned 0 bytes on read");
     }

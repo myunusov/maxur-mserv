@@ -18,6 +18,9 @@ import com.typesafe.config.ConfigObject;
 import com.typesafe.config.ConfigValue;
 import com.typesafe.config.ConfigValueType;
 
+/**
+ * The type Hocon tree traversing parser.
+ */
 public class HoconTreeTraversingParser extends ParserMinimalBase {
 
 	/*
@@ -26,6 +29,9 @@ public class HoconTreeTraversingParser extends ParserMinimalBase {
     /**********************************************************
      */
 
+    /**
+     * The Object codec.
+     */
     protected ObjectCodec _objectCodec;
 
     /**
@@ -41,7 +47,7 @@ public class HoconTreeTraversingParser extends ParserMinimalBase {
 
     /**
      * Sometimes parser needs to buffer a single look-ahead token; if so,
-     * it'll be stored here. This is currently used for handling 
+     * it'll be stored here. This is currently used for handling
      */
     protected JsonToken _nextToken;
 
@@ -50,7 +56,7 @@ public class HoconTreeTraversingParser extends ParserMinimalBase {
      * Array/Object nodes.
      */
     protected boolean _startContainer;
-    
+
     /**
      * Flag that indicates whether parser is closed or not. Gets
      * set when parser is either closed by explicit call
@@ -59,11 +65,11 @@ public class HoconTreeTraversingParser extends ParserMinimalBase {
     protected boolean _closed;
 
     private final ConfigObject _rootObject;
-    
+
     /**
      * HOCON specific getter for the originating ConfigObject. Useful for
      * accessing the underlying Config instance in custom deserializers.
-     * 
+     *
      * @return The ConfigObject with which this parser was instantiated.
      */
     public ConfigObject getConfigObject() {
@@ -76,8 +82,19 @@ public class HoconTreeTraversingParser extends ParserMinimalBase {
     /**********************************************************
      */
 
+    /**
+     * Instantiates a new Hocon tree traversing parser.
+     *
+     * @param n the n
+     */
     public HoconTreeTraversingParser(ConfigObject n) { this(n, null); }
 
+    /**
+     * Instantiates a new Hocon tree traversing parser.
+     *
+     * @param n     the n
+     * @param codec the codec
+     */
     public HoconTreeTraversingParser(ConfigObject n, ObjectCodec codec)
     {
         super(0);
@@ -98,7 +115,13 @@ public class HoconTreeTraversingParser extends ParserMinimalBase {
             _nodeCursor = new HoconNodeCursor.RootValue(n, null);
         }
     }
-    
+
+    /**
+     * As json token json token.
+     *
+     * @param value the value
+     * @return the json token
+     */
     public static JsonToken asJsonToken(ConfigValue value) {
         if (HoconNodeCursor.isNumericallyIndexed(value)) {
             return JsonToken.START_ARRAY;
@@ -427,6 +450,11 @@ public class HoconTreeTraversingParser extends ParserMinimalBase {
     /**********************************************************
      */
 
+    /**
+     * Current node config value.
+     *
+     * @return the config value
+     */
     protected ConfigValue currentNode() {
         if (_closed || _nodeCursor == null) {
             return null;
@@ -434,6 +462,12 @@ public class HoconTreeTraversingParser extends ParserMinimalBase {
         return _nodeCursor.currentNode();
     }
 
+    /**
+     * Current numeric node config value.
+     *
+     * @return the config value
+     * @throws JsonParseException the json parse exception
+     */
     protected ConfigValue currentNumericNode()
         throws JsonParseException
     {

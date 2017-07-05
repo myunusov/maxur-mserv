@@ -26,24 +26,41 @@ import java.net.URL;
 
 /**
  * This code was pretty much copied from the jackson YAMLFactory
- * @author jclawson
  *
+ * @author jclawson
  */
 public class HoconFactory extends JsonFactory {
 	private static final long serialVersionUID = 1L;
-	
-	public final static String FORMAT_NAME_HOCON = "HOCON";
+
+    /**
+     * The constant FORMAT_NAME_HOCON.
+     */
+    public final static String FORMAT_NAME_HOCON = "HOCON";
 	
 	private final static byte UTF8_BOM_1 = (byte) 0xEF;
     private final static byte UTF8_BOM_2 = (byte) 0xBB;
     private final static byte UTF8_BOM_3 = (byte) 0xBF;
-	
+
+    /**
+     * Instantiates a new Hocon factory.
+     */
     public HoconFactory() { this(null); }
-    
+
+    /**
+     * Instantiates a new Hocon factory.
+     *
+     * @param oc the oc
+     */
     public HoconFactory(ObjectCodec oc) {
         super(oc);
     }
 
+    /**
+     * Instantiates a new Hocon factory.
+     *
+     * @param src the src
+     * @param oc  the oc
+     */
     public HoconFactory(HoconFactory src, ObjectCodec oc) {
         super(src, oc);
     }
@@ -399,6 +416,15 @@ public class HoconFactory extends JsonFactory {
     /**********************************************************
      */
 
+    /**
+     * Create reader reader.
+     *
+     * @param in   the in
+     * @param enc  the enc
+     * @param ctxt the ctxt
+     * @return the reader
+     * @throws IOException the io exception
+     */
     protected Reader _createReader(InputStream in, JsonEncoding enc, IOContext ctxt) throws IOException
     {
         if (enc == null) {
@@ -413,6 +439,17 @@ public class HoconFactory extends JsonFactory {
         return new InputStreamReader(in, enc.getJavaName());
     }
 
+    /**
+     * Create reader reader.
+     *
+     * @param data   the data
+     * @param offset the offset
+     * @param len    the len
+     * @param enc    the enc
+     * @param ctxt   the ctxt
+     * @return the reader
+     * @throws IOException the io exception
+     */
     protected Reader _createReader(byte[] data, int offset, int len,
             JsonEncoding enc, IOContext ctxt) throws IOException
     {

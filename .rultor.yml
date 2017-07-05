@@ -1,0 +1,18 @@
+architect:
+  - myunusov
+docker:
+  image: "maxur/maxur-dev"
+decrypt:
+  settings.xml: "repo/settings.xml.asc"
+  pubring.gpg: "repo/pubring.gpg.asc"
+  secring.gpg: "repo/secring.gpg.asc"
+
+merge:
+  script: |
+deploy:
+  script: |
+release:
+  script: |
+    mvn versions:set "-DnewVersion=${tag}" -Denv=prod
+    git commit -am "${tag}"
+    mvn clean deploy --settings /home/r/settings.xml -Denv=prod -Pmaxur,sonatype,debug
