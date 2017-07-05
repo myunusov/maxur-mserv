@@ -1,0 +1,24 @@
+language: java
+
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.m2
+
+env:
+  global:
+    - MAVEN_OPTS="-Xmx4g"
+    - JAVA_OPTS="-Xmx4g"
+
+jdk:
+ - oraclejdk8
+
+before_install:
+ - chmod +x ./mvnw
+
+script:
+  - mvn clean verify -Denv=dev -Pdebug
+
+notifications:
+  slack: maxur:bIyYFLYJ0n1toR66dIr5OSbD

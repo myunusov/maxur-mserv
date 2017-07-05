@@ -1,6 +1,7 @@
 /.*
 !.gitignore
 !.tgitconfig
+!.travis.yml
 !/.mvn
 /.mvn/timing.properties
 log
