@@ -34,13 +34,13 @@
         <jersey.version>2.25.1</jersey.version>
 
         <hk2.version>2.5.0-b32</hk2.version>
-        <guava.version>20.0</guava.version>
+        <guava.version>22.0</guava.version>
 
         <slf4j.version>1.7.25</slf4j.version>
-        <logback.version>1.1.7</logback.version>
+        <logback.version>1.2.3</logback.version>
 
-        <swagger.version>1.5.14</swagger.version>
-        <swagger-ui.version>3.0.14</swagger-ui.version>
+        <swagger.version>1.5.15</swagger.version>
+        <swagger-ui.version>3.0.17</swagger-ui.version>
 
         <hal-browser.version>3325375</hal-browser.version>
 
@@ -56,15 +56,17 @@
         <expekt.version>0.5.0</expekt.version>
         <objenesis.version>2.6</objenesis.version>
         <HK2Utilities.version>1.4.1</HK2Utilities.version>
-        <hibernate-validator.version>5.2.4.Final</hibernate-validator.version>
+        <hibernate-validator.version>5.4.1.Final</hibernate-validator.version>
 
-        <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
-        <maven-compiler-plugin.version>3.5.1</maven-compiler-plugin.version>
+        <maven-enforcer-plugin.version>1.4.2.jenkins-1</maven-enforcer-plugin.version>
+        <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
         <build-helper-maven-plugin.version>3.0.0</build-helper-maven-plugin.version>
         <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
         <buildnumber-maven-plugin.version>1.4</buildnumber-maven-plugin.version>
-
+        <jacoco-maven-plugin.version>0.7.9</jacoco-maven-plugin.version>
         <coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
+        <maven-antrun-plugin.version>1.8</maven-antrun-plugin.version>
+        <ktlint.version>0.8.3</ktlint.version>
     </properties>
 
     <profiles>
@@ -312,11 +314,28 @@
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2</artifactId>
             <version>${hk2.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.glassfish.hk2</groupId>
+                    <artifactId>hk2-config</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2-api</artifactId>
             <version>${hk2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>hk2-config</artifactId>
+            <version>${hk2.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-validator</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -512,12 +531,22 @@
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-api</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-jaxrs</artifactId>
             <version>${swagger.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.swagger</groupId>
@@ -739,7 +768,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.7</version>
+                <version>${maven-antrun-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>ktlint</id>
@@ -778,7 +807,7 @@
                     <dependency>
                         <groupId>com.github.shyiko</groupId>
                         <artifactId>ktlint</artifactId>
-                        <version>0.8.1</version>
+                        <version>${ktlint.version}</version>
                     </dependency>
                     <!-- additional 3rd party ruleset(s) can be specified here -->
                 </dependencies>

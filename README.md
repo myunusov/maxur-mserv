@@ -6,7 +6,7 @@ Yet another microservices framework
 
 [![codecov](https://codecov.io/gh/myunusov/maxur-mserv/branch/master/graph/badge.svg)](https://codecov.io/gh/myunusov/maxur-mserv)
 
-[![Dependency Status](https://www.versioneye.com/user/projects/595ccfe86725bd003b407966/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/595ccfe86725bd003b407966)
+[![Dependency Status](https://www.versioneye.com/user/projects/595cd4a80fb24f006379c716/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/595cd4a80fb24f006379c716)
 
 [![We recommend IntelliJ IDEA](http://img.teamed.io/intellij-idea-recommend.svg)](https://www.jetbrains.com/idea/)
 
