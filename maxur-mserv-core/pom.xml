@@ -114,6 +114,24 @@
                 </plugins>
             </build>
         </profile>
+
+        <profile>
+            <id>dep-jacoco</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>${jacoco-maven-plugin.version}</version>
+                        <configuration>
+                            <excludes>
+                                <exclude>com/jasonclawson/**/*</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
     <dependencies>
