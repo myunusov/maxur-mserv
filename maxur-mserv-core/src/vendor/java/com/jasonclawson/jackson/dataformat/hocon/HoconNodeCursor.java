@@ -11,12 +11,27 @@ import com.typesafe.config.ConfigObject;
 import com.typesafe.config.ConfigValue;
 import com.typesafe.config.ConfigValueType;
 
+/**
+ * The type Hocon node cursor.
+ */
 public abstract class HoconNodeCursor extends JsonStreamContext {
 
-	protected final HoconNodeCursor _parent;
-	protected String _currentName;
+    /**
+     * The Parent.
+     */
+    protected final HoconNodeCursor _parent;
+    /**
+     * The Current name.
+     */
+    protected String _currentName;
 
-	public HoconNodeCursor(int contextType, HoconNodeCursor p) {
+    /**
+     * Instantiates a new Hocon node cursor.
+     *
+     * @param contextType the context type
+     * @param p           the p
+     */
+    public HoconNodeCursor(int contextType, HoconNodeCursor p) {
 		_type = contextType;
 		_index = -1;
 		_parent = p;
@@ -31,16 +46,21 @@ public abstract class HoconNodeCursor extends JsonStreamContext {
 	public String getCurrentName() {
 		return _currentName;
 	}
-	
-	public void overrideCurrentName(String name) {
+
+    /**
+     * Override current name.
+     *
+     * @param name the name
+     */
+    public void overrideCurrentName(String name) {
         _currentName = name;
     }
-	
+
     /**
      * HOCON specific method to construct the path for this node. Useful for
      * interacting directly with the underlying Config instance in custom
      * deserializers.
-     * 
+     *
      * @return The path of this node cursor.
      */
     public String constructPath() {
@@ -54,30 +74,70 @@ public abstract class HoconNodeCursor extends JsonStreamContext {
             return initial.append(_currentName);
         }
     }
-	
-	public abstract JsonToken nextToken();
 
+    /**
+     * Next token json token.
+     *
+     * @return the json token
+     */
+    public abstract JsonToken nextToken();
+
+    /**
+     * End token json token.
+     *
+     * @return the json token
+     */
     public abstract JsonToken endToken();
 
+    /**
+     * Current node config value.
+     *
+     * @return the config value
+     */
     public abstract ConfigValue currentNode();
 
+    /**
+     * Current has children boolean.
+     *
+     * @return the boolean
+     */
     public abstract boolean currentHasChildren();
-    
+
+    /**
+     * Is array boolean.
+     *
+     * @param value the value
+     * @return the boolean
+     */
     protected static boolean isArray(ConfigValue value) {
     	return value.valueType() == ConfigValueType.LIST;
     }
-    
+
+    /**
+     * Is object boolean.
+     *
+     * @param value the value
+     * @return the boolean
+     */
     protected static boolean isObject(ConfigValue value) {
     	return value.valueType() == ConfigValueType.OBJECT;
     }
-    
+
+    /**
+     * As json token json token.
+     *
+     * @param value the value
+     * @return the json token
+     */
     protected static JsonToken asJsonToken(ConfigValue value) {
 		return HoconTreeTraversingParser.asJsonToken(value);
 	}
-    
+
     /**
      * Method called to create a new context for iterating all
      * contents of the current structured value (JSON array or object)
+     *
+     * @return the hocon node cursor
      */
     public final HoconNodeCursor iterateChildren() {
     	ConfigValue n = currentNode();
@@ -96,6 +156,12 @@ public abstract class HoconNodeCursor extends JsonStreamContext {
         throw new IllegalStateException("Current node of type "+n.getClass().getName());
     }
 
+    /**
+     * Is numerically indexed boolean.
+     *
+     * @param n the n
+     * @return the boolean
+     */
     public static boolean isNumericallyIndexed(ConfigValue n) {
         java.lang.Object unwrapped = n.unwrapped();
         if (unwrapped instanceof Map) {
@@ -131,12 +197,27 @@ public abstract class HoconNodeCursor extends JsonStreamContext {
         return false;
     }
 
+    /**
+     * The type Root value.
+     */
     protected final static class RootValue extends HoconNodeCursor {
-    	 protected ConfigValue _node;
+        /**
+         * The Node.
+         */
+        protected ConfigValue _node;
 
-         protected boolean _done = false;
+        /**
+         * The Done.
+         */
+        protected boolean _done = false;
 
-         public RootValue(ConfigValue n, HoconNodeCursor p) {
+        /**
+         * Instantiates a new Root value.
+         *
+         * @param n the n
+         * @param p the p
+         */
+        public RootValue(ConfigValue n, HoconNodeCursor p) {
              super(JsonStreamContext.TYPE_ROOT, p);
              _node = n;
          }
@@ -161,15 +242,27 @@ public abstract class HoconNodeCursor extends JsonStreamContext {
          public boolean currentHasChildren() { return false; }
     	
     }
-    
+
     /**
      * Cursor used for traversing non-empty JSON Array nodes
      */
     protected final static class Array extends HoconNodeCursor {
+        /**
+         * The Contents.
+         */
         protected Iterator<ConfigValue> _contents;
 
+        /**
+         * The Current node.
+         */
         protected ConfigValue _currentNode;
 
+        /**
+         * Instantiates a new Array.
+         *
+         * @param n the n
+         * @param p the p
+         */
         public Array(ConfigValue n, HoconNodeCursor p) {
             super(JsonStreamContext.TYPE_ARRAY, p);
             _contents = ((ConfigList)n).iterator();
@@ -207,10 +300,22 @@ public abstract class HoconNodeCursor extends JsonStreamContext {
      * Cursor used for traversing non-empty JSON Object nodes and converting them to Arrays because they have numerically indexed keys
      */
     protected final static class NumericallyIndexedObjectBackedArray extends HoconNodeCursor {
+        /**
+         * The Contents.
+         */
         protected Iterator<ConfigValue> _contents;
 
+        /**
+         * The Current node.
+         */
         protected ConfigValue _currentNode;
 
+        /**
+         * Instantiates a new Numerically indexed object backed array.
+         *
+         * @param n the n
+         * @param p the p
+         */
         public NumericallyIndexedObjectBackedArray(ConfigValue n, HoconNodeCursor p) {
             super(JsonStreamContext.TYPE_ARRAY, p);
             TreeMap<Integer, ConfigValue> sortedContents = new TreeMap<Integer, ConfigValue>();
@@ -259,11 +364,26 @@ public abstract class HoconNodeCursor extends JsonStreamContext {
      * Cursor used for traversing non-empty JSON Object nodes
      */
     protected final static class Object extends HoconNodeCursor {
+        /**
+         * The Contents.
+         */
         protected Iterator<Map.Entry<String, ConfigValue>> _contents;
+        /**
+         * The Current.
+         */
         protected Map.Entry<String, ConfigValue> _current;
 
+        /**
+         * The Need entry.
+         */
         protected boolean _needEntry;
-        
+
+        /**
+         * Instantiates a new Object.
+         *
+         * @param n the n
+         * @param p the p
+         */
         public Object(ConfigValue n, HoconNodeCursor p) {
             super(JsonStreamContext.TYPE_OBJECT, p);
             _contents = ((ConfigObject) n).entrySet().iterator();

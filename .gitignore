@@ -3,6 +3,7 @@
 !.tgitconfig
 !.travis.yml
 !.codecov.yml
+!.rultor.yml
 !/.mvn
 /.mvn/timing.properties
 log
