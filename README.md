@@ -2,7 +2,7 @@
 
 Yet another microservices framework
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.maxur/maxur-mserv/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.maxur/maxur-mserv)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.maxur/maxur-mserv-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.maxur/maxur-mserv-core)
 
 [![Build Status](https://travis-ci.org/myunusov/maxur-mserv.svg?branch=master)](https://travis-ci.org/myunusov/maxur-mserv)
 
