@@ -1,6 +1,6 @@
 language: java
 
-sudo: false
+sudo: false # faster builds
 
 cache:
   directories:
@@ -21,7 +21,7 @@ script:
   - mvn clean verify -Denv=dev -Pdebug,dep-jacoco
 
 after_success:
-  - mvn -DTRAVIS_JOB_ID=$TRAVIS_JOB_ID coveralls:report
+  - bash <(curl -s https://codecov.io/bash)
 
 notifications:
   slack: maxur:bIyYFLYJ0n1toR66dIr5OSbD
