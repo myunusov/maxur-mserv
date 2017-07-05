@@ -7,12 +7,12 @@
     <parent>
         <groupId>org.maxur</groupId>
         <artifactId>maxur-mserv-base</artifactId>
-        <version>0.01-SNAPSHOT</version>
+        <version>0.1</version>
     </parent>
 
     <artifactId>maxur-mserv-core</artifactId>
     <name>maxur-mserv-core</name>
-    <version>0.01-SNAPSHOT</version>
+    <version>0.1</version>
     <description>Maxur Microservice Framework</description>
 
     <properties>
