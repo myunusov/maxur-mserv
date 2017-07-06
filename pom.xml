@@ -25,40 +25,13 @@
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
         <github.global.server>github</github.global.server>
 
-        <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
-        <maven-surefire-plugin.version>2.20</maven-surefire-plugin.version>
-        <maven-failsafe-plugin.version>2.20</maven-failsafe-plugin.version>
-
-        <jacoco-maven-plugin.version>0.7.9</jacoco-maven-plugin.version>
-        <versioneye-maven-plugin.version>3.11.4</versioneye-maven-plugin.version>
-        <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
-        <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
-        <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
-        <versions-maven-plugin.version>2.2</versions-maven-plugin.version>
-        <maven-scm-provider-gitexe.version>1.9.5</maven-scm-provider-gitexe.version>
-        <maven-enforcer-plugin.version>1.4.2.jenkins-1</maven-enforcer-plugin.version>
+        <maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
     </properties>
 
     <organization>
         <name>Maxim Yunusov</name>
         <url>http://www.maxur.org</url>
     </organization>
-
-    <developers>
-        <developer>
-            <id>myunusov</id>
-            <name>Maxim</name>
-            <email>myunusov@maxur.org</email>
-            <url>http://www.maxur.org</url>
-            <organization>Maxim Yunusov</organization>
-            <organizationUrl>http://www.maxur.org</organizationUrl>
-            <roles>
-                <role>architect</role>
-                <role>developer</role>
-            </roles>
-            <timezone>-6</timezone>
-        </developer>
-    </developers>
 
     <licenses>
         <license>
@@ -96,6 +69,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-deploy-plugin</artifactId>
+                <version>${maven-deploy-plugin.version}</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>

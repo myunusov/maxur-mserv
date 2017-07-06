@@ -82,26 +82,29 @@
         <junit-platform.version>1.0.0-M4</junit-platform.version>
         <expekt.version>0.5.0</expekt.version>
         <objenesis.version>2.6</objenesis.version>
+
         <HK2Utilities.version>1.4.1</HK2Utilities.version>
         <hibernate-validator.version>5.4.1.Final</hibernate-validator.version>
 
         <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>2.20</maven-surefire-plugin.version>
         <maven-failsafe-plugin.version>2.20</maven-failsafe-plugin.version>
-        <jacoco-maven-plugin.version>0.7.9</jacoco-maven-plugin.version>
-        <versioneye-maven-plugin.version>3.11.4</versioneye-maven-plugin.version>
+        <maven-changes-plugin.version>2.12.1</maven-changes-plugin.version>
         <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
-        <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
         <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
-        <versions-maven-plugin.version>2.4</versions-maven-plugin.version>
         <maven-scm-provider-gitexe.version>1.9.5</maven-scm-provider-gitexe.version>
         <maven-enforcer-plugin.version>1.4.2.jenkins-1</maven-enforcer-plugin.version>
         <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
-        <build-helper-maven-plugin.version>3.0.0</build-helper-maven-plugin.version>
         <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
-        <buildnumber-maven-plugin.version>1.4</buildnumber-maven-plugin.version>
-        <coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
         <maven-antrun-plugin.version>1.8</maven-antrun-plugin.version>
+        <maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
+
+        <jacoco-maven-plugin.version>0.7.9</jacoco-maven-plugin.version>
+        <versioneye-maven-plugin.version>3.11.4</versioneye-maven-plugin.version>
+        <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
+        <versions-maven-plugin.version>2.4</versions-maven-plugin.version>
+        <build-helper-maven-plugin.version>3.0.0</build-helper-maven-plugin.version>
+        <buildnumber-maven-plugin.version>1.4</buildnumber-maven-plugin.version>
         <ktlint.version>0.8.3</ktlint.version>
     </properties>
 
@@ -145,6 +148,61 @@
         </profile>
 
         <profile>
+            <id>inspect</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>${maven-antrun-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>ktlint</id>
+                                <phase>verify</phase>
+                                <configuration>
+                                    <target name="ktlint">
+                                        <java taskname="ktlint" dir="${basedir}" fork="true" failonerror="false"
+                                              classname="com.github.shyiko.ktlint.Main"
+                                              classpathref="maven.plugin.classpath">
+                                            <arg value="src/**/*.kt"/>
+                                        </java>
+                                    </target>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>ktlint-format</id>
+                                <configuration>
+                                    <target name="ktlint">
+                                        <java taskname="ktlint" dir="${basedir}" fork="true" failonerror="false"
+                                              classname="com.github.shyiko.ktlint.Main"
+                                              classpathref="maven.plugin.classpath">
+                                            <arg value="-F"/>
+                                            <arg value="src/**/*.kt"/>
+                                        </java>
+                                    </target>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>com.github.shyiko</groupId>
+                                <artifactId>ktlint</artifactId>
+                                <version>${ktlint.version}</version>
+                            </dependency>
+                            <!-- additional 3rd party ruleset(s) can be specified here -->
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
             <id>dep-jacoco</id>
             <build>
                 <plugins>
@@ -168,6 +226,7 @@
                     <plugins>
                         <plugin>
                             <artifactId>maven-deploy-plugin</artifactId>
+                            <version>${maven-deploy-plugin.version}</version>
                             <configuration>
                                 <skip>true</skip>
                             </configuration>
@@ -175,6 +234,14 @@
                     </plugins>
                 </pluginManagement>
                 <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-changes-plugin</artifactId>
+                        <version>${maven-changes-plugin.version}</version>
+                        <configuration>
+                             <skip>true</skip>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <artifactId>maven-source-plugin</artifactId>
                         <executions>
@@ -186,21 +253,49 @@
                             </execution>
                         </executions>
                     </plugin>
+
                     <plugin>
-                        <!--
-                        Generate -javadoc.jar artifact, required by Maven Central.
-                        -->
-                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <groupId>org.jetbrains.dokka</groupId>
+                        <artifactId>dokka-maven-plugin</artifactId>
+                        <version>${dokka.version}</version>
                         <executions>
+                            <execution>
+                                <phase>pre-site</phase>
+                                <goals>
+                                    <goal>dokka</goal>
+                                </goals>
+                            </execution>
                             <execution>
                                 <id>maxur-javadoc</id>
                                 <phase>package</phase>
                                 <goals>
-                                    <goal>jar</goal>
+                                    <goal>javadocJar</goal>
                                 </goals>
                             </execution>
                         </executions>
+                        <configuration>
+                            <skip>false</skip>
+                            <outputFormat>jekyll</outputFormat>
+                            <outputDir>${maxur-mserv.root.path}/target/doc/</outputDir>
+                            <!-- http://kotlinlang.org/docs/reference/kotlin-doc.html#module-and-package-documentation -->
+                            <includes>
+                                <include>${basedir}/packages.md</include>
+                                <include>${basedir}/module.md</include>
+                            </includes>
+                            <sourceLinks>
+                                <link>
+                                    <dir>${project.basedir}</dir>
+                                    <url>https://github.com/myunusov/maxur-mserv/tree/master/${project.artifactId}</url>
+                                    <urlSuffix>#L</urlSuffix>
+                                </link>
+                            </sourceLinks>
+                            <jdkVersion>8</jdkVersion>
+                            <sourceDirectories>
+                                <dir>${basedir}/src/main/kotlin</dir>
+                            </sourceDirectories>
+                        </configuration>
                     </plugin>
+                    
                     <plugin>
                         <!-- @see http://www.sonatype.com/books/nexus-book/reference/staging-sect-deployment.html -->
                         <groupId>org.sonatype.plugins</groupId>
@@ -824,6 +919,7 @@
                     </execution>
                 </executions>
             </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -854,89 +950,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>${maven-antrun-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>ktlint</id>
-                        <phase>verify</phase>
-                        <configuration>
-                            <target name="ktlint">
-                                <java taskname="ktlint" dir="${basedir}" fork="true" failonerror="false"
-                                      classname="com.github.shyiko.ktlint.Main"
-                                      classpathref="maven.plugin.classpath">
-                                    <arg value="src/**/*.kt"/>
-                                </java>
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>ktlint-format</id>
-                        <configuration>
-                            <target name="ktlint">
-                                <java taskname="ktlint" dir="${basedir}" fork="true" failonerror="false"
-                                      classname="com.github.shyiko.ktlint.Main"
-                                      classpathref="maven.plugin.classpath">
-                                    <arg value="-F"/>
-                                    <arg value="src/**/*.kt"/>
-                                </java>
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.github.shyiko</groupId>
-                        <artifactId>ktlint</artifactId>
-                        <version>${ktlint.version}</version>
-                    </dependency>
-                    <!-- additional 3rd party ruleset(s) can be specified here -->
-                </dependencies>
-            </plugin>
-
-            <plugin>
-                <groupId>org.jetbrains.dokka</groupId>
-                <artifactId>dokka-maven-plugin</artifactId>
-                <version>${dokka.version}</version>
-                <executions>
-                    <execution>
-                        <phase>pre-site</phase>
-                        <goals>
-                            <goal>dokka</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <skip>false</skip>
-                    <outputFormat>jekyll</outputFormat>
-                    <outputDir>${maxur-mserv.root.path}/target/doc/</outputDir>
-                    <!-- http://kotlinlang.org/docs/reference/kotlin-doc.html#module-and-package-documentation -->
-                    <includes>
-                        <include>${basedir}/packages.md</include>
-                        <include>${basedir}/module.md</include>
-                    </includes>
-                    <sourceLinks>
-                        <link>
-                            <dir>${project.basedir}</dir>
-                            <url>https://github.com/myunusov/maxur-mserv/tree/master/${project.artifactId}</url>
-                            <urlSuffix>#L</urlSuffix>
-                        </link>
-                    </sourceLinks>
-                    <jdkVersion>8</jdkVersion>
-                    <sourceDirectories>
-                        <dir>${basedir}/src/main/kotlin</dir>
-                    </sourceDirectories>
-                </configuration>
             </plugin>
 
             <plugin>
