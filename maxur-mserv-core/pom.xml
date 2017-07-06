@@ -253,21 +253,49 @@
                             </execution>
                         </executions>
                     </plugin>
+
                     <plugin>
-                        <!--
-                        Generate -javadoc.jar artifact, required by Maven Central.
-                        -->
-                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <groupId>org.jetbrains.dokka</groupId>
+                        <artifactId>dokka-maven-plugin</artifactId>
+                        <version>${dokka.version}</version>
                         <executions>
+                            <execution>
+                                <phase>pre-site</phase>
+                                <goals>
+                                    <goal>dokka</goal>
+                                </goals>
+                            </execution>
                             <execution>
                                 <id>maxur-javadoc</id>
                                 <phase>package</phase>
                                 <goals>
-                                    <goal>jar</goal>
+                                    <goal>javadocJar</goal>
                                 </goals>
                             </execution>
                         </executions>
+                        <configuration>
+                            <skip>false</skip>
+                            <outputFormat>jekyll</outputFormat>
+                            <outputDir>${maxur-mserv.root.path}/target/doc/</outputDir>
+                            <!-- http://kotlinlang.org/docs/reference/kotlin-doc.html#module-and-package-documentation -->
+                            <includes>
+                                <include>${basedir}/packages.md</include>
+                                <include>${basedir}/module.md</include>
+                            </includes>
+                            <sourceLinks>
+                                <link>
+                                    <dir>${project.basedir}</dir>
+                                    <url>https://github.com/myunusov/maxur-mserv/tree/master/${project.artifactId}</url>
+                                    <urlSuffix>#L</urlSuffix>
+                                </link>
+                            </sourceLinks>
+                            <jdkVersion>8</jdkVersion>
+                            <sourceDirectories>
+                                <dir>${basedir}/src/main/kotlin</dir>
+                            </sourceDirectories>
+                        </configuration>
                     </plugin>
+                    
                     <plugin>
                         <!-- @see http://www.sonatype.com/books/nexus-book/reference/staging-sect-deployment.html -->
                         <groupId>org.sonatype.plugins</groupId>
@@ -922,41 +950,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.jetbrains.dokka</groupId>
-                <artifactId>dokka-maven-plugin</artifactId>
-                <version>${dokka.version}</version>
-                <executions>
-                    <execution>
-                        <phase>pre-site</phase>
-                        <goals>
-                            <goal>dokka</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <skip>false</skip>
-                    <outputFormat>jekyll</outputFormat>
-                    <outputDir>${maxur-mserv.root.path}/target/doc/</outputDir>
-                    <!-- http://kotlinlang.org/docs/reference/kotlin-doc.html#module-and-package-documentation -->
-                    <includes>
-                        <include>${basedir}/packages.md</include>
-                        <include>${basedir}/module.md</include>
-                    </includes>
-                    <sourceLinks>
-                        <link>
-                            <dir>${project.basedir}</dir>
-                            <url>https://github.com/myunusov/maxur-mserv/tree/master/${project.artifactId}</url>
-                            <urlSuffix>#L</urlSuffix>
-                        </link>
-                    </sourceLinks>
-                    <jdkVersion>8</jdkVersion>
-                    <sourceDirectories>
-                        <dir>${basedir}/src/main/kotlin</dir>
-                    </sourceDirectories>
-                </configuration>
             </plugin>
 
             <plugin>
