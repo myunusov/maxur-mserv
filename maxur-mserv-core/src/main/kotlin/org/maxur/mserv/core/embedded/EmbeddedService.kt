@@ -7,13 +7,18 @@ package org.maxur.mserv.core.embedded
 interface EmbeddedService {
 
     /**
-     * Start Web server.
+     * Start server.
      */
     fun start()
 
     /**
-     * Stop Web server.
+     * Stop server.
      */
     fun stop()
+
+    /**
+     * Relaunch server.
+     */
+    fun restart()
 
 }

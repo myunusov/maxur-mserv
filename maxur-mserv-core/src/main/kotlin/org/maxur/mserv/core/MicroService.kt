@@ -83,5 +83,10 @@ class BaseMicroService constructor(
         locator.shutdown()
     }
 
+    override fun relaunch() {
+        embeddedService.restart()
+    }
+
+
 }
 
