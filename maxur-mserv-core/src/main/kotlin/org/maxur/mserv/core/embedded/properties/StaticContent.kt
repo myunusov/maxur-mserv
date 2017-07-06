@@ -7,16 +7,12 @@ import java.net.URI
 
 class StaticContent(
         @JsonProperty("roots")         val roots: Array<URI>,
-        @JsonProperty("path")          val path: String,
+        @JsonProperty("path")          val path: Path,
         @JsonProperty("default-page", required = false) val page: String? = "index.html",
         @JsonProperty("start-url", required = false) val startUrl: String? = ""
 ) {
 
-    val normalisePath: String = run {
-        val ex = path.replace("/{2,}".toRegex(), "/")
-        if (ex.endsWith("/")) ex.substring(0, ex.length - 1) else ex
-    }
-    
+
     private fun normalizeScheme(scheme: String?): String = scheme ?: "file"
 
     fun fileContent(): StaticContent =

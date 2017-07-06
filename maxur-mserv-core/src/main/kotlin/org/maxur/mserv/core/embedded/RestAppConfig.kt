@@ -14,7 +14,7 @@ data class RestAppConfig (
 
     // TODO condition must be rewrite
     fun staticContentByPath(path: String): StaticContent? =
-            staticContent.filter { it.path == path || "/${it.path}" == path }.firstOrNull()
+            staticContent.filter { it.path.path == path || "/${it.path.path}" == path }.firstOrNull()
     
 }
 
