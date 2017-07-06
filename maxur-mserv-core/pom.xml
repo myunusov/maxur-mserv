@@ -6,14 +6,40 @@
 
     <parent>
         <groupId>org.maxur</groupId>
-        <artifactId>maxur-mserv-base</artifactId>
-        <version>0.2-SNAPSHOT</version>
+        <artifactId>maxur-base</artifactId>
+        <version>0.20</version>
+        <relativePath/>
     </parent>
 
     <artifactId>maxur-mserv-core</artifactId>
     <name>maxur-mserv-core</name>
     <version>0.2-SNAPSHOT</version>
     <description>Maxur Microservice Framework</description>
+
+    <issueManagement>
+        <system>GitHub Social Coding</system>
+        <url>https://github.com/myunusov/maxur-mserv.git/issues</url>
+    </issueManagement>
+
+    <ciManagement>
+        <system>Travis</system>
+        <url>https://travis-ci.org/myunusov/maxur-mserv.git/</url>
+        <notifiers/>
+    </ciManagement>
+
+    <distributionManagement>
+        <downloadUrl>https://oss.sonatype.org/content/groups/public</downloadUrl>
+        <!-- Deploy releases -->
+        <repository>
+            <id>oss.sonatype.org</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+        <!-- Deploy snapshots -->
+        <snapshotRepository>
+            <id>oss.sonatype.org</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <properties>
         <env>dev</env>
@@ -59,12 +85,21 @@
         <HK2Utilities.version>1.4.1</HK2Utilities.version>
         <hibernate-validator.version>5.4.1.Final</hibernate-validator.version>
 
+        <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
+        <maven-surefire-plugin.version>2.20</maven-surefire-plugin.version>
+        <maven-failsafe-plugin.version>2.20</maven-failsafe-plugin.version>
+        <jacoco-maven-plugin.version>0.7.9</jacoco-maven-plugin.version>
+        <versioneye-maven-plugin.version>3.11.4</versioneye-maven-plugin.version>
+        <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
+        <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
+        <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
+        <versions-maven-plugin.version>2.4</versions-maven-plugin.version>
+        <maven-scm-provider-gitexe.version>1.9.5</maven-scm-provider-gitexe.version>
         <maven-enforcer-plugin.version>1.4.2.jenkins-1</maven-enforcer-plugin.version>
         <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
         <build-helper-maven-plugin.version>3.0.0</build-helper-maven-plugin.version>
         <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
         <buildnumber-maven-plugin.version>1.4</buildnumber-maven-plugin.version>
-        <jacoco-maven-plugin.version>0.7.9</jacoco-maven-plugin.version>
         <coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
         <maven-antrun-plugin.version>1.8</maven-antrun-plugin.version>
         <ktlint.version>0.8.3</ktlint.version>
@@ -77,15 +112,6 @@
                 <plugins>
                     <plugin>
                         <artifactId>maven-enforcer-plugin</artifactId>
-                        <version>${maven-enforcer-plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>enforce-property</id>
-                                <goals>
-                                    <goal>enforce</goal>
-                                </goals>
-                            </execution>
-                        </executions>
                         <configuration>
                             <rules>
                                 <requireProperty>
@@ -99,7 +125,7 @@
                                     </regexMessage>
                                 </requireProperty>
                                 <requireMavenVersion>
-                                    <version>[3.0.4,)</version>
+                                    <version>[3.3.0,)</version>
                                 </requireMavenVersion>
                                 <requireReleaseDeps>
                                     <message>No Snapshots Allowed!</message>
@@ -125,7 +151,6 @@
                     <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
-                        <version>${jacoco-maven-plugin.version}</version>
                         <configuration>
                             <excludes>
                                 <exclude>com/jasonclawson/**/*</exclude>
@@ -185,7 +210,6 @@
                         <configuration>
                             <serverId>oss.sonatype.org</serverId>
                             <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <description>${project.version}</description>
                         </configuration>
                         <executions>
                             <execution>
@@ -953,16 +977,6 @@
             </plugin>
 
             <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>**/GraphViz*.class</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
@@ -978,24 +992,7 @@
                     </dependency>
                 </dependencies>
             </plugin>
-
-            <plugin>
-                <groupId>org.eluder.coveralls</groupId>
-                <artifactId>coveralls-maven-plugin</artifactId>
-                <version>${coveralls-maven-plugin.version}</version>
-                <configuration>
-                    <!--suppress MavenModelInspection -->
-                    <repoToken>${env.coveralls_repo_token}</repoToken>
-                    <jacocoReports>
-                        <jacocoReport>${project.reporting.outputDirectory}/jacoco-ut/jacoco.xml</jacocoReport>
-                        <jacocoReport>${project.reporting.outputDirectory}/jacoco-it/jacoco.xml</jacocoReport>
-                    </jacocoReports>
-                </configuration>
-            </plugin>
-
         </plugins>
-
-
     </build>
 
     <pluginRepositories>
