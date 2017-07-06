@@ -12,7 +12,7 @@
 
     <artifactId>maxur-mserv-java-sample</artifactId>
     <version>0.2-SNAPSHOT</version>
-    <name>maxur-mserv-sample</name>
+    <name>maxur-mserv-java-sample</name>
     <description>Maxur Sample Microservice</description>
 
     <properties>

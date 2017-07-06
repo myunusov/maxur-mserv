@@ -8,8 +8,8 @@
     <artifactId>maxur-mserv-base</artifactId>
     <version>0.2-SNAPSHOT</version>
     <packaging>pom</packaging>
-	<name>maxur-mserv-base</name>
-	<description>Maxur Microservice Base POM</description>
+    <name>maxur-mserv-base</name>
+    <description>Maxur Microservice Base POM</description>
     <url>https://github.com/myunusov/maxur-mserv.git</url>
 
     <properties>
@@ -36,6 +36,7 @@
         <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
         <versions-maven-plugin.version>2.2</versions-maven-plugin.version>
         <maven-scm-provider-gitexe.version>1.9.5</maven-scm-provider-gitexe.version>
+        <maven-enforcer-plugin.version>1.4.2.jenkins-1</maven-enforcer-plugin.version>
     </properties>
 
     <organization>
@@ -85,21 +86,6 @@
         <notifiers/>
     </ciManagement>
 
-    <distributionManagement>
-        <downloadUrl>https://oss.sonatype.org/content/groups/public</downloadUrl>
-        <!-- Deploy releases -->
-        <repository>
-            <id>oss.sonatype.org</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-        </repository>
-        <!-- Deploy snapshots -->
-        <snapshotRepository>
-            <id>oss.sonatype.org</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
-
     <modules>
         <module>maxur-mserv-core</module>
         <module>maxur-mserv-sample</module>
@@ -140,6 +126,28 @@
                         </executions>
                     </plugin>
                 </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>enforcer</id>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-enforcer-plugin</artifactId>
+                            <version>${maven-enforcer-plugin.version}</version>
+                            <executions>
+                                <execution>
+                                    <id>enforce-property</id>
+                                    <goals>
+                                        <goal>enforce</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
             </build>
         </profile>
 
@@ -402,11 +410,10 @@
                         <generateBackupPoms>false</generateBackupPoms>
                     </configuration>
                 </plugin>
-                
+
             </plugins>
         </pluginManagement>
     </build>
-
 
 
 </project>
