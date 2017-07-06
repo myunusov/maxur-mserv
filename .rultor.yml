@@ -13,6 +13,6 @@ deploy:
   script: |
 release:
   script: |
-    mvn versions:set "-DnewVersion=${tag}" -Denv=prod
+    mvn versions:set "-DnewVersion=${tag}"
     git commit -am "${tag}"
-    mvn clean deploy --settings /home/r/settings.xml -Denv=prod -Pmaxur,sonatype,debug
+    mvn clean deploy --settings /home/r/settings.xml -Pmaxur,sonatype,debug
