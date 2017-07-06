@@ -4,6 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 data class RestService(
         @JsonProperty("name", required = false) val name: String?,
-        @JsonProperty("path") val path: String
+        @JsonProperty("path") val path: Path
 )
 
