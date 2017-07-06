@@ -91,5 +91,15 @@
         <module>maxur-mserv-sample</module>
         <module>maxur-mserv-java-sample</module>
     </modules>
-    
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
