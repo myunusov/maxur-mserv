@@ -2,6 +2,7 @@ package org.maxur.mserv.core.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider
+import com.nhaarman.mockito_kotlin.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.glassfish.hk2.utilities.binding.AbstractBinder
 import org.glassfish.jersey.ServiceLocatorProvider
@@ -19,9 +20,11 @@ import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnitRunner
 import java.io.IOException
+import javax.ws.rs.client.Entity
 import javax.ws.rs.core.Application
 import javax.ws.rs.core.Feature
 import javax.ws.rs.core.FeatureContext
+import javax.ws.rs.core.MediaType
 
 
 @RunWith(MockitoJUnitRunner::class)
@@ -52,6 +55,28 @@ class ServiceResourceIT : JerseyTest() {
                 .isEqualTo("service/stop")
         assertThat(node.findPath("restart").findPath("href").asText())
                 .isEqualTo("service/restart")
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun testServiceResourceStop() {
+        val baseTarget = target("/service/stop")
+        val response = baseTarget.request()
+                .accept(MediaType.APPLICATION_JSON)
+                .put(Entity.json(""))
+        assertThat(response.status).isEqualTo(204)
+        verify(service).deferredStop()
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun testServiceResourceRestart() {
+        val baseTarget = target("/service/restart")
+        val response = baseTarget.request()
+                .accept(MediaType.APPLICATION_JSON)
+                .put(Entity.json(""))
+        assertThat(response.status).isEqualTo(204)
+        verify(service).deferredRestart()
     }
 
 
