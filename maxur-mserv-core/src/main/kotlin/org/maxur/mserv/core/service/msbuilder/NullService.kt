@@ -19,6 +19,7 @@ class NullService : MicroService(loc) {
 
     override fun shutdown() = Unit
     override fun launch() = Unit
+    override fun relaunch() = Unit
     override val version: String = ""
     override var name: String  = "noname"
     override fun <T> bean(clazz: Class<T>): T? = throw UnsupportedOperationException()

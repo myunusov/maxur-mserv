@@ -33,6 +33,12 @@ abstract class BaseService(val locator: Locator) {
     fun stop() = state.stop(this, locator)
 
     /**
+     * Immediately restart this Service.
+     */
+    fun restart() = state.restart(this, locator)
+
+
+    /**
      * shutdown this service.
      */
     abstract protected fun shutdown()
@@ -41,6 +47,12 @@ abstract class BaseService(val locator: Locator) {
      * launch this service.
      */
     abstract protected fun launch()
+
+    /**
+     * relaunch this service.
+     */
+    abstract protected fun relaunch()
+
 
     /**
      * Represent State of micro-service
@@ -52,11 +64,7 @@ abstract class BaseService(val locator: Locator) {
         STARTED {
             override fun start(service: BaseService, locator: Locator) = Unit
             override fun stop(service: BaseService, locator: Locator) = shutdown(service, locator)
-            override fun restart(service: BaseService, locator: Locator) {
-                shutdown(service, locator)
-                launch(service, locator)
-
-            }
+            override fun restart(service: BaseService, locator: Locator) = relaunch(service, locator)
         },
         /**
          * Stop application
@@ -84,6 +92,16 @@ abstract class BaseService(val locator: Locator) {
             try {
                 service.beforeStart.forEach { call(it, service, locator) }
                 service.launch()
+                service.afterStart.forEach { call(it, service, locator) }
+                service.state = BaseService.State.STARTED
+            } catch(e: Exception) {
+                service.onError.forEach { error(it, service, locator, e) }
+            }
+        }
+        protected fun relaunch(service: BaseService, locator: Locator) {
+            try {
+                service.beforeStop.forEach { call(it, service, locator) }
+                service.relaunch()
                 service.afterStart.forEach { call(it, service, locator) }
                 service.state = BaseService.State.STARTED
             } catch(e: Exception) {
