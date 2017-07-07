@@ -11,3 +11,6 @@ target
 /work
 *.iml
 
+/pubring.gpg
+/secring.gpg
+/settings.xml
