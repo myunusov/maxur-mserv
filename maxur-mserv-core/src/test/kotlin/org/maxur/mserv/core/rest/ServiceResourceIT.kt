@@ -1,39 +1,30 @@
 package org.maxur.mserv.core.rest
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider
 import com.nhaarman.mockito_kotlin.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.glassfish.hk2.utilities.binding.AbstractBinder
-import org.glassfish.jersey.ServiceLocatorProvider
-import org.glassfish.jersey.jackson.JacksonFeature
-import org.glassfish.jersey.media.multipart.MultiPartFeature
-import org.glassfish.jersey.server.ResourceConfig
-import org.glassfish.jersey.server.ServerProperties
-import org.glassfish.jersey.test.JerseyTest
-import org.glassfish.jersey.test.TestProperties
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.maxur.mserv.core.MicroService
-import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnitRunner
 import java.io.IOException
 import javax.ws.rs.client.Entity
-import javax.ws.rs.core.Application
-import javax.ws.rs.core.Feature
-import javax.ws.rs.core.FeatureContext
 import javax.ws.rs.core.MediaType
 
 
 @RunWith(MockitoJUnitRunner::class)
-class ServiceResourceIT : JerseyTest() {
-
-    private val mapper: ObjectMapper = ObjectMapperProvider().provide()
+class ServiceResourceIT : AbstractResourceIT() {
 
     @Mock
     private lateinit var service: MicroService
+
+    override fun resourceClass(): Class<*> = ServiceResource::class.java
+
+    override fun configurator(): Function1<AbstractBinder, Unit> = { binder: AbstractBinder ->
+        binder.bind(service).to(MicroService::class.java)
+    }
 
     @Test
     @Throws(IOException::class)
@@ -68,6 +59,7 @@ class ServiceResourceIT : JerseyTest() {
         verify(service).deferredStop()
     }
 
+
     @Test
     @Throws(IOException::class)
     fun testServiceResourceRestart() {
@@ -78,42 +70,4 @@ class ServiceResourceIT : JerseyTest() {
         assertThat(response.status).isEqualTo(204)
         verify(service).deferredRestart()
     }
-
-
-    override fun configure(): Application {
-        enable(TestProperties.LOG_TRAFFIC)
-        enable(TestProperties.DUMP_ENTITY)
-        return object : ResourceConfig(ServiceResource::class.java) {
-            init {
-                property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true)
-                property(ServerProperties.BV_DISABLE_VALIDATE_ON_EXECUTABLE_OVERRIDE_CHECK, true)
-                val provider = JacksonJaxbJsonProvider()
-                provider.setMapper(mapper)
-                register(provider)
-                register(JacksonFeature::class.java)
-                register(RuntimeExceptionHandler::class.java)
-                register(ServiceLocatorFeature())
-                register(ServiceEventListener("/"))
-                register(MultiPartFeature::class.java)
-                register(object : AbstractBinder() {
-                    override fun configure() {
-                        configurator().invoke(this)
-                    }
-                })
-            }
-        }
-    }
-
-    private class ServiceLocatorFeature : Feature {
-        override fun configure(context: FeatureContext): Boolean {
-            ServiceLocatorProvider.getServiceLocator(context)
-            return true
-        }
-    }
-
-    protected fun configurator(): Function1<AbstractBinder, Unit> = { binder: AbstractBinder ->
-        binder.bind(service).to(MicroService::class.java)
-    }
-
-
 }
