@@ -1,6 +1,7 @@
 package org.maxur.mserv.core.service.msbuilder
 
 import org.maxur.mserv.core.MicroService
+import org.maxur.mserv.core.NullService
 import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.domain.Holder
 import java.util.function.Consumer

@@ -11,29 +11,65 @@ import java.util.concurrent.Executors
  * @version 1.0
  * @since <pre>12.06.2017</pre>
  */
-abstract class MicroService(locator: Locator) : BaseService(locator) {
+interface MicroService  {
+
+    /**
+     * The service name
+     */
+    val name: String
 
     /**
      * The service version
      */
-    abstract val version: String
+    val version: String
 
     /**
-     * The bean from service IoC by it's name
-     * @param clazz Class of bean
-     * @param <T> type of bean
+     * Start this Service
      */
-    abstract fun <T> bean(clazz: Class<T>): T?
+    fun start()
 
     /**
      * Stop this Service
      */
-    fun deferredStop() = postpone({ state.stop(this, locator) })
+    fun stop()
+
+    /**
+     * Stop this Service
+     */
+    fun deferredStop()
 
     /**
      * Restart this Service
      */
-    fun deferredRestart() = postpone({ state.restart(this, locator) })
+    fun deferredRestart()
+
+}
+
+
+/**
+ * @param embeddedService Embedded service (may be composite)
+ * @param locator Service Locator
+ */
+class BaseMicroService constructor(
+        val embeddedService: EmbeddedService,
+        locator: Locator
+) : BaseService(locator), MicroService {
+
+    init {
+        Runtime.getRuntime().addShutdownHook(object : Thread() {
+            override fun run() {
+                this@BaseMicroService.stop()
+            }
+        })
+    }
+
+    override var name: String = "Anonymous microService"
+
+    override val version: String = MicroService::class.java.`package`.implementationVersion ?: ""
+
+    override fun deferredStop() = postpone({ state.stop(this, locator) })
+
+    override fun deferredRestart() = postpone({ state.restart(this, locator) })
 
     private fun postpone(func: () -> Unit) {
         val pool = Executors.newSingleThreadExecutor { runnable ->
@@ -48,31 +84,6 @@ abstract class MicroService(locator: Locator) : BaseService(locator) {
         pool.shutdown()
     }
 
-}
-
-
-/**
- * @param embeddedService Embedded service (may be composite)
- * @param locator Service Locator
- */
-class BaseMicroService constructor(
-        val embeddedService: EmbeddedService,
-        locator: Locator
-) : MicroService(locator) {
-
-    init {
-        Runtime.getRuntime().addShutdownHook(object : Thread() {
-            override fun run() {
-                this@BaseMicroService.stop()
-            }
-        })
-    }
-
-    override var name: String = "Anonymous microService"
-
-    override val version: String = MicroService::class.java.`package`.implementationVersion ?: ""
-
-    override fun <T> bean(clazz: Class<T>): T? = locator.service(clazz)
 
     override fun launch() {
         embeddedService.start()
@@ -86,7 +97,13 @@ class BaseMicroService constructor(
     override fun relaunch() {
         embeddedService.restart()
     }
-
-
 }
 
+class NullService : MicroService {
+    override val version: String = ""
+    override var name: String  = "noname"
+    override fun start() = Unit
+    override fun stop() = Unit
+    override fun deferredStop() = Unit
+    override fun deferredRestart() = Unit
+}

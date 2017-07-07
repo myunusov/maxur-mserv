@@ -2,6 +2,10 @@ language: java
 
 sudo: false # faster builds
 
+branches:
+  only:
+    - master
+
 cache:
   directories:
     - $HOME/.m2
