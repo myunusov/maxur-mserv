@@ -22,7 +22,7 @@ before_install:
  - chmod +x ./mvnw
 
 script:
-  - mvn clean verify -Denv=dev -Pdebug,dep-jacoco,enforcer
+  - mvn clean verify -Denv=dev -Pdebug,dep-jacoco,enforcer,kotlin
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
