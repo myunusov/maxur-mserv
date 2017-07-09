@@ -25,10 +25,10 @@ open class ErrorHandler: ErrorService {
 
     override fun onFailure(errorInformation: ErrorInformation) {
         val exception = errorInformation.associatedException
-        if (ErrorHandler.log.isDebugEnabled) {
-            ErrorHandler.log.error("Bean initialization error: ", exception)
+        if (log.isDebugEnabled) {
+            log.error("Bean initialization error: ", exception)
         } else {
-            ErrorHandler.log.error(exception.message)
+            log.error(exception.message)
         }
     }
 

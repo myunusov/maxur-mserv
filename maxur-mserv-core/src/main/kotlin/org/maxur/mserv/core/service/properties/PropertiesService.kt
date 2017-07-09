@@ -62,8 +62,9 @@ interface PropertiesService {
      */
     fun <P> read(key: String, clazz: Class<P>): P?
 
+
     /**
-     * Service name
+     * This is connected Properties Source
      */
-    val name: String
+    val  source: PropertiesSource
 }

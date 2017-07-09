@@ -33,7 +33,7 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
     val locator: ServiceLocator by lazy {
         if (packages.isNotEmpty()) {
             HK2RuntimeInitializer.init(
-                "locator-1",
+                "mserv-locator",
                 false,
                 *packages.toTypedArray(), "org.maxur.mserv.core"
             )

@@ -15,6 +15,7 @@ import org.maxur.mserv.core.service.hk2.LocatorFactoryHK2Impl
 import org.maxur.mserv.core.service.properties.PropertiesService
 import org.maxur.mserv.core.service.properties.PropertiesServiceFactory
 import org.maxur.mserv.core.service.properties.PropertiesSource
+import java.net.URI
 import kotlin.reflect.KFunction
 
 /**
@@ -46,16 +47,27 @@ abstract class MSBuilder {
     var onError = ErrorHookHolder()
 
     open fun build(): MicroService {
-        val locator = LocatorFactoryHK2Impl {
-            this.packages = packagesHolder
-            bind(*bindersHolder.toTypedArray())
-            bind(propertiesHolder::build, PropertiesService::class.java)
-            bind({ locator -> BaseMicroService(services.build(locator), locator) }, MicroService::class.java)
-        }.make()
+        val locator = buildLocator()
+        return buildService(locator)
+    }
 
-        val service = locator.service(MicroService::class.java) ?:
+    private fun buildLocator(): Locator? {
+        try {
+            return LocatorFactoryHK2Impl {
+                this.packages = packagesHolder
+                bind(*bindersHolder.toTypedArray())
+                bind(propertiesHolder::build, PropertiesService::class.java)
+                bind({ locator -> BaseMicroService(services.build(locator), locator) }, MicroService::class.java)
+            }.make()
+        } catch(e: Exception) {
+            Locator.current.shutdown()
+            return null
+        }
+    }
+
+    private fun buildService(locator: Locator?): MicroService {
+        val service = locator?.service(MicroService::class.java) ?:
                 throw IllegalStateException("A MicroService is not created. Maybe It's configuration is wrong")
-
         if (service is BaseMicroService) {
             service.name = titleHolder.get(locator)!!
             service.beforeStart.addAll(beforeStart.list)
@@ -155,16 +167,16 @@ class ServiceHolder {
 class PropertiesHolder {
     private val clazz = PropertiesServiceFactory::class.java
     var format: String = "Hocon"
-    var rootKey: String = "DEFAULTS"
-    fun none() {
-        format = "None"
-        rootKey = ""
-    }
+    var uri: URI? = null
+    var rootKey: String? = null
+    var url: String = ""
+        set(value) {
+            uri = URI.create(value)
+        }
     fun build(locator: Locator): PropertiesService {
-        val source = PropertiesSource(format, rootKey)
+        val source = PropertiesSource(format, uri, rootKey)
         val factory: PropertiesServiceFactory = locator.locate(format, clazz)
         return factory.make(source)
-                ?: throw IllegalStateException("Properties Service '$format' is not configured\n")
     }
 }
 
