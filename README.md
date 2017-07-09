@@ -10,5 +10,6 @@ Yet another microservices framework
 [![codebeat badge](https://codebeat.co/badges/22f3e896-27be-487e-8fba-6c9a8cf21995)](https://codebeat.co/projects/github-com-myunusov-maxur-mserv-master)
 [![Dependency Status](https://www.versioneye.com/user/projects/595cd4a80fb24f006379c716/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/595cd4a80fb24f006379c716)
 
+[![PDD status](http://www.0pdd.com/svg?name=myunusov/maxur-mserv)](http://www.0pdd.com/p?name=myunusov/maxur-mserv)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/myunusov/maxur-mserv.svg)](https://github.com/myunusov/maxur-mserv/pulls)
 [![GitHub issues](https://img.shields.io/github/issues-raw/myunusov/maxur-mserv.svg)](https://github.com/myunusov/maxur-mserv/issues)
