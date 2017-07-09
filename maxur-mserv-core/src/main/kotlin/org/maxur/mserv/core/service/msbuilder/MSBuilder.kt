@@ -17,6 +17,9 @@ import org.maxur.mserv.core.service.properties.PropertiesServiceFactory
 import org.maxur.mserv.core.service.properties.PropertiesSource
 import kotlin.reflect.KFunction
 
+/**
+ * @todo Implement support of default options for best service choice
+ */
 abstract class MSBuilder {
 
     protected var titleHolder: Holder<String> = Holder.string("Anonymous")
