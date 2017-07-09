@@ -20,7 +20,7 @@ import javax.ws.rs.core.FeatureContext
  * @version 1.0
  * @since <pre>07.07.2017</pre>
  */
-abstract class AbstractResourceIT : JerseyTest() {
+abstract class AbstractResourceAT : JerseyTest() {
 
     protected val mapper: ObjectMapper = ObjectMapperProvider().provide()
 

@@ -1,0 +1,103 @@
+${esc.h} Release notes
+
+The Maxur Team is pleased to announce the Maxur Base POM $release.getVersion() release!
+
+The history of Maxur Base POM releases is documented below. For details of changes refer to the [project's GitHub issues][maxur-base-issues].
+
+[maxur-base-issues]: http://github.com/myunusov/maxur-base/issues?state=closed
+
+#if ($releases.size() == 0)
+No releases of this product.
+#else
+#foreach($releaseItem in $sorter.sort($releases, "version:desc"))
+
+${esc.h}${esc.h} $releaseItem.getVersion() #if($releaseItem.get("dateRelease"))/ $releaseItem.get("dateRelease")#end
+
+#if($releaseItem.get("description"))$releaseItem.get("description")#end
+
+
+#if ($releaseItem.getActions().size() == 0)
+No changes defined in this version.
+#else
+Changes in this version include:
+
+${esc.h}${esc.h}${esc.h}${esc.h} New features:
+#foreach($actionItem in $releaseItem.getActions(""))
+#set($action=$actionItem.getAction())
+#if ($actionItem.getIssue())
+#set($issue=$actionItem.getIssue())
+#else
+#set($issue="")
+#end
+- ${action} #if($!issue != "") Issue: $issue #end
+
+#set($issue="")
+#end
+
+#if ($releaseItem.getActions('add').size() !=0)
+${esc.h}${esc.h}${esc.h}${esc.h} Enhancements:
+#foreach($actionItem in $releaseItem.getActions('add'))
+#set($action=$actionItem.getAction())
+#if ($actionItem.getIssue())
+#set($issue=$actionItem.getIssue())
+#else
+#set($issue="")
+#end
+#end
+- ${action} #if($!issue != "") Issue: $issue. #end
+
+#set($issue="")
+#end
+
+#if ($releaseItem.getActions('fix').size() !=0)
+${esc.h}${esc.h}${esc.h}${esc.h} Fixed Bugs:
+#foreach($actionItem in $releaseItem.getActions('fix'))
+#set($action=$actionItem.getAction())
+#if ($actionItem.getIssue())
+#set($issue=$actionItem.getIssue())
+#else
+#set($issue="")
+#end
+#end
+- ${action} #if($!issue != "") Issue: $issue. #end
+
+#set($issue="")
+#end
+
+#if ($releaseItem.getActions('update').size() !=0)
+${esc.h}${esc.h}${esc.h}${esc.h} Changes:
+#foreach($actionItem in $releaseItem.getActions('update'))
+#set($action=$actionItem.getAction())
+#if ($actionItem.getIssue())
+#set($issue=$actionItem.getIssue())
+#else
+#set($issue="")
+#end
+#end
+- ${action} #if($!issue != "") Issue: $issue. #end
+
+#set($issue="")
+#end
+
+#if ($releaseItem.getActions('remove').size() !=0)
+${esc.h}${esc.h}${esc.h}${esc.h} Removed:
+#foreach($actionItem in $releaseItem.getActions('remove'))
+#set($action=$actionItem.getAction())
+#if ($actionItem.getIssue())
+#set($issue=$actionItem.getIssue())
+#else
+#set($issue="")
+#end
+#end
+- ${action} #if($!issue != "") Issue: $issue. #end
+
+#set($issue="")
+#end
+
+#end
+## End of main loop
+#end
+#end
+
+Have fun!
+Maxim Yunusov

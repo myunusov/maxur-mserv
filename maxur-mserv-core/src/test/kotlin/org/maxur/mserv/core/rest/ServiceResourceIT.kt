@@ -15,7 +15,7 @@ import javax.ws.rs.core.MediaType
 
 
 @RunWith(MockitoJUnitRunner::class)
-class ServiceResourceIT : AbstractResourceIT() {
+class ServiceResourceIT : AbstractResourceAT() {
 
     @Mock
     private lateinit var service: MicroService
