@@ -28,8 +28,7 @@ import java.net.URL;
  * This code was pretty much copied from the jackson YAMLFactory
  *
  * @author jclawson
- *
- * @todo Convert to kotlin
+ *@todo #234:15m/DEV Convert this class to kotlin
  */
 public class HoconFactory extends JsonFactory {
 	private static final long serialVersionUID = 1L;
