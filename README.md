@@ -1,3 +1,5 @@
+![Logo](https://raw.githubusercontent.com/wiki/myunusov/maxur-mserv/maxur-logo.png)  
+
 # Maxur μService
 
 Yet another microservices framework
