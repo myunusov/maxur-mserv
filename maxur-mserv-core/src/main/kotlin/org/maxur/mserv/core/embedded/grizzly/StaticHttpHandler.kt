@@ -52,10 +52,10 @@ class StaticHttpHandler(staticContent: StaticContent) : AbstractStaticHttpHandle
                 .filterNotNull()
     }
 
-    private fun makeRoot(it: URI): File? {
-        return when (it.scheme) {
-            "file" -> Paths.get(it).toFile()
-            null -> File(it.toString())
+    private fun makeRoot(uri: URI): File? {
+        return when (uri.scheme) {
+            "file" -> Paths.get(uri).toFile()
+            null -> File(uri.toString())
             else -> null
         }
     }

@@ -14,11 +14,15 @@ import org.maxur.mserv.core.service.properties.PropertiesServiceFactory
 import org.maxur.mserv.core.service.properties.PropertiesSource
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.File
 import java.io.IOException
 import java.net.URI
+import java.nio.file.Paths
 import java.util.function.Function
 
 /**
+ * The Properties Service Factory Hocon Implementation
+ *
  * @author myunusov
  * @version 1.0
  * @since <pre>24.06.2017</pre>
@@ -30,19 +34,51 @@ class PropertiesServiceFactoryHoconImpl : PropertiesServiceFactory() {
         val log: Logger = LoggerFactory.getLogger(PropertiesServiceFactoryHoconImpl::class.java)
     }
 
-    override fun make(source: PropertiesSource): PropertiesService? {
+    override fun make(source: PropertiesSource): PropertiesService {
+        val uri: URI? = source.uri
+        val config = when {
+                    uri == null -> ConfigFactory.load()
+                    uri.scheme == null -> loadFrom(File(uri.toString()))
+                    uri.scheme == "file" -> loadFrom(Paths.get(uri).toFile())
+                    else -> throw IllegalArgumentException(
+                            """Unsupported url '${uri.scheme}' to properties source. Must be one of [file]"""
+                    )
+                }
+        val rootKey = getRootKey(source)
+        val effectiveSource = effectiveSourceFrom(source)
         try {
-            return PropertiesServiceHoconImpl(ConfigFactory.load().getConfig(source.rootKey), name)
+            return PropertiesServiceHoconImpl(config.getConfig(rootKey), effectiveSource)
         } catch(e: ConfigException.Missing) {
-            log.warn(
-                "The '${source.rootKey}' config not found. " +
-                    "Add application.conf with '${source.rootKey}' section to classpath"
+            throw IllegalArgumentException (
+                    """The '${effectiveSource.uri}' file not found. Add file '$' with '$rootKey' section"""
             )
-            return null
         }
     }
 
-    class PropertiesServiceHoconImpl(val config: Config, override val name: String) : PropertiesService {
+    private fun effectiveSourceFrom(source: PropertiesSource): PropertiesSource =
+            PropertiesSource(
+                    source.format,
+                    source.uri ?: URI.create("classpath:///application.conf"),
+                    source.rootKey ?: "DEFAULTS"
+            )
+
+    private fun loadFrom(file: File): Config {
+        if (!file.exists()) {
+            throw IllegalArgumentException("Properties file '${file.absolutePath}' is not found")
+        }
+        return ConfigFactory.parseFile(file)
+    }
+
+    private fun getRootKey(source: PropertiesSource): String {
+        if (source.rootKey != null)
+            return source.rootKey
+        else {
+            log.info("Root key of properties source is not configured. So it's 'DEFAULTS' by default.")
+            return "DEFAULTS"
+        }
+    }
+
+    class PropertiesServiceHoconImpl(val config: Config, override val source: PropertiesSource) : PropertiesService {
 
         private val objectMapper = ObjectMapper(HoconFactory())
 

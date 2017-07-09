@@ -45,7 +45,7 @@ object Launcher {
     }
 
     fun beforeStart(configParams: ConfigParams, propertiesService: PropertiesService) {
-        log().info("Properties Source is '${propertiesService.name}'\n")
+        log().info("Properties Source is '${propertiesService.source.format}'\n")
         configParams.log()
     }
 

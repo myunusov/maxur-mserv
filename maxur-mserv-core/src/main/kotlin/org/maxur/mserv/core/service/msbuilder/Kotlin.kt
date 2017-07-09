@@ -34,6 +34,14 @@ class KBuilder(): MSBuilder() {
         init()
     }
 
+    fun withoutProperties() {
+        propertiesHolder.apply {
+            format = "None"
+            rootKey = null
+            uri = null
+        }
+    }
+
     fun properties(init: PropertiesHolder.() -> Unit) {
         propertiesHolder.apply { init() }
     }

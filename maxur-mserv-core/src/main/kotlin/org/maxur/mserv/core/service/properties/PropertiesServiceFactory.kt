@@ -25,6 +25,6 @@ abstract class PropertiesServiceFactory {
         name = descriptor?.name ?: "Undefined"
     }
 
-    abstract fun make(source: PropertiesSource): PropertiesService?
+    abstract fun make(source: PropertiesSource): PropertiesService
 
 }

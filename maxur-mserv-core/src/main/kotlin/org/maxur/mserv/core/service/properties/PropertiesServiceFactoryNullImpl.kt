@@ -8,9 +8,12 @@ import java.net.URI
 @Service(name = "None")
 class PropertiesServiceFactoryNullImpl : PropertiesServiceFactory() {
 
-    override fun make(source: PropertiesSource): PropertiesService? =
-            object : PropertiesService {
-                override val name: String = "None"
+    override fun make(source: PropertiesSource): PropertiesService =
+            if (source.isConfigured())
+                throw IllegalArgumentException("None properties source is configured")
+            else
+                object : PropertiesService {
+                override val source = source
                 override fun asString(key: String): String? = error(key)
                 override fun asLong(key: String): Long? = error(key)
                 override fun asInteger(key: String): Int? = error(key)
@@ -19,4 +22,6 @@ class PropertiesServiceFactoryNullImpl : PropertiesServiceFactory() {
                 private fun <T> error(key: String): T =
                         throw IllegalStateException("Service Configuration is not found. Key '$key' unresolved")
             }
+
+
 }

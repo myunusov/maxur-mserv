@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class Launcher {
 
-    private final static Logger log = LoggerFactory.getLogger(Launcher.class);
+    private static final  Logger log = LoggerFactory.getLogger(Launcher.class);
 
     /**
      * Command line entry point. This method kicks off the building of a application  object
@@ -33,8 +33,8 @@ public final class Launcher {
             .properties("hocon")
             .rest()
             .beforeStart(Launcher::beforeStart)
-            .afterStop( (service) -> log.info("Service is stopped"))
-            .onError((exception) -> log.error(exception.getMessage(), exception) )
+            .afterStop(service -> log.info("Service is stopped"))
+            .onError(exception -> log.error(exception.getMessage(), exception) )
             .start();
     }
     
@@ -42,7 +42,7 @@ public final class Launcher {
         final Locator locator = service.getLocator();
         final PropertiesService propertiesService  = locator.service(PropertiesService.class);
         if (propertiesService != null) {
-            log.info("Properties Source is '{}'", propertiesService.getName());
+            log.info("Properties Source is '{}'", propertiesService.getSource().getFormat());
             final ConfigParams configParams = locator.service(ConfigParams.class);
             if (configParams != null) {
                 configParams.log();
