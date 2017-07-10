@@ -98,12 +98,3 @@ class BaseMicroService constructor(
         embeddedService.restart()
     }
 }
-
-class NullService : MicroService {
-    override val version: String = ""
-    override var name: String  = "noname"
-    override fun start() = Unit
-    override fun stop() = Unit
-    override fun deferredStop() = Unit
-    override fun deferredRestart() = Unit
-}
