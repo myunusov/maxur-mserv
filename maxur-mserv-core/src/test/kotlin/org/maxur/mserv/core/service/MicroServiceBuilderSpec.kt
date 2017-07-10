@@ -7,6 +7,7 @@ import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.NullService
+import org.maxur.mserv.core.service.msbuilder.Java
 import org.maxur.mserv.core.service.msbuilder.Kotlin
 import org.maxur.mserv.core.service.properties.PropertiesService
 import java.net.URI
@@ -15,29 +16,35 @@ class MicroServiceBuilderSpec : Spek({
 
     describe("a micro-service dsl Builder") {
 
-        on("Build empty micro-service") {
-
+        on("Build empty micro-service without properties") {
             it("should return new micro-service") {
                 val service = Kotlin.service { withoutProperties() }
                 service.should.be.not.`null`
-                service.start()
                 val propertiesService = Locator.current.service(PropertiesService::class.java)
                 propertiesService.should.be.not.`null`
                 propertiesService!!.source.format.should.be.equal("None")
-                service.stop()
+                Locator.current.shutdown()
+            }
+            it("should return new micro-service for java client") {
+                val service = Java.service()
+                        .withoutProperties()
+                        .build()
+                service.should.be.not.`null`
+                val propertiesService = Locator.current.service(PropertiesService::class.java)
+                propertiesService.should.be.not.`null`
+                propertiesService!!.source.format.should.be.equal("None")
+                Locator.current.shutdown()
             }
         }
 
-        on("Build empty micro-service with Hocon properties") {
-
-            it("should return new micro-service with properties by default") {
+        on("Build empty micro-service with Hocon properties without configuration") {
+            it("should return new micro-service with default properties source") {
                 val service = Kotlin.service {
                     properties {
                         format = "Hocon"
                     }
                 }
                 service.should.be.not.`null`
-                service.start()
                 val propertiesService = Locator.current.service(PropertiesService::class.java)
                 propertiesService.should.be.not.`null`
                 propertiesService!!.source.apply {
@@ -45,10 +52,26 @@ class MicroServiceBuilderSpec : Spek({
                     rootKey.should.be.equal("DEFAULTS")
                     uri.should.be.equal(URI("classpath:///application.conf"))
                 }
-                service.stop()
+                Locator.current.shutdown()
             }
+            it("should return new micro-service with default properties source for java client") {
+                val service = Java.service()
+                        .properties("Hocon")
+                        .build()
+                service.should.be.not.`null`
+                val propertiesService = Locator.current.service(PropertiesService::class.java)
+                propertiesService.should.be.not.`null`
+                propertiesService!!.source.apply {
+                    format.should.be.equal("Hocon")
+                    rootKey.should.be.equal("DEFAULTS")
+                    uri.should.be.equal(URI("classpath:///application.conf"))
+                }
+                Locator.current.shutdown()
+            }
+        }
 
-            it("should return new micro-service with described properties file") {
+        on("Build empty micro-service with Hocon properties file by url") {
+            it("should return new micro-service") {
                 val service = Kotlin.service {
                     properties {
                         format = "Hocon"
@@ -56,7 +79,6 @@ class MicroServiceBuilderSpec : Spek({
                     }
                 }
                 service.should.be.not.`null`
-                service.start()
                 val propertiesService = Locator.current.service(PropertiesService::class.java)
                 propertiesService.should.be.not.`null`
                 propertiesService!!.source.apply {
@@ -64,10 +86,27 @@ class MicroServiceBuilderSpec : Spek({
                     rootKey.should.be.equal("DEFAULTS")
                     uri.should.be.equal(URI("src/test/resources/application.conf"))
                 }
-                service.stop()
+                Locator.current.shutdown()
             }
+            it("should return new micro-service for java client") {
+                val service = Java.service()
+                        .properties("Hocon")
+                        .url("src/test/resources/application.conf")
+                        .build()
+                service.should.be.not.`null`
+                val propertiesService = Locator.current.service(PropertiesService::class.java)
+                propertiesService.should.be.not.`null`
+                propertiesService!!.source.apply {
+                    format.should.be.equal("Hocon")
+                    rootKey.should.be.equal("DEFAULTS")
+                    uri.should.be.equal(URI("src/test/resources/application.conf"))
+                }
+                Locator.current.shutdown()
+            }
+        }
 
-            it("should return new micro-service with described root key") {
+        on("Build empty micro-service with Hocon properties and rootKey") {
+            it("should return new micro-service ") {
                 val service = Kotlin.service {
                     properties {
                         format = "Hocon"
@@ -75,7 +114,6 @@ class MicroServiceBuilderSpec : Spek({
                     }
                 }
                 service.should.be.not.`null`
-                service.start()
                 val propertiesService = Locator.current.service(PropertiesService::class.java)
                 propertiesService.should.be.not.`null`
                 propertiesService!!.source.apply {
@@ -83,8 +121,26 @@ class MicroServiceBuilderSpec : Spek({
                     rootKey.should.be.equal("USER")
                     uri.should.be.equal(URI("classpath:///application.conf"))
                 }
-                service.stop()
+                Locator.current.shutdown()
             }
+            it("should return new micro-service for java client") {
+                val service = Java.service()
+                        .properties("Hocon")
+                        .rootKey("USER")
+                        .build()
+                service.should.be.not.`null`
+                val propertiesService = Locator.current.service(PropertiesService::class.java)
+                propertiesService.should.be.not.`null`
+                propertiesService!!.source.apply {
+                    format.should.be.equal("Hocon")
+                    rootKey.should.be.equal("USER")
+                    uri.should.be.equal(URI("classpath:///application.conf"))
+                }
+                Locator.current.shutdown()
+            }
+        }
+
+        on("Build empty micro-service with Hocon properties with invalid configuration") {
 
             it("should return null service on unknown url scheme") {
                 val service = Kotlin.service {
@@ -118,10 +174,7 @@ class MicroServiceBuilderSpec : Spek({
 
         }
 
-
-
         on("Build empty micro-service with default properties") {
-
             it("should return new micro-service") {
                 val service = Kotlin.service {
                 }

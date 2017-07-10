@@ -1,61 +1,68 @@
 package org.maxur.mserv.core.service.msbuilder
 
 import org.maxur.mserv.core.MicroService
-import org.maxur.mserv.core.NullService
 import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.domain.Holder
 import java.util.function.Consumer
 
 
 class Java {
-
     companion object dsl {
-        fun service(): JBuilder {
-            try {
-                return JBuilder()
-            } catch (e: Exception) {
-                return object: JBuilder() {
-                    override fun build(): MicroService = NullService()
-                }
-            }
-        }
+        fun service(): JBuilder = JBuilder()
     }
 }
 
-open class JBuilder: MSBuilder() {
 
-    fun title(value: String): JBuilder {
+interface IJBuilder {
+    fun title(value: String): JBuilder
+    fun packages(value: String): JBuilder
+    fun properties(format: String): JPropertiesBuilder
+    fun properties(): JBuilder
+    fun withoutProperties(): JBuilder
+    fun service(type: String, properties: String): JBuilder
+    fun rest(): JBuilder
+    fun beforeStart(func: Consumer<in BaseService>): JBuilder
+    fun afterStop(func: Consumer<in BaseService>): JBuilder
+    fun beforeStop(func: Consumer<in BaseService>): JBuilder
+    fun afterStart(func: Consumer<in BaseService>): JBuilder
+    fun onError(func: Consumer<Exception>): JBuilder
+    fun build(): MicroService
+    fun start()
+}
+
+class JBuilder : MSBuilder(), IJBuilder {
+
+    override fun title(value: String): JBuilder {
         titleHolder = Holder.string(value)
         return this
     }
 
-    fun packages(value: String): JBuilder {
+    override fun packages(value: String): JBuilder {
         packagesHolder.addAll(value.split("\\s*,\\s*"))
         return this
     }
 
-    fun properties(format: String, root: String): JBuilder {
+    override fun properties(format: String): JPropertiesBuilder {
         propertiesHolder = PropertiesHolder()
         propertiesHolder.format = format
-        propertiesHolder.rootKey = root
+        return JPropertiesBuilder(this)
+    }
+
+    override fun properties(): JBuilder {
+        propertiesHolder = PropertiesHolder()
         return this
     }
 
-    fun properties(format: String): JBuilder {
+    override fun withoutProperties(): JBuilder {
         propertiesHolder = PropertiesHolder()
-        propertiesHolder.format = format
-        propertiesHolder.rootKey = "DEFAULTS"
+        propertiesHolder.format = "None"
+        propertiesHolder.rootKey = null
+        propertiesHolder.uri = null
         return this
     }
 
-    fun properties(): JBuilder {
-        propertiesHolder = PropertiesHolder()
-        propertiesHolder.format = "hocon"
-        propertiesHolder.rootKey = "DEFAULTS"
-        return this
-    }
-    
-    fun service(type: String, properties: String): JBuilder {
+
+    override fun service(type: String, properties: String): JBuilder {
         val holder = ServiceHolder()
         holder.type = type
         holder.properties = properties
@@ -63,48 +70,64 @@ open class JBuilder: MSBuilder() {
         return this
     }
 
-    fun rest(): JBuilder {
-        service( "grizzly", ":webapp")
+    override fun rest(): JBuilder {
+        service("grizzly", ":webapp")
         return this
     }
 
-    fun beforeStart(func: Consumer<in BaseService>): JBuilder {
+    override fun beforeStart(func: Consumer<in BaseService>): JBuilder {
         beforeStart.plusAssign(unitFunc(func))
         return this
     }
-    fun afterStop(func: Consumer<in BaseService>): JBuilder {
+
+    override fun afterStop(func: Consumer<in BaseService>): JBuilder {
         afterStop.plusAssign(unitFunc(func))
         return this
     }
-    fun beforeStop(func: Consumer<in BaseService>): JBuilder {
+
+    override fun beforeStop(func: Consumer<in BaseService>): JBuilder {
         beforeStop.plusAssign(unitFunc(func))
         return this
     }
-    fun afterStart(func: Consumer<in BaseService>): JBuilder {
+
+    override fun afterStart(func: Consumer<in BaseService>): JBuilder {
         afterStart.plusAssign(unitFunc(func))
         return this
     }
-    fun onError(func: Consumer<Exception>): JBuilder {
+
+    override fun onError(func: Consumer<Exception>): JBuilder {
         onError.plusAssign(errorFunc(func))
         return this
     }
 
-    private fun unitFunc(func: Consumer<in BaseService>): Function1<BaseService, Unit> {
-        return object : Function1<BaseService, Unit> {
-            override fun invoke(service: BaseService) = func.accept(service)
-        }
-    }
+    private fun unitFunc(func: Consumer<in BaseService>): Function1<BaseService, Unit> =
+            object : Function1<BaseService, Unit> {
+                override fun invoke(service: BaseService) = func.accept(service)
+            }
 
-    private fun errorFunc(func: Consumer<Exception>): Function1<Exception, Unit> {
-        return object : Function1<Exception, Unit> {
-            override fun invoke(e: Exception) = func.accept(e)
-        }
-    }
+    private fun errorFunc(func: Consumer<Exception>): Function1<Exception, Unit> =
+            object : Function1<Exception, Unit> {
+                override fun invoke(e: Exception) = func.accept(e)
+            }
 
-    fun start() {
+    override fun start() {
         build().start()
     }
 
+
+}
+
+class JPropertiesBuilder(val parent: JBuilder) : IJBuilder by parent {
+
+    fun url(value: String): JPropertiesBuilder {
+        parent.propertiesHolder.url = value
+        return this
+    }
+
+    fun rootKey(value: String): JPropertiesBuilder {
+        parent.propertiesHolder.rootKey = value
+        return this
+    }
 
 }
 

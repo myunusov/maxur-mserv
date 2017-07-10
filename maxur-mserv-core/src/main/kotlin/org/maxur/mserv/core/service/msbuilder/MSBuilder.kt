@@ -37,7 +37,7 @@ abstract class MSBuilder {
             value?.let { bindersHolder.add(value) }
         }
 
-    protected var propertiesHolder: PropertiesHolder = PropertiesHolder()
+    var propertiesHolder: PropertiesHolder = PropertiesHolder()
 
     val services: ServicesHolder = ServicesHolder()
     val beforeStart = HookHolder()
