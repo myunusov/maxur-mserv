@@ -1,20 +1,10 @@
 package org.maxur.mserv.core.service.msbuilder
 
 import org.maxur.mserv.core.MicroService
-import org.maxur.mserv.core.NullService
 import org.maxur.mserv.core.domain.Holder
 
-
 object Kotlin {
-
-    fun service(init: KBuilder.() -> Unit): MicroService {
-        try {
-            return KBuilder(init)
-                .build()
-        } catch (e: Exception) {
-            return NullService()
-        }
-    }
+    fun service(init: KBuilder.() -> Unit): MicroService = KBuilder(init).build()
 }
 
 class KBuilder(): MSBuilder() {

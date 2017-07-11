@@ -23,12 +23,12 @@ open class ErrorHandler: ErrorService {
         val log: Logger = LoggerFactory.getLogger(ErrorHandler::class.java)
     }
 
+    var latestError: Exception? = null
+
     override fun onFailure(errorInformation: ErrorInformation) {
-        val exception = errorInformation.associatedException
+        latestError = errorInformation.associatedException
         if (log.isDebugEnabled) {
-            log.error("Bean initialization error: ", exception)
-        } else {
-            log.error(exception.message)
+            log.error("Bean initialization error: ", latestError)
         }
     }
 
