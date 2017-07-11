@@ -11,6 +11,7 @@ import org.maxur.mserv.core.domain.Holder
 import org.maxur.mserv.core.embedded.CompositeService
 import org.maxur.mserv.core.embedded.EmbeddedService
 import org.maxur.mserv.core.embedded.EmbeddedServiceFactory
+import org.maxur.mserv.core.service.hk2.ErrorHandler
 import org.maxur.mserv.core.service.hk2.LocatorFactoryHK2Impl
 import org.maxur.mserv.core.service.properties.PropertiesService
 import org.maxur.mserv.core.service.properties.PropertiesServiceFactory
@@ -60,16 +61,14 @@ abstract class MSBuilder {
                 bind({ locator -> BaseMicroService(services.build(locator), locator) }, MicroService::class.java)
             }.make()
         } catch(e: Exception) {
-            Locator.current.shutdown()
-            return null
+            return onConfigurationError(Locator.current)
         }
     }
 
     private fun buildService(locator: Locator?): MicroService {
-        val service = locator?.service(MicroService::class.java) ?:
-                throw IllegalStateException("A MicroService is not created. Maybe It's configuration is wrong")
+        val service = locator?.service(MicroService::class.java) ?: onConfigurationError(locator)
         if (service is BaseMicroService) {
-            service.name = titleHolder.get(locator)!!
+            service.name = titleHolder.get(locator!!)!!
             service.beforeStart.addAll(beforeStart.list)
             service.afterStart.addAll(afterStart.list)
             service.beforeStop.addAll(beforeStop.list)
@@ -77,6 +76,16 @@ abstract class MSBuilder {
             service.onError.addAll(onError.list)
         }
         return service
+    }
+
+    private fun <T> onConfigurationError(locator: Locator?) : T {
+        val errorMessage = locator
+                ?.service(ErrorHandler::class.java)
+                ?.latestError
+                ?.message
+                ?: "Unknown error"
+        Locator.current.shutdown()
+        throw IllegalStateException("A MicroService is not created. $errorMessage")
     }
 }
 
