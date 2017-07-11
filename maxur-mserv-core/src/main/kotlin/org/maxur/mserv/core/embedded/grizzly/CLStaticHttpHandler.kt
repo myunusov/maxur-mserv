@@ -16,6 +16,7 @@ import org.glassfish.grizzly.http.server.Response
 import org.glassfish.grizzly.http.server.StaticHttpHandlerBase
 import org.glassfish.grizzly.http.util.Header
 import org.glassfish.grizzly.http.util.HttpStatus
+import org.glassfish.grizzly.http.util.MimeType
 import org.glassfish.grizzly.memory.MemoryManager
 import org.maxur.mserv.core.embedded.properties.StaticContent
 import java.io.File
@@ -42,107 +43,65 @@ import java.util.logging.Level
  */
 class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticContent) : AbstractStaticHttpHandler() {
 
-    // path prefixes to be used
-    private val docRoots = HashSet<String>()
+    private val resourceLocator: ResourceLocator = ResourceLocator(classLoader, staticContent)
 
-    /**
-     * default page
-     */
     private val defaultPage: String = staticContent.page!!
-
-    /**
-     *  This staticContent is the static content configuration
-     *  with
-     *      the root(s) - the doc roots (path prefixes), which will be used
-     *           to find resources. Effectively each docRoot will be prepended
-     *           to a resource path before passing it to [ClassLoader.getResource].
-     *           If no <tt>docRoots</tt> are set - the resources will be searched starting
-     *           from [ClassLoader]'s root.
-     *      the path    - url related to base url
-     *      and default page (index.html by default)
-     *  If the <tt>root</tt> is <tt>null</tt> - static pages won't be served by this <tt>HttpHandler</tt>
-     *
-     *  IllegalArgumentException if one of the docRoots doesn't end with slash ('/')
-     */
-    init {
-        val roots = staticContent.roots
-                .map { makeRoot(it) }
-                .filterNotNull()
-        if (roots.any({ !it.endsWith("/") })) {
-            throw IllegalArgumentException("Doc root should end with slash ('/')")
-        }
-        if (roots.isNotEmpty()) {
-            this.docRoots.addAll(roots)
-        } else {
-            this.docRoots.add("/")
-        }
-    }
-    
-    private fun makeRoot(it: URI): String? {
-        return when (it.scheme) {
-            "classpath" -> it.toString().substring("classpath".length + 1)
-            else -> null
-        }
-    }
 
     /**
      * {@inheritDoc}
      */
     @Throws(Exception::class)
     public override fun handle(resourcePath: String, request: Request, response: Response): Boolean {
-
-        var path = resourcePath
-        if (path.startsWith(SLASH_STR)) {
-            path = path.substring(1)
+        resourceLocator.find(resourcePath)?.let {
+            return it.open(request, response)
         }
-
-        val mayBeFolder: Boolean
-        var url: URL?
-
-        if (path.isEmpty() || path.endsWith("/")) {
-            path += defaultPage
-            mayBeFolder = false
-            url = lookupResource(path)
-        } else {
-            url = lookupResource(path)
-            if (url == null && CHECK_NON_SLASH_TERMINATED_FOLDERS) {
-                // So try to add index.html to double-check.
-                // For example null will be returned for a folder inside a jar file.
-                url = lookupResource("$path/$defaultPage")
-                // some ClassLoaders return null if a URL points to a folder.
-                mayBeFolder = false
-            } else {
-                mayBeFolder = true
-            }
-        }
-
-        if (url == null) {
-            fine("Resource not found $path")
-            return false
-        }
-
-        // url may point to a folder or a file
-        if ("file" == url.protocol) {
-            return onFile(url, request, response, path)
-        } else {
-            return onNotFile(url, mayBeFolder, path, request, response)
-        }
+        fine("Resource not found $resourcePath")
+        return false
     }
 
-    private fun onNotFile(url: URL, mayBeFolder: Boolean, path: String, request: Request, response: Response): Boolean {
-        var url1 = url
-        var urlInputStream: InputStream? = null
-        var found = false
-        var urlConnection: URLConnection? = url1.openConnection()
+    inner class FileResource(path: String, val url: URL) : Resource(path) {
+
+        var file: File? = null
+
+        override fun init(): Boolean {
+            file = respondedFile(url)
+            return file != null
+        }
+
+        override fun process(request: Request, response: Response) {
+            pickupContentType(response, file!!.path)
+            addToFileCache(request, response, file)
+            StaticHttpHandlerBase.sendFile(response, file)
+        }
+
+        private fun respondedFile(url: URL): File? {
+            val file = File(url.toURI())
+            if (file.exists()) {
+                if (file.isDirectory) {
+                    val welcomeFile = File(file, "/$defaultPage")
+                    if (welcomeFile.exists() && welcomeFile.isFile) {
+                        return welcomeFile
+                    }
+                } else {
+                    return file
+                }
+            }
+            return null
+        }
+
+    }
+
+    inner class JarResource(path: String, val url: URL) : Resource(path) {
+
+        private var urlInputStream: JarURLInputStream? = null
         var filePath: String? = null
-        if ("jar" == url1.protocol) {
+        val urlConnection: URLConnection? = url.openConnection()
+
+        override fun init(): Boolean {
             val jarUrlConnection = urlConnection as JarURLConnection?
             var jarEntry: JarEntry? = jarUrlConnection!!.jarEntry
             val jarFile = jarUrlConnection.jarFile
-            // check if this is not a folder
-            // we can't rely on jarEntry.isDirectory() because of http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6233323
             var iinputStream: InputStream? = jarFile.getInputStream(jarEntry)
-
             if (jarEntry!!.isDirectory || iinputStream == null) { // it's probably a folder
                 val welcomeResource = if (jarEntry.name.endsWith("/"))
                     "${jarEntry.name}$defaultPage"
@@ -154,154 +113,282 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
                     iinputStream = jarFile.getInputStream(jarEntry)
                 }
             }
-
             if (iinputStream != null) {
-                urlInputStream = JarURLInputStream(jarUrlConnection,
-                        jarFile, iinputStream)
-
+                urlInputStream = JarURLInputStream(jarUrlConnection, jarFile, iinputStream)
                 assert(jarEntry != null)
                 filePath = jarEntry!!.name
-                found = true
+                return true
             } else {
-                closeJarFileIfNeeded(jarUrlConnection, jarFile)
+                urlInputStream?.closeJarFileIfNeeded()
+                return false
             }
-        } else if ("bundle" == url1.protocol) { // OSGi resource
-            // it might be either folder or file
+        }
+
+        override fun process(request: Request, response: Response) {
+            pickupContentType(response, filePath ?: url.path)
+            assert(urlConnection != null)
+            val jarFile = getJarFile(
+                    // we need that because url.getPath() may have url encoded symbols,
+                    // which are getting decoded when calling uri.getPath()
+                    URI(url.path).path
+            )
+            // if it's not a jar file - we don't know what to do with that
+            // so not adding it to the file cache
+            addTimeStampEntryToFileCache(request, response, jarFile)
+            val stream = urlInputStream ?: urlConnection!!.getInputStream()!!
+            sendResource(response, stream)
+        }
+
+        private fun addTimeStampEntryToFileCache(req: Request, res: Response, archive: File): Boolean {
+            if (isFileCacheEnabled) {
+                val fcContext = req.context
+                val fileCacheFilter = lookupFileCache(fcContext)
+                if (fileCacheFilter != null) {
+                    val fileCache = fileCacheFilter.fileCache
+                    if (fileCache.isEnabled) {
+                        StaticHttpHandlerBase.addCachingHeaders(res, archive)
+                        fileCache.add(req.request, archive.lastModified())
+                        return true
+                    }
+                }
+            }
+            return false
+        }
+
+        @Throws(MalformedURLException::class, FileNotFoundException::class)
+        private fun getJarFile(path: String): File {
+            val jarDelimIdx = path.indexOf("!/")
+            if (jarDelimIdx == -1) {
+                throw MalformedURLException("The jar file delimeter were not found")
+            }
+
+            val file = File(path.substring(0, jarDelimIdx))
+
+            if (!file.exists() || !file.isFile) {
+                throw FileNotFoundException("The jar file was not found")
+            }
+            return file
+        }
+    }
+
+    class JarURLInputStream(
+            private val jarConnection: JarURLConnection,
+            private val jarFile: JarFile,
+            src: InputStream
+    ) : java.io.FilterInputStream(src) {
+
+        @Throws(IOException::class)
+        override fun close() {
+            try {
+                super.close()
+            } finally {
+                closeJarFileIfNeeded()
+            }
+        }
+
+        @Throws(IOException::class)
+        fun closeJarFileIfNeeded() {
+            if (!jarConnection.useCaches) {
+                jarFile.close()
+            }
+        }
+    }
+
+
+    // OSGi resource
+    inner class BundleResource(path: String, var mayBeFolder: Boolean, var url: URL) : Resource(path) {
+
+        var urlConnection: URLConnection? = url.openConnection()
+
+        override fun init(): Boolean {
             if (mayBeFolder && urlConnection!!.contentLength <= 0) { // looks like a folder?
                 // check if there's a welcome resource
-                val welcomeUrl = classLoader.getResource("${url1.path}/$defaultPage")
+                val welcomeUrl = classLoader.getResource("${url.path}/$defaultPage")
                 if (welcomeUrl != null) {
-                    url1 = welcomeUrl
+                    url = welcomeUrl
                     urlConnection = welcomeUrl.openConnection()
                 }
             }
-            found = true
-        } else {
-            found = true
+            return true
         }
 
+        override fun process(request: Request, response: Response) {
+            pickupContentType(response, url.path)
+            assert(urlConnection != null)
+            sendResource(response, urlConnection!!.getInputStream())
+        }
+    }
+
+    inner class UnknownResource(path: String, val url: URL) : Resource(path) {
+
+        var urlConnection: URLConnection? = url.openConnection()
+
+        override fun init(): Boolean = true
+
+        override fun process(request: Request, response: Response) {
+            pickupContentType(response, url.path)
+            assert(urlConnection != null)
+            sendResource(response, urlConnection!!.getInputStream())
+        }
+    }
+
+    inner class ResourceLocator(val classLoader: ClassLoader, staticContent: StaticContent) {
+
+        private val SLASH_STR = "/"
+        private val EMPTY_STR = ""
+
+        private val roots = makeRoots(staticContent)
+
+        private fun makeRoots(staticContent: StaticContent): Set<String> {
+            val set = staticContent.roots
+                    .map { makeRoot(it) }
+                    .filterNotNull()
+                    .map { checkLastSlash(it) }
+                    .map { skipFirstSlash(it) }
+                    .toHashSet()
+
+            if (set.isNotEmpty()) {
+                return set
+            } else {
+                return setOf(EMPTY_STR)
+            }
+        }
+
+        private fun checkLastSlash(docRoot: String): String =
+                if (docRoot.endsWith(SLASH_STR)) docRoot
+                else throw IllegalArgumentException("Doc root should end with slash ('/')")
+
+        private fun makeRoot(it: URI): String? =
+                when (it.scheme) {
+                    "classpath" -> it.toString().substring("classpath".length + 1)
+                    else -> null
+                }
+
+        //@todo #2 DEV move "check-non-slash-terminated-folders" to web-app properties
+        private val CHECK_NON_SLASH_TERMINATED_FOLDERS_PROP =
+                CLStaticHttpHandler::class.java.name + ".check-non-slash-terminated-folders"
+
+        /**
+         * <tt>true</tt> (default) if we want to double-check the resource requests,
+         * that don't have terminating slash if they represent a folder and try
+         * to retrieve a welcome resource from the folder.
+         */
+        private val CHECK_NON_SLASH_TERMINATED_FOLDERS =
+                System.getProperty(CHECK_NON_SLASH_TERMINATED_FOLDERS_PROP) == null ||
+                        java.lang.Boolean.getBoolean(CHECK_NON_SLASH_TERMINATED_FOLDERS_PROP)
+
+
+        fun find(resourcePath: String): Resource? {
+            var path = skipFirstSlash(resourcePath)
+            if (path.isEmpty() || path.endsWith(SLASH_STR)) {
+                path += defaultPage
+                val url = lookupResource(path) ?: return null
+                return make(path, url, false)
+            } else {
+                return lookupResource(path)?.let {
+                    make(path, it, true)
+                } ?: if (CHECK_NON_SLASH_TERMINATED_FOLDERS) {
+                    // So try to add index.html to double-check.
+                    // For example null will be returned for a folder inside a jar file.
+                    val url = lookupResource("$path/$defaultPage") ?: return null
+                    // some ClassLoaders return null if a URL points to a folder.
+                    return make(path, url, false)
+                } else {
+                    null
+                }
+            }
+        }
+
+        private fun make(path: String, url: URL, mayBeFolder: Boolean): Resource = when (url.protocol) {
+            "file" -> FileResource(path, url)
+            "jar" -> JarResource(path, url)
+            "bundle" -> BundleResource(path, mayBeFolder, url)
+            else -> UnknownResource(path, url)
+        }
+
+        private fun skipFirstSlash(docRoot: String): String =
+                when {
+                    SLASH_STR == docRoot -> EMPTY_STR
+                    docRoot.startsWith(SLASH_STR) -> docRoot.substring(1)
+                    else -> docRoot
+                }
+
+        private fun lookupResource(resourcePath: String): URL? {
+            return roots
+                    .map { it + resourcePath }
+                    .map { classLoader.getResource(it) }
+                    .firstOrNull { it != null }
+        }
+    }
+
+}
+
+
+abstract class Resource(val path: String) {
+
+    companion object {
+        private val log = Grizzly.logger(AbstractStaticHttpHandler::class.java)
+    }
+
+    protected fun fine(msg: String) {
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, msg)
+        }
+    }
+
+    // url may point to a folder or a file
+    fun open(request: Request, response: Response): Boolean {
+        val found = init()
         if (!found) {
             fine("Resource not found $path")
             return false
         }
-
         // If it's not HTTP GET - return method is not supported status
         if (Method.GET != request.method) {
             returnMethodIsNotAllowed(path, request, response)
-            return true
+        } else {
+            process(request, response)
         }
-
-        pickupContentType(response, if (filePath != null) filePath else url1.path)
-
-
-        assert(urlConnection != null)
-
-        // if it's not a jar file - we don't know what to do with that
-        // so not adding it to the file cache
-        if ("jar" == url1.protocol) {
-            val jarFile = getJarFile(
-                    // we need that because url.getPath() may have url encoded symbols,
-                    // which are getting decoded when calling uri.getPath()
-                    URI(url1.path).path
-            )
-
-            addTimeStampEntryToFileCache(request, response, jarFile)
-        }
-
-        sendResource(response,
-                if (urlInputStream != null)
-                    urlInputStream
-                else
-                    urlConnection!!.getInputStream())
         return true
     }
 
-    private fun onFile(url: URL, request: Request, response: Response, path: String): Boolean {
-        val result: File? = respondedFile(url)
-        if (result != null) {
-            processFile(request, result, response)
-            return true
-        } else {
-            fine("Resource not found $path")
-            return false
-        }
+    abstract fun init(): Boolean
+
+    abstract fun process(request: Request, response: Response)
+
+    /**
+     *  If it's not HTTP GET - return method is not supported status
+     */
+    protected fun returnMethodIsNotAllowed(resource: String, request: Request, response: Response) {
+        fine("File found $resource, but HTTP method ${request.method} is not allowed")
+        response.setStatus(HttpStatus.METHOD_NOT_ALLOWED_405)
+        response.setHeader(Header.Allow, "GET")
     }
 
-    private fun respondedFile(url: URL): File? {
-        val file = File(url.toURI())
-        if (file.exists()) {
-            if (file.isDirectory) {
-                val welcomeFile = File(file, "/$defaultPage")
-                if (welcomeFile.exists() && welcomeFile.isFile) {
-                    return welcomeFile
+    protected fun pickupContentType(response: Response, path: String) {
+        if (!response.response.isContentTypeSet) {
+            val dot = path.lastIndexOf('.')
+
+            if (dot > 0) {
+                val ext = path.substring(dot + 1)
+                val ct = MimeType.get(ext)
+                if (ct != null) {
+                    response.contentType = ct
                 }
             } else {
-                return file
+                response.contentType = MimeType.get("html")
             }
         }
-        return null
     }
 
-    private fun lookupResource(resourcePath: String): URL? {
-        if (docRoots.isEmpty()) {
-            fine("No doc roots registered -> resource $resourcePath is not found ")
-            return null
-        }
-
-        for (docRoot in docRoots) {
-            val docRootPart: String
-            when {
-                SLASH_STR == docRoot -> docRootPart = EMPTY_STR
-                docRoot.startsWith(SLASH_STR) -> docRootPart = docRoot.substring(1)
-                else -> docRootPart = docRoot
-            }
-
-            val fullPath = docRootPart + resourcePath
-            val url = classLoader.getResource(fullPath)
-
-            if (url != null) {
-                return url
-            }
-        }
-
-        return null
-    }
-
-    private fun addTimeStampEntryToFileCache(req: Request,
-                                             res: Response?,
-                                             archive: File): Boolean {
-        if (isFileCacheEnabled) {
-            val fcContext = req.context
-            val fileCacheFilter = lookupFileCache(fcContext)
-            if (fileCacheFilter != null) {
-                val fileCache = fileCacheFilter.fileCache
-                if (fileCache.isEnabled) {
-                    if (res != null) {
-                        StaticHttpHandlerBase.addCachingHeaders(res, archive)
-                    }
-                    fileCache.add(req.request, archive.lastModified())
-                    return true
-                }
-            }
-        }
-
-        return false
-    }
-
-    @Throws(MalformedURLException::class, FileNotFoundException::class)
-    private fun getJarFile(path: String): File {
-        val jarDelimIdx = path.indexOf("!/")
-        if (jarDelimIdx == -1) {
-            throw MalformedURLException("The jar file delimeter were not found")
-        }
-
-        val file = File(path.substring(0, jarDelimIdx))
-
-        if (!file.exists() || !file.isFile) {
-            throw FileNotFoundException("The jar file was not found")
-        }
-
-        return file
+    @Throws(IOException::class)
+    protected fun sendResource(response: Response, input: InputStream) {
+        response.setStatus(HttpStatus.OK_200)
+        response.addDateHeader(Header.Date, System.currentTimeMillis())
+        val chunkSize = 8192
+        response.suspend()
+        val outputStream = response.nioOutputStream
+        outputStream.notifyCanWrite(NonBlockingDownloadHandler(response, outputStream, input, chunkSize))
     }
 
     private class NonBlockingDownloadHandler internal constructor(private val response: Response,
@@ -433,64 +520,10 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
             }
         }
     }
-
-
-    internal class JarURLInputStream(private val jarConnection: JarURLConnection,
-                                     private val jarFile: JarFile,
-                                     src: InputStream) : java.io.FilterInputStream(src) {
-
-        @Throws(IOException::class)
-        override fun close() {
-            try {
-                super.close()
-            } finally {
-                closeJarFileIfNeeded(jarConnection, jarFile)
-            }
-        }
-    }
-
-    companion object {
-
-        private val CHECK_NON_SLASH_TERMINATED_FOLDERS_PROP =
-                CLStaticHttpHandler::class.java.name + ".check-non-slash-terminated-folders"
-
-        /**
-         * <tt>true</tt> (default) if we want to double-check the resource requests,
-         * that don't have terminating slash if they represent a folder and try
-         * to retrieve a welcome resource from the folder.
-         */
-        private val CHECK_NON_SLASH_TERMINATED_FOLDERS =
-                System.getProperty(CHECK_NON_SLASH_TERMINATED_FOLDERS_PROP) == null ||
-                        java.lang.Boolean.getBoolean(CHECK_NON_SLASH_TERMINATED_FOLDERS_PROP)
-
-        private val SLASH_STR = "/"
-
-        private val EMPTY_STR = ""
-
-        @Throws(IOException::class)
-        private fun sendResource(response: Response,
-                                 input: InputStream) {
-            response.setStatus(HttpStatus.OK_200)
-
-            response.addDateHeader(Header.Date, System.currentTimeMillis())
-            val chunkSize = 8192
-
-            response.suspend()
-
-            val outputStream = response.nioOutputStream
-
-            outputStream.notifyCanWrite(
-                    NonBlockingDownloadHandler(response, outputStream,
-                            input, chunkSize))
-
-        }
-
-        @Throws(IOException::class)
-        private fun closeJarFileIfNeeded(jarConnection: JarURLConnection,
-                                         jarFile: JarFile) {
-            if (!jarConnection.useCaches) {
-                jarFile.close()
-            }
-        }
-    }
 }
+
+
+
+
+
+
