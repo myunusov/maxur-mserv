@@ -4,6 +4,7 @@
 !.travis.yml
 !.codecov.yml
 !.rultor.yml
+!.codebeatignore
 !/.0pdd.yml
 !/.mvn
 /.mvn/timing.properties
