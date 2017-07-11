@@ -59,9 +59,12 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
         return false
     }
 
-    inner class FileResource(path: String, val url: URL) : Resource(path) {
+    inner class FileResource(resourcePath: String, val url: URL) : Resource() {
 
         var file: File? = null
+
+        override val path: String = resourcePath
+            get() = file?.path ?: field
 
         override fun init(): Boolean {
             file = respondedFile(url)
@@ -69,7 +72,6 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
         }
 
         override fun process(request: Request, response: Response) {
-            pickupContentType(response, file!!.path)
             addToFileCache(request, response, file)
             StaticHttpHandlerBase.sendFile(response, file)
         }
@@ -88,14 +90,18 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
             }
             return null
         }
-
     }
 
-    inner class JarResource(path: String, val url: URL) : Resource(path) {
+    inner class JarResource(val url: URL) : Resource() {
+
+        val urlConnection: URLConnection = url.openConnection()
+
+        var filePath: String? = null
+
+        override val path: String = url.path
+            get() = filePath ?: field
 
         private var urlInputStream: JarURLInputStream? = null
-        var filePath: String? = null
-        val urlConnection: URLConnection? = url.openConnection()
 
         override fun init(): Boolean {
             val jarUrlConnection = urlConnection as JarURLConnection?
@@ -125,8 +131,6 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
         }
 
         override fun process(request: Request, response: Response) {
-            pickupContentType(response, filePath ?: url.path)
-            assert(urlConnection != null)
             val jarFile = getJarFile(
                     // we need that because url.getPath() may have url encoded symbols,
                     // which are getting decoded when calling uri.getPath()
@@ -135,7 +139,7 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
             // if it's not a jar file - we don't know what to do with that
             // so not adding it to the file cache
             addTimeStampEntryToFileCache(request, response, jarFile)
-            val stream = urlInputStream ?: urlConnection!!.getInputStream()!!
+            val stream = urlInputStream ?: urlConnection.getInputStream()!!
             sendResource(response, stream)
         }
 
@@ -196,12 +200,14 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
 
 
     // OSGi resource
-    inner class BundleResource(path: String, var mayBeFolder: Boolean, var url: URL) : Resource(path) {
+    inner class BundleResource(var mayBeFolder: Boolean, var url: URL) : Resource() {
 
-        var urlConnection: URLConnection? = url.openConnection()
+        var urlConnection: URLConnection = url.openConnection()
+
+        override val path: String = url.path
 
         override fun init(): Boolean {
-            if (mayBeFolder && urlConnection!!.contentLength <= 0) { // looks like a folder?
+            if (mayBeFolder && urlConnection.contentLength <= 0) { // looks like a folder?
                 // check if there's a welcome resource
                 val welcomeUrl = classLoader.getResource("${url.path}/$defaultPage")
                 if (welcomeUrl != null) {
@@ -213,22 +219,20 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
         }
 
         override fun process(request: Request, response: Response) {
-            pickupContentType(response, url.path)
-            assert(urlConnection != null)
-            sendResource(response, urlConnection!!.getInputStream())
+            sendResource(response, urlConnection.getInputStream())
         }
     }
 
-    inner class UnknownResource(path: String, val url: URL) : Resource(path) {
+    inner class UnknownResource(val url: URL) : Resource() {
 
-        var urlConnection: URLConnection? = url.openConnection()
+        override val path: String = url.path
+
+        var urlConnection: URLConnection = url.openConnection()
 
         override fun init(): Boolean = true
 
         override fun process(request: Request, response: Response) {
-            pickupContentType(response, url.path)
-            assert(urlConnection != null)
-            sendResource(response, urlConnection!!.getInputStream())
+            sendResource(response, urlConnection.getInputStream())
         }
     }
 
@@ -301,9 +305,9 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
 
         private fun make(path: String, url: URL, mayBeFolder: Boolean): Resource = when (url.protocol) {
             "file" -> FileResource(path, url)
-            "jar" -> JarResource(path, url)
-            "bundle" -> BundleResource(path, mayBeFolder, url)
-            else -> UnknownResource(path, url)
+            "jar" -> JarResource(url)
+            "bundle" -> BundleResource(mayBeFolder, url)
+            else -> UnknownResource(url)
         }
 
         private fun skipFirstSlash(docRoot: String): String =
@@ -324,17 +328,18 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
 }
 
 
-abstract class Resource(val path: String) {
+abstract class Resource {
 
     companion object {
         private val log = Grizzly.logger(AbstractStaticHttpHandler::class.java)
     }
-
     protected fun fine(msg: String) {
         if (log.isLoggable(Level.FINE)) {
             log.log(Level.FINE, msg)
         }
     }
+
+    abstract val path: String
 
     // url may point to a folder or a file
     fun open(request: Request, response: Response): Boolean {
@@ -347,6 +352,7 @@ abstract class Resource(val path: String) {
         if (Method.GET != request.method) {
             returnMethodIsNotAllowed(path, request, response)
         } else {
+            pickupContentType(response, path)
             process(request, response)
         }
         return true
@@ -408,7 +414,6 @@ abstract class Resource(val path: String) {
             log.log(Level.FINE, "[onWritePossible]")
             // send CHUNK of data
             val isWriteMore = sendChunk()
-
             if (isWriteMore) {
                 // if there are more bytes to be sent - reregister this WriteHandler
                 outputStream.notifyCanWrite(this)
