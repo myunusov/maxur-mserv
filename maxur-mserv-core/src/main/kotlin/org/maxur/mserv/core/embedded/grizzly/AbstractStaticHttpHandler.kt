@@ -9,11 +9,12 @@ import org.glassfish.grizzly.http.util.Header
 import org.glassfish.grizzly.http.util.HttpStatus
 import java.io.File
 import java.util.logging.Level
+import java.util.logging.Logger
 
 abstract class AbstractStaticHttpHandler: StaticHttpHandlerBase()   {
 
     companion object {
-        private val log = Grizzly.logger(AbstractStaticHttpHandler::class.java)
+        val log : Logger = Grizzly.logger(StaticHttpHandlerBase::class.java)
     }
     
     protected fun fine(msg: String) {
