@@ -241,15 +241,6 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
 
         abstract fun process(request: Request, response: Response)
 
-        /**
-         *  If it's not HTTP GET - return method is not supported status
-         */
-        protected fun returnMethodIsNotAllowed(resource: String, request: Request, response: Response) {
-            fine("File found $resource, but HTTP method ${request.method} is not allowed")
-            response.setStatus(HttpStatus.METHOD_NOT_ALLOWED_405)
-            response.setHeader(Header.Allow, "GET")
-        }
-
         protected fun pickupContentType(response: Response, path: String) {
             if (response.response.isContentTypeSet) return
             val dot = path.lastIndexOf('.')
@@ -274,14 +265,13 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
             outputStream.notifyCanWrite(NonBlockingDownloadHandler(response, outputStream, input, chunkSize))
         }
 
-        inner private class NonBlockingDownloadHandler internal constructor(private val response: Response,
-                                                                      private val outputStream: NIOOutputStream,
-                                                                      private val inputStream: InputStream,
-                                                                      private val chunkSize: Int
+        inner private class NonBlockingDownloadHandler
+        internal constructor(private val response: Response,
+                             private val outputStream: NIOOutputStream,
+                             private val inputStream: InputStream,
+                             private val chunkSize: Int
         ) : WriteHandler {
-
             private val mm: MemoryManager<*> = response.request.context.memoryManager
-
             @Throws(Exception::class)
             override fun onWritePossible() {
                 log.log(Level.FINE, "[onWritePossible]")
@@ -304,59 +294,11 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
              */
             @Throws(IOException::class)
             private fun sendChunk(): Boolean {
-                // allocate Buffer
-                var buffer: Buffer? = null
-
-                if (!mm.willAllocateDirect(chunkSize)) {
-                    buffer = mm.allocate(chunkSize)
-                    val len: Int
-                    if (!buffer!!.isComposite) {
-                        len = inputStream.read(buffer.array(),
-                                buffer.position() + buffer.arrayOffset(),
-                                chunkSize)
-                    } else {
-                        val bufferArray = buffer.toBufferArray()
-                        val size = bufferArray.size()
-                        val buffers = bufferArray.array
-
-                        var lenCounter = 0
-                        for (i in 0..size - 1) {
-                            val subBuffer = buffers[i]
-                            val subBufferLen = subBuffer.remaining()
-                            val justReadLen = inputStream.read(subBuffer.array(),
-                                    subBuffer.position() + subBuffer.arrayOffset(),
-                                    subBufferLen)
-
-                            if (justReadLen > 0) {
-                                lenCounter += justReadLen
-                            }
-
-                            if (justReadLen < subBufferLen) {
-                                break
-                            }
-                        }
-
-                        bufferArray.restore()
-                        bufferArray.recycle()
-
-                        len = if (lenCounter > 0) lenCounter else -1
-                    }
-
-                    if (len > 0) {
-                        buffer.position(buffer.position() + len)
-                    } else {
-                        buffer.dispose()
-                        buffer = null
-                    }
+                val buffer: Buffer? = if (!mm.willAllocateDirect(chunkSize)) {
+                    indirectAllocateBuffer()
                 } else {
-                    val buf = ByteArray(chunkSize)
-                    val len = inputStream.read(buf)
-                    if (len > 0) {
-                        buffer = mm.allocate(len)
-                        buffer!!.put(buf)
-                    }
+                    directAllocateBuffer()
                 }
-
                 if (buffer == null) {
                     complete(false)
                     return false
@@ -364,11 +306,54 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
                 // mark it available for disposal after content is written
                 buffer.allowBufferDispose(true)
                 buffer.trim()
-
                 // write the Buffer
                 outputStream.write(buffer)
-
                 return true
+            }
+
+            private fun directAllocateBuffer(): Buffer? {
+                val buf = ByteArray(chunkSize)
+                val len = inputStream.read(buf)
+                if (len <= 0) {
+                    return null
+                }
+                val buffer: Buffer = mm.allocate(len)
+                buffer.put(buf)
+                return buffer
+            }
+
+            private fun indirectAllocateBuffer(): Buffer? {
+                val buffer: Buffer = mm.allocate(chunkSize)
+                val len: Int =
+                        if (buffer.isComposite) readCompositeBuffer(buffer)
+                        else inputStream.read(buffer.array(),
+                                buffer.position() + buffer.arrayOffset(),
+                                chunkSize)
+                if (len > 0) {
+                    buffer.position(buffer.position() + len)
+                } else {
+                    buffer.dispose()
+                }
+                if (len > 0) return buffer else return null
+            }
+
+            private fun readCompositeBuffer(buffer: Buffer): Int {
+                val bufferArray = buffer.toBufferArray()
+                val size = bufferArray.size()
+                val buffers = bufferArray.array
+                var lenCounter = 0
+                for (i in 0..size - 1) {
+                    val subBuffer = buffers[i]
+                    val subBufferLen = subBuffer.remaining()
+                    val justReadLen = inputStream.read(subBuffer.array(),
+                            subBuffer.position() + subBuffer.arrayOffset(),
+                            subBufferLen)
+                    if (justReadLen > 0) lenCounter += justReadLen
+                    if (justReadLen < subBufferLen) break
+                }
+                bufferArray.restore()
+                bufferArray.recycle()
+                return if (lenCounter > 0) lenCounter else -1
             }
 
             /**
