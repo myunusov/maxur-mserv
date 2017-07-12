@@ -165,16 +165,10 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
         @Throws(MalformedURLException::class, FileNotFoundException::class)
         private fun getJarFile(path: String): File {
             val jarDelimIdx = path.indexOf("!/")
-            if (jarDelimIdx == -1) {
-                throw MalformedURLException("The jar file delimeter were not found")
-            }
-
+            if (jarDelimIdx == -1) throw MalformedURLException("The jar file delimiter were not found")
             val file = File(path.substring(0, jarDelimIdx))
-
-            if (!file.exists() || !file.isFile) {
-                throw FileNotFoundException("The jar file was not found")
-            }
-            return file
+            if (file.exists() && file.isFile) return file
+            throw FileNotFoundException("The jar file was not found")
         }
     }
 

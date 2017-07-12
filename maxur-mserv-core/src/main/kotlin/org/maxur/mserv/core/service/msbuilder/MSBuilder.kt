@@ -29,6 +29,7 @@ abstract class MSBuilder {
     protected var packagesHolder: MutableList<String> = ArrayList()
 
     protected var bindersHolder: MutableList<Binder> = ArrayList()
+
     var binders: Array<Binder> = arrayOf()
         set(value) {
             bindersHolder.addAll(value)
@@ -43,9 +44,9 @@ abstract class MSBuilder {
     val services: ServicesHolder = ServicesHolder()
     val beforeStart = HookHolder()
     val afterStart = HookHolder()
-    var afterStop = HookHolder()
-    var beforeStop = HookHolder()
-    var onError = ErrorHookHolder()
+    val afterStop = HookHolder()
+    val beforeStop = HookHolder()
+    val onError = ErrorHookHolder()
 
     open fun build(): MicroService {
         val locator = buildLocator()
