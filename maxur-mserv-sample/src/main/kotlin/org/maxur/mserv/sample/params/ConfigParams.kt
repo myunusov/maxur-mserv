@@ -35,9 +35,16 @@ class ConfigParams @Inject constructor(
     }
 
     override fun toString(): String {
-        val mapper = ObjectMapperProvider().provide()
-        mapper.enable(SerializationFeature.INDENT_OUTPUT)
-        return mapper.writeValueAsString(this)
+        return asText(this)
     }
 
+    val WebAppProperties.toString: String
+        get() = asText(this)
+
+    private fun asText(any: Any): String {
+        val mapper = ObjectMapperProvider().provide()
+        mapper.enable(SerializationFeature.INDENT_OUTPUT)
+        return mapper.writeValueAsString(any)
+    }
+    
 }
