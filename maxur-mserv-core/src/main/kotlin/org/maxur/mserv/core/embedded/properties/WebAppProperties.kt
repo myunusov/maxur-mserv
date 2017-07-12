@@ -1,8 +1,6 @@
 package org.maxur.mserv.core.embedded.properties
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.SerializationFeature
-import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
 import java.net.URI
 
 /**
@@ -24,12 +22,5 @@ class WebAppProperties(
                 mutableListOf(*staticContent)
             else
                 ArrayList()
-
-    override fun toString(): String {
-        val mapper = ObjectMapperProvider().provide()
-        mapper.enable(SerializationFeature.INDENT_OUTPUT)
-        return mapper.writeValueAsString(this)
-    }
-
 }
 

@@ -47,10 +47,14 @@ public class ConfigParams {
 
     @Override
     public String toString() {
+        return asText(this);
+    }
+
+    private String asText(final Object value) {
         final ObjectMapper mapper = new ObjectMapperProvider().provide();
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         try {
-            return mapper.writeValueAsString(this);
+            return mapper.writeValueAsString(value);
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(e);
         }

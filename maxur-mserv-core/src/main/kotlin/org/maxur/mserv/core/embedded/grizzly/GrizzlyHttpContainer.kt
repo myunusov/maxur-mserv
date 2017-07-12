@@ -57,15 +57,6 @@ class GrizzlyHttpContainer(@Volatile private var appHandler: ApplicationHandler?
      */
     private var configReduceContextPathSlashesEnabled: Boolean = false
 
-    /**
-     * Create a new Grizzly HTTP container.
-
-     * @param application JAX-RS / Jersey application to be deployed on Grizzly HTTP container.
-     */
-    constructor(application: Application): this(ApplicationHandler(application, GrizzlyBinder())) {
-        cacheConfigSetStatusOverSendError()
-        cacheConfigEnableLeadingContextPathSlashes()
-    }
 
     /**
      * Create a new Grizzly HTTP container.
@@ -107,16 +98,12 @@ class GrizzlyHttpContainer(@Volatile private var appHandler: ApplicationHandler?
             bindFactory(GrizzlyRequestReferencingFactory::class.java).to(Request::class.java)
                     .proxy(false).`in`(RequestScoped::class.java)
             bindFactory(ReferencingFactory.referenceFactory<Request>()).to(object : TypeLiteral<Ref<Request>>() {
-
-            })
-                    .`in`(RequestScoped::class.java)
+            }).`in`(RequestScoped::class.java)
 
             bindFactory(GrizzlyResponseReferencingFactory::class.java).to(Response::class.java)
                     .proxy(true).proxyForSameScope(false).`in`(RequestScoped::class.java)
             bindFactory(ReferencingFactory.referenceFactory<Response>()).to(object : TypeLiteral<Ref<Response>>() {
-
-            })
-                    .`in`(RequestScoped::class.java)
+            }).`in`(RequestScoped::class.java)
         }
     }
 
@@ -412,10 +399,8 @@ class GrizzlyHttpContainer(@Volatile private var appHandler: ApplicationHandler?
 
 
 class GrizzlyRequestPropertiesDelegate(private val request: Request) : PropertiesDelegate {
-
     override fun getProperty(name: String): Any? = request.getAttribute(name)
     override fun getPropertyNames(): Collection<String>? = request.attributeNames
     override fun setProperty(name: String, value: Any) = request.setAttribute(name, value)
     override fun removeProperty(name: String) = request.removeAttribute(name)
-
 }
