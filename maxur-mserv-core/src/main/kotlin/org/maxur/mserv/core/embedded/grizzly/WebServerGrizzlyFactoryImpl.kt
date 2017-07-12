@@ -72,8 +72,8 @@ class WebServerGrizzlyFactoryImpl @Inject constructor(val locator: Locator) : Em
 
     private fun swaggerContent(): StaticContent {
         return StaticContent(
-                arrayOf(URI("classpath:/META-INF/resources/webjars/swagger-ui/3.0.17/")),
                 Path("docs"),
+                arrayOf(URI("classpath:/META-INF/resources/webjars/swagger-ui/3.0.17/")),
                 "index.html",
                 "/index.html?url=/api/swagger.json"
         )
@@ -81,8 +81,8 @@ class WebServerGrizzlyFactoryImpl @Inject constructor(val locator: Locator) : Em
 
     private fun halContent(): StaticContent {
         return StaticContent(
-                arrayOf(URI("classpath:/META-INF/resources/webjars/hal-browser/3325375/")),
                 Path("hal"),
+                arrayOf(URI("classpath:/META-INF/resources/webjars/hal-browser/3325375/")),
                 "browser.html",
                 "/#/api/service"
         )

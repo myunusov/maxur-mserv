@@ -10,7 +10,6 @@ class CompositeStaticHttpHandler(
         val clHandle: CLStaticHttpHandler
 ) : AbstractStaticHttpHandler() {
 
-
     companion object {
         fun make(content: StaticContent): HttpHandler {
             val fileContent = content.fileContent()
@@ -31,9 +30,8 @@ class CompositeStaticHttpHandler(
         }
     }
 
-    override fun handle(uri: String, request: Request, response: Response): Boolean {
-        return clHandle.handle(uri, request, response) || fileHandle.handle(uri, request, response)
-    }
+    override fun handle(uri: String, request: Request, response: Response): Boolean =
+            clHandle.handle(uri, request, response) || fileHandle.handle(uri, request, response)
 
 }
 
