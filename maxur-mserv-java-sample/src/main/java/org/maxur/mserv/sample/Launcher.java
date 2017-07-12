@@ -26,8 +26,7 @@ public final class Launcher {
      * @param args - arguments of command.
      */
     public static void main(String[] args) {
-
-        Java.dsl.service()
+        Java.service()
             .title(":name")
             .packages("org.maxur.mserv.sample")
             .properties("hocon")

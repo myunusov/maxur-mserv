@@ -8,10 +8,10 @@ import java.util.function.Consumer
 
 class Java {
     companion object dsl {
+        @JvmStatic
         fun service(): JBuilder = JBuilder()
     }
 }
-
 
 interface IJBuilder {
     fun title(value: String): JBuilder
