@@ -39,7 +39,6 @@ import java.util.logging.Level
 class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticContent) : AbstractStaticHttpHandler() {
 
     private val resourceLocator: ResourceLocator = ResourceLocator(classLoader, staticContent)
-
     private val defaultPage: String = staticContent.page!!
 
     /**
