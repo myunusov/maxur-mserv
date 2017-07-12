@@ -108,9 +108,7 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
 
         override fun init(): Boolean {
             val jarUrlConnection = urlConnection as JarURLConnection
-            val pair = makeInputStream(jarUrlConnection)
-            val iinputStream: InputStream? = pair.first
-            val jarEntry: JarEntry = pair.second
+            val (iinputStream, jarEntry) = makeInputStream(jarUrlConnection)
             if (iinputStream != null) {
                 urlInputStream = JarURLInputStream(jarUrlConnection, iinputStream)
                 filePath = jarEntry.name
