@@ -154,8 +154,7 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
 
         private fun addTimeStampEntryToFileCache(request: Request, response: Response, archive: File): Boolean {
             if (!isFileCacheEnabled) return false
-            val fileCacheFilter = lookupFileCache(request.context)
-            if (fileCacheFilter == null) return false
+            val fileCacheFilter = lookupFileCache(request.context) ?: return false
             val fileCache = fileCacheFilter.fileCache
             if (!fileCache.isEnabled) return false
             StaticHttpHandlerBase.addCachingHeaders(response, archive)
