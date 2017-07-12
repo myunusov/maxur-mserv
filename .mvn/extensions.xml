@@ -10,4 +10,10 @@
         <artifactId>maven-timeline</artifactId>
         <version>1.6</version>
     </extension>
+
+    <extension>
+        <groupId>fr.jcgay.maven</groupId>
+        <artifactId>maven-notifier</artifactId>
+        <version>1.10.1</version>
+    </extension>
 </extensions>
