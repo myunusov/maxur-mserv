@@ -49,7 +49,7 @@ class StaticHttpHandler(
     }
 
     private val resourceLocator: ResourceLocator = ResourceLocator(classLoader, staticContent)
-    private val defaultPage: String = staticContent.page!!
+    private val defaultPage: String = staticContent.page ?: "index.html"
 
     fun fine(msg: String) {
         if (log.isLoggable(Level.FINE)) {
