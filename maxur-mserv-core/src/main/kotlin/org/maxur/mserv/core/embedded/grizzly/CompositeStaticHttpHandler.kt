@@ -18,12 +18,12 @@ class CompositeStaticHttpHandler(
                 val fileHandle: StaticHttpHandler
                         = StaticHttpHandler(content.fileContent())
                 val clHandle: CLStaticHttpHandler
-                        = CLStaticHttpHandler(CompositeStaticHttpHandler::class.java.classLoader, content)
+                        = CLStaticHttpHandler(content)
                 return CompositeStaticHttpHandler(fileHandle, clHandle)
             } else if (!fileContent.roots.isEmpty()) {
                 return StaticHttpHandler(content.fileContent())
             } else if (!clContent.roots.isEmpty()) {
-                return CLStaticHttpHandler(CompositeStaticHttpHandler::class.java.classLoader, content)
+                return CLStaticHttpHandler(content)
             } else {
                 throw IllegalStateException("Root of static context is not fond")
             }

@@ -36,7 +36,10 @@ import java.util.logging.Level
  * @author Grizzly Team
  * @author Maxim Yunusov
  */
-class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticContent) : AbstractStaticHttpHandler() {
+class CLStaticHttpHandler(
+        staticContent: StaticContent,
+        val classLoader: ClassLoader = CLStaticHttpHandler::class.java.classLoader
+) : AbstractStaticHttpHandler() {
 
     private val resourceLocator: ResourceLocator = ResourceLocator(classLoader, staticContent)
     private val defaultPage: String = staticContent.page!!
@@ -47,7 +50,7 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
     @Throws(Exception::class)
     public override fun handle(resourcePath: String, request: Request, response: Response): Boolean {
         resourceLocator.find(resourcePath)?.let {
-            return it.open(request, response)
+            if (it.isExist()) return it.handle(request, response)
         }
         fine("Resource not found $resourcePath")
         return false
@@ -60,7 +63,7 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
         override val path: String = resourcePath
             get() = file?.path ?: field
 
-        override fun init(): Boolean {
+        override fun isExist(): Boolean {
             file = respondedFile(url)
             return file != null
         }
@@ -106,7 +109,7 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
             get() = filePath ?: field
         private var urlInputStream: JarURLInputStream? = null
 
-        override fun init(): Boolean {
+        override fun isExist(): Boolean {
             val jarUrlConnection = urlConnection as JarURLConnection
             val (iinputStream, jarEntry) = makeInputStream(jarUrlConnection)
             if (iinputStream != null) {
@@ -176,7 +179,7 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
 
         override val path: String = url.path
 
-        override fun init(): Boolean {
+        override fun isExist(): Boolean {
             if (mayBeFolder && urlConnection.contentLength <= 0) { // looks like a folder?
                 // check if there's a welcome resource
                 val welcomeUrl = classLoader.getResource("${url.path}/$defaultPage")
@@ -199,7 +202,7 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
 
         var urlConnection: URLConnection = url.openConnection()
 
-        override fun init(): Boolean = true
+        override fun isExist(): Boolean = true
 
         override fun process(request: Request, response: Response) {
             sendResource(response, urlConnection.getInputStream())
@@ -211,12 +214,7 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
         abstract val path: String
 
         // url may point to a folder or a file
-        fun open(request: Request, response: Response): Boolean {
-            val found = init()
-            if (!found) {
-                fine("Resource not found $path")
-                return false
-            }
+        fun handle(request: Request, response: Response): Boolean {
             // If it's not HTTP GET - return method is not supported status
             if (Method.GET != request.method) {
                 returnMethodIsNotAllowed(path, request, response)
@@ -227,7 +225,7 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
             return true
         }
 
-        abstract fun init(): Boolean
+        abstract fun isExist(): Boolean
 
         abstract fun process(request: Request, response: Response)
 
@@ -261,7 +259,7 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
                              private val inputStream: InputStream,
                              private val chunkSize: Int
         ) : WriteHandler {
-            private val mm: MemoryManager<*> = response.request.context.memoryManager
+            private val mm: MemoryManager<*> = response.getRequest().context.memoryManager
             @Throws(Exception::class)
             override fun onWritePossible() {
                 log.log(Level.FINE, "[onWritePossible]")
@@ -419,21 +417,19 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
             if (path.isEmpty() || path.endsWith("/")) {
                 return findDefaultPage(path)
             }
-            return lookupResource(path)?.let {
-                make(path, it, true)
+            return lookupResource(path, true)?.let {
+                return it
             } ?: if (CHECK_NON_SLASH_TERMINATED_FOLDERS) {
                 // So try to add index.html to double-check.
                 // For example null will be returned for a folder inside a jar file.
                 // some ClassLoaders return null if a URL points to a folder.
-                findDefaultPage(path + "/")
+                return findDefaultPage(path + "/")
             } else null
         }
 
         private fun findDefaultPage(folderPath: String): Resource? {
             val path = folderPath + defaultPage
-            return lookupResource(path)?.let {
-                make(path, it, false)
-            }
+            return lookupResource(path, false)
         }
 
         private fun make(path: String, url: URL, mayBeFolder: Boolean): Resource = when (url.protocol) {
@@ -443,11 +439,14 @@ class CLStaticHttpHandler(val classLoader: ClassLoader, staticContent: StaticCon
             else -> UnknownResource(url)
         }
 
-        private fun lookupResource(resourcePath: String): URL? {
+        private fun lookupResource(resourcePath: String, mayBeFolder: Boolean): Resource? {
             return roots
                     .map { it + resourcePath }
                     .map { classLoader.getResource(it) }
-                    .firstOrNull { it != null }
+                    .filterNotNull()
+                    .map { make(resourcePath, it, mayBeFolder) }
+                    .filter { it.isExist() }
+                    .firstOrNull()
         }
     }
 
