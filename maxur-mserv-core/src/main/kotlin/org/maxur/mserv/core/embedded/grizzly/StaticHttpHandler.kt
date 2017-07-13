@@ -50,6 +50,15 @@ class StaticHttpHandler(staticContent: StaticContent) : AbstractStaticHttpHandle
         docRoots = staticContent
                 .roots.map { makeRoot(it) }
                 .filterNotNull()
+
+        /*
+           TODO different behaviour with CLStaticHttpHandler see  
+          if (set.isNotEmpty()) {
+            return set
+          } else {
+            return setOf("")
+          }
+        */
     }
 
     private fun makeRoot(uri: URI): File? {
@@ -70,8 +79,8 @@ class StaticHttpHandler(staticContent: StaticContent) : AbstractStaticHttpHandle
             if (!resource.exists) {
                 continue
             }
-            if (resource.redirectedUrl != null) {
-                redirectTo(response, resource.redirectedUrl)
+            if (resource.mustBeRedirected) {
+                redirectTo(response, resource.redirectedUrl!!)
             }
             val result = resource.respondedFile()
             if (result.exists()) {
@@ -90,17 +99,17 @@ class StaticHttpHandler(staticContent: StaticContent) : AbstractStaticHttpHandle
 
         val exists: Boolean = file.exists()
 
-        private val isDirectory: Boolean = file.isDirectory
+        private val mayBeFolder: Boolean = file.isDirectory
 
-        private val mustBeRedirected: Boolean =
-                isDirectory && !this@StaticHttpHandler.isDirectorySlashOff && !uri.endsWith("/")
+        val mustBeRedirected: Boolean =
+                mayBeFolder && !this@StaticHttpHandler.isDirectorySlashOff && !uri.endsWith("/")
 
         // Redirect to the same url, but with trailing slash
         val redirectedUrl: String? = if (mustBeRedirected) "$uri/" else null
 
         fun respondedFile(): File {
             when {
-                isDirectory -> return File(file, "/${this@StaticHttpHandler.defaultPage}")
+                mayBeFolder -> return File(file, "/${this@StaticHttpHandler.defaultPage}")
                 else -> return file
             }
         }
