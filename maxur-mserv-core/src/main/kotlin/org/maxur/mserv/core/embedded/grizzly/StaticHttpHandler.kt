@@ -18,6 +18,7 @@ import org.glassfish.grizzly.http.util.HttpStatus
 import org.glassfish.grizzly.http.util.MimeType
 import org.glassfish.grizzly.memory.MemoryManager
 import org.glassfish.jersey.internal.util.ExtendedLogger
+import org.maxur.mserv.core.embedded.properties.Path
 import org.maxur.mserv.core.embedded.properties.StaticContent
 import java.io.*
 import java.net.*
@@ -46,17 +47,20 @@ class StaticHttpHandler(
 
     companion object {
         val log = ExtendedLogger(Logger.getLogger(StaticHttpHandler::class.java.name), Level.FINEST)
+        fun fine(msg: String) {
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, msg)
+            }
+        }
     }
 
     private val resourceLocator: ResourceLocator = ResourceLocator(classLoader, staticContent)
     private val defaultPage: String = staticContent.page ?: "index.html"
 
-    fun fine(msg: String) {
-        if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, msg)
-        }
-    }
-    
+    constructor(path: String, vararg roots: String) : this(
+            StaticContent(Path(path), roots.map { URI.create(it) }.toTypedArray())
+    )
+
     /**
      * {@inheritDoc}
      */
@@ -69,32 +73,32 @@ class StaticHttpHandler(
         return false
     }
 
-    inner class CLFileResource(resourcePath: String, val url: URL) : Resource() {
-
-        var file: File? = null
-
-        override val path: String = resourcePath
-            get() = file?.path ?: field
-
-        override fun isExist(): Boolean {
-            file = respondedFile(url)
-            return file != null
+    fun respondedFile(url: URL): File {
+        val file = File(url.toURI())
+        if (!file.exists() || !file.isDirectory) return file
+        val welcomeFile = File(file, "/$defaultPage")
+        if (welcomeFile.exists() && welcomeFile.isFile) {
+            return welcomeFile
         }
+        return file
+    }
 
+    inner class CLFileResource(
+            val url: URL,
+            resourcePath: String,
+            private val file: File = respondedFile(url),
+            override val path: String = resourcePath
+    ) : Resource() {
+
+        override fun mustBeRedirected(resourcePath: String): Boolean =
+                // TODO !this@StaticHttpHandler.isDirectorySlashOff &&
+                file.isDirectory &&
+                        !resourcePath.endsWith("/")
+
+        override fun isExist(): Boolean = file.exists()
         override fun process(request: Request, response: Response) {
             addToFileCache(request, response, file)
             StaticHttpHandlerBase.sendFile(response, file)
-        }
-
-        private fun respondedFile(url: URL): File? {
-            val file = File(url.toURI())
-            if (!file.exists()) return null
-            if (!file.isDirectory) return file
-            val welcomeFile = File(file, "/$defaultPage")
-            if (welcomeFile.exists() && welcomeFile.isFile) {
-                return welcomeFile
-            }
-            return null
         }
     }
 
@@ -121,6 +125,8 @@ class StaticHttpHandler(
         override val path: String = url.path
             get() = filePath ?: field
         private var urlInputStream: JarURLInputStream? = null
+
+        override fun mustBeRedirected(resourcePath: String): Boolean = false
 
         override fun isExist(): Boolean {
             val jarUrlConnection = urlConnection as JarURLConnection
@@ -186,7 +192,9 @@ class StaticHttpHandler(
     }
 
     // OSGi resource
-    inner class BundleResource(var mayBeFolder: Boolean, var url: URL) : Resource() {
+    inner class BundleResource(var url: URL, val mayBeFolder: Boolean) : Resource() {
+
+        override fun mustBeRedirected(resourcePath: String): Boolean = false
 
         var urlConnection: URLConnection = url.openConnection()
 
@@ -211,6 +219,8 @@ class StaticHttpHandler(
 
     inner class UnknownResource(val url: URL) : Resource() {
 
+        override fun mustBeRedirected(resourcePath: String): Boolean = false
+
         override val path: String = url.path
 
         var urlConnection: URLConnection = url.openConnection()
@@ -222,28 +232,50 @@ class StaticHttpHandler(
         }
     }
 
+
+    inner class RedirectedResource(url: String) : Resource() {
+
+        override fun mustBeRedirected(resourcePath: String): Boolean = false
+
+        override val path: String = url
+
+        override fun isExist(): Boolean = true
+
+        // Redirect to the same url, but with trailing slash
+        override fun process(request: Request, response: Response) {
+            response.setStatus(HttpStatus.MOVED_PERMANENTLY_301)
+            response.setHeader(Header.Location, response.encodeRedirectURL("$path/"))
+        }
+
+    }
+
     inner abstract class Resource {
 
         abstract val path: String
 
         // url may point to a folder or a file
-        fun handle(request: Request, response: Response): Boolean {
-            // If it's not HTTP GET - return method is not supported status
-            if (Method.GET != request.method) {
-                returnMethodIsNotAllowed(path, request, response)
-            } else {
-                pickupContentType(response, path)
-                process(request, response)
-            }
+        fun handle(request: Request, response: Response): Boolean =
+                // If it's not HTTP GET - return method is not supported status
+                if (isGet(request))
+                    success(response, request)
+                else
+                    methodIsNotAllowed(path, request, response)
+
+        private fun isGet(request: Request) = Method.GET == request.method
+
+        private fun success(response: Response, request: Request): Boolean {
+            pickupContentType(response, path)
+            process(request, response)
             return true
         }
 
-        private fun returnMethodIsNotAllowed(resource: String, request: Request, response: Response) {
+        private fun methodIsNotAllowed(resource: String, request: Request, response: Response): Boolean {
             fine("File found $resource, but HTTP method ${request.method} is not allowed")
             response.setStatus(HttpStatus.METHOD_NOT_ALLOWED_405)
             response.setHeader(Header.Allow, "GET")
+            return true
         }
-        
+
         abstract fun isExist(): Boolean
 
         abstract fun process(request: Request, response: Response)
@@ -386,6 +418,8 @@ class StaticHttpHandler(
                 }
             }
         }
+
+        abstract fun mustBeRedirected(resourcePath: String): Boolean
     }
 
     inner class ResourceLocator(val classLoader: ClassLoader, staticContent: StaticContent) {
@@ -410,7 +444,7 @@ class StaticHttpHandler(
                 when (uri.scheme) {
                     null -> FileRoot(File(uri.toString()))
                     "file" -> FileRoot(Paths.get(uri).toFile())
-                    "classpath" ->  CLRoot(uri, classLoader)
+                    "classpath" -> CLRoot(uri, classLoader)
                     else -> null
                 }
 
@@ -436,7 +470,8 @@ class StaticHttpHandler(
             return roots
                     .map { it.lookupResource(path, true) }
                     .firstOrNull()?.let {
-                return it
+                return if (it.mustBeRedirected(resourcePath)) RedirectedResource(resourcePath)
+                else it
             } ?: if (CHECK_NON_SLASH_TERMINATED_FOLDERS) {
                 // So try to add index.html to double-check.
                 // For example null will be returned for a folder inside a jar file.
@@ -447,57 +482,45 @@ class StaticHttpHandler(
 
         private fun findDefaultPage(folderPath: String): Resource? = roots
                 .map { it.lookupResource(folderPath + defaultPage, false) }
-                .firstOrNull()
+                .firstOrNull()?.let {
+            return it
+        }
 
     }
 
-    inner class FileRoot(val file: File): Root {
+
+    inner class FileResource(
+            folder: File,
+            resourcePath: String,
+            private val file: File = File(folder, resourcePath)
+    ) : Resource() {
+
+        override fun mustBeRedirected(resourcePath: String): Boolean =
+            // TODO !this@StaticHttpHandler.isDirectorySlashOff &&
+                 file.isDirectory &&
+            !resourcePath.endsWith("/")
+
+        override val path: String = file.path
+
+        override fun isExist(): Boolean = this.file.exists()
+
+        override fun process(request: Request, response: Response) {
+            if (file.exists()) {
+                addToFileCache(request, response, file)
+                sendFile(response, file)
+            }
+        }
+    }
+
+    inner class FileRoot(val file: File) : Root {
 
         override fun validate(): Root = this
-
         override fun lookupResource(resourcePath: String, mayBeFolder: Boolean): Resource? {
             return FileResource(file, resourcePath)
         }
     }
 
-    inner class FileResource(folder: File, val uri: String) : Resource() {
-
-        private val file: File = File(folder, uri)
-        private val mayBeFolder: Boolean = this.file.isDirectory
-        private val mustBeRedirected: Boolean =
-                mayBeFolder &&
-                        // TODO !this@StaticHttpHandler.isDirectorySlashOff &&
-                        !uri.endsWith("/")
-
-        override val path: String = file.path
-        override fun isExist(): Boolean = this.file.exists()
-        override fun process(request: Request, response: Response) {
-            if (mustBeRedirected) {
-                // TODO inaccessible
-                // Redirect to the same url, but with trailing slash
-                redirectTo(response, "$uri/")
-            }
-            val result = respondedFile()
-            if (result.exists()) {
-                addToFileCache(request, response, result)
-                sendFile(response, result)
-            }
-        }
-
-        private fun respondedFile(): File {
-            when {
-                mayBeFolder -> return File(file, "/${defaultPage}")
-                else -> return file
-            }
-        }
-
-        private fun redirectTo(response: Response, url: String) {
-            response.setStatus(HttpStatus.MOVED_PERMANENTLY_301)
-            response.setHeader(Header.Location, response.encodeRedirectURL(url))
-        }
-    }
-
-    inner class CLRoot(val path: String, val classLoader: ClassLoader): Root {
+    inner class CLRoot(val path: String, val classLoader: ClassLoader) : Root {
 
         constructor(uri: URI, classLoader: ClassLoader) : this(
                 uri.toString().substring("classpath".length + 1).trimStart('/'),
@@ -518,15 +541,18 @@ class StaticHttpHandler(
             return null
         }
 
-        private fun make(path: String, url: URL, mayBeFolder: Boolean): StaticHttpHandler.Resource = when (url.protocol) {
-            "file" -> CLFileResource(path, url)
-            "jar" -> JarResource(url)
-            "bundle" -> BundleResource(mayBeFolder, url)
-            else -> UnknownResource(url)
-        }
+        private fun make(path: String, url: URL, mayBeFolder: Boolean): StaticHttpHandler.Resource =
+                when (url.protocol) {
+                    "file" -> CLFileResource(url, path)
+                    "jar" -> JarResource(url)
+                    "bundle" -> BundleResource(url, mayBeFolder)
+                    else -> UnknownResource(url)
+                }
     }
 
+
 }
+
 
 interface Root {
     fun validate(): Root
