@@ -14,7 +14,7 @@ import kotlin.test.assertFailsWith
 
 class MicroServiceBuilderSpec : Spek({
 
-    describe("a micro-service dsl Builder") {
+    describe("a empty micro-service") {
 
         on("Build micro-service without properties") {
             it("should return new micro-service") {
@@ -215,4 +215,10 @@ class MicroServiceBuilderSpec : Spek({
             }
         }
     }
+
+
+    describe("a rest micro-service") {
+
+    }
+
 })
