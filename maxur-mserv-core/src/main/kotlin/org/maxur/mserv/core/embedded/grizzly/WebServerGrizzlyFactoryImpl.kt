@@ -150,7 +150,7 @@ open class WebServerGrizzlyImpl(
     private fun makeStaticHandlers(serverConfiguration: ServerConfiguration) {
         config.staticContent.forEach {
             serverConfiguration.addHttpHandler(
-                    CompositeStaticHttpHandler.make(it),
+                    StaticHttpHandler(it),
                     "/${it.path.contextPath}"
             )
         }

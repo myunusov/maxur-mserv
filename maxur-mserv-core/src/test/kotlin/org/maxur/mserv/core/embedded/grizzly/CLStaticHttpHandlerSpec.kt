@@ -18,7 +18,7 @@ class CLStaticHttpHandlerSpec : Spek({
         on("Create CLStaticHttpHandler with folder") {
             it("should return new CLStaticHttpHandler  instance") {
                 val content = StaticContent("web", "classpath:/web/")
-                val handler = CLStaticHttpHandler(content)
+                val handler = StaticHttpHandler(content)
                 handler.should.be.not.`null`
             }
         }
@@ -26,7 +26,7 @@ class CLStaticHttpHandlerSpec : Spek({
         on("valid request of jar") {
             it("should return new CLStaticHttpHandler  instance") {
                 val content = StaticContent("web", "classpath:/META-INF/resources/webjars/swagger-ui/3.0.17/")
-                val handler = CLStaticHttpHandler(content)
+                val handler = StaticHttpHandler(content)
                 val (response, request) = RequestUtil.resreq("/")
                 handler.service(request, response)
                 verify(response).setStatus(HttpStatus.OK_200)
@@ -36,7 +36,7 @@ class CLStaticHttpHandlerSpec : Spek({
         on("valid request of file from jar") {
             it("should return new CLStaticHttpHandler  instance") {
                 val content = StaticContent("web", "classpath:/META-INF/resources/webjars/swagger-ui/3.0.17/")
-                val handler = CLStaticHttpHandler(content)
+                val handler = StaticHttpHandler(content)
                 val (response, request) = RequestUtil.resreq("/index.html")
                 handler.service(request, response)
                 verify(response).setStatus(HttpStatus.OK_200)
@@ -46,7 +46,7 @@ class CLStaticHttpHandlerSpec : Spek({
         on("request of invalid file from jar") {
             it("should return new CLStaticHttpHandler  instance") {
                 val content = StaticContent("web", "classpath:/META-INF/resources/webjars/swagger-ui/3.0.17/")
-                val handler = CLStaticHttpHandler(content)
+                val handler = StaticHttpHandler(content)
                 val (response, request) = RequestUtil.resreq("/error.html")
                 handler.service(request, response)
                 verify(response).sendError(404)
@@ -57,7 +57,7 @@ class CLStaticHttpHandlerSpec : Spek({
         on("valid request of root folder") {
             it("should return status 200") {
                 val content = StaticContent("web", "classpath:/web/")
-                val handler = CLStaticHttpHandler(content)
+                val handler = StaticHttpHandler(content)
                 val (response, request) = RequestUtil.resreq("/")
                 handler.service(request, response)
                 verify(response).setStatus(HttpStatus.OK_200)
@@ -67,7 +67,7 @@ class CLStaticHttpHandlerSpec : Spek({
         on("invalid request of root folder") {
             it("should return status 404") {
                 val content = StaticContent("web", "classpath:/web/")
-                val handler = CLStaticHttpHandler(content)
+                val handler = StaticHttpHandler(content)
                 val (response, request) = RequestUtil.resreq("/error/")
                 handler.service(request, response)
                 verify(response).sendError(404)
@@ -77,7 +77,7 @@ class CLStaticHttpHandlerSpec : Spek({
         on("request of invalid root folder") {
             it("should return status 404") {
                 val content = StaticContent("web", "classpath:/error/")
-                val handler = CLStaticHttpHandler(content)
+                val handler = StaticHttpHandler(content)
                 val (response, request) = RequestUtil.resreq("/")
                 handler.service(request, response)
                 verify(response).sendError(404)
@@ -87,7 +87,7 @@ class CLStaticHttpHandlerSpec : Spek({
         on("valid request of root folder with invalid method") {
             it("should return status 404") {
                 val content = StaticContent("web", "classpath:/web/")
-                val handler = CLStaticHttpHandler(content)
+                val handler = StaticHttpHandler(content)
                 val (response, request) = RequestUtil.resreq("/", Method.POST)
                 handler.service(request, response)
                 verify(response).setStatus(HttpStatus.METHOD_NOT_ALLOWED_405)

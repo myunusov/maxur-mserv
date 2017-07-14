@@ -8,3 +8,5 @@ coverage:
         branches: null
         flags: null
         paths: null
+ignore:
+  - "maxur-mserv-core/src/vendor/**/*"
