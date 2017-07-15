@@ -14,6 +14,7 @@ import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
 import javax.ws.rs.core.Application
 import javax.ws.rs.core.Feature
 import javax.ws.rs.core.FeatureContext
+import kotlin.reflect.KClass
 
 /**
  * @author myunusov
@@ -27,7 +28,7 @@ abstract class AbstractResourceAT : JerseyTest() {
     override fun configure(): Application {
         enable(TestProperties.LOG_TRAFFIC)
         enable(TestProperties.DUMP_ENTITY)
-        return object : ResourceConfig(resourceClass()) {
+        return object : ResourceConfig(resourceClass().java) {
             init {
                 property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true)
                 property(ServerProperties.BV_DISABLE_VALIDATE_ON_EXECUTABLE_OVERRIDE_CHECK, true)
@@ -48,7 +49,7 @@ abstract class AbstractResourceAT : JerseyTest() {
         }
     }
 
-    protected abstract fun resourceClass(): Class<*>
+    protected abstract fun resourceClass(): KClass<out Any>
 
     protected abstract fun configurator(): (AbstractBinder) -> Unit
 

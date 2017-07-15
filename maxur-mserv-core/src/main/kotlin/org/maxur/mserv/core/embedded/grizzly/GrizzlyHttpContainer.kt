@@ -11,7 +11,6 @@ import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainer
 import org.glassfish.jersey.grizzly2.httpserver.internal.LocalizationMessages
 import org.glassfish.jersey.internal.PropertiesDelegate
 import org.glassfish.jersey.internal.inject.ReferencingFactory
-import org.glassfish.jersey.internal.util.ExtendedLogger
 import org.glassfish.jersey.internal.util.collection.Ref
 import org.glassfish.jersey.process.internal.RequestScoped
 import org.glassfish.jersey.server.*
@@ -19,6 +18,7 @@ import org.glassfish.jersey.server.internal.ContainerUtils
 import org.glassfish.jersey.server.spi.Container
 import org.glassfish.jersey.server.spi.ContainerResponseWriter
 import org.glassfish.jersey.server.spi.RequestScopedInitializer
+import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.io.OutputStream
 import java.net.URI
@@ -26,8 +26,6 @@ import java.net.URISyntaxException
 import java.security.Principal
 import java.util.*
 import java.util.concurrent.TimeUnit
-import java.util.logging.Level
-import java.util.logging.Logger
 import javax.inject.Inject
 import javax.inject.Provider
 import javax.ws.rs.core.Application
@@ -36,7 +34,7 @@ import javax.ws.rs.core.SecurityContext
 class GrizzlyHttpContainer(@Volatile private var appHandler: ApplicationHandler?): HttpHandler(), Container {
 
     companion object {
-        val logger = ExtendedLogger(Logger.getLogger(GrizzlyHttpContainer::class.java.name), Level.FINEST)
+        val log: org.slf4j.Logger = LoggerFactory.getLogger(GrizzlyHttpContainer::class.java)
     }
     private val RequestTYPE = object : TypeLiteral<Ref<Request>>() {}.type
     private val ResponseTYPE = object : TypeLiteral<Ref<Response>>() {}.type
@@ -122,9 +120,9 @@ class GrizzlyHttpContainer(@Volatile private var appHandler: ApplicationHandler?
         private val name: String
 
         init {
-            if (logger.isDebugLoggable()) {
+            if (log.isDebugEnabled()) {
                 this.name = "ResponseWriter {id=${UUID.randomUUID()}, grizzlyResponse=${grizzlyResponse.hashCode()}}"
-                logger.debugLog("{0} - init", name)
+                log.debug("{0} - init", name)
             } else {
                 this.name = "ResponseWriter"
             }
@@ -140,7 +138,7 @@ class GrizzlyHttpContainer(@Volatile private var appHandler: ApplicationHandler?
                     grizzlyResponse.resume()
                 }
             } finally {
-                logger.debugLog("{0} - commit() called", name)
+                log.debug("{0} - commit() called", name)
             }
         }
 
@@ -162,7 +160,7 @@ class GrizzlyHttpContainer(@Volatile private var appHandler: ApplicationHandler?
             } catch (ex: IllegalStateException) {
                 return false
             } finally {
-                logger.debugLog("{0} - suspend(...) called", name)
+                log.debug("{0} - suspend(...) called", name)
             }
         }
 
@@ -171,7 +169,7 @@ class GrizzlyHttpContainer(@Volatile private var appHandler: ApplicationHandler?
             try {
                 grizzlyResponse.suspendContext.setTimeout(timeOut, timeUnit)
             } finally {
-                logger.debugLog("{0} - setTimeout(...) called", name)
+                log.debug("{0} - setTimeout(...) called", name)
             }
         }
 
@@ -196,7 +194,7 @@ class GrizzlyHttpContainer(@Volatile private var appHandler: ApplicationHandler?
 
                 return grizzlyResponse.outputStream
             } finally {
-                logger.debugLog("{0} - writeResponseStatusAndHeaders() called", name)
+                log.debug("{0} - writeResponseStatusAndHeaders() called", name)
             }
         }
 
@@ -212,7 +210,7 @@ class GrizzlyHttpContainer(@Volatile private var appHandler: ApplicationHandler?
                         }
                     } catch (ex: IllegalStateException) {
                         // a race condition externally committing the response can still occur...
-                        logger.log(Level.FINER, "Unable to reset failed response.", ex)
+                        log.trace("Unable to reset failed response.", ex)
                     } catch (ex: IOException) {
                         throw ContainerException(
                                 LocalizationMessages.EXCEPTION_SENDING_ERROR_RESPONSE(500, "Request failed."),
@@ -221,7 +219,7 @@ class GrizzlyHttpContainer(@Volatile private var appHandler: ApplicationHandler?
 
                 }
             } finally {
-                logger.debugLog("{0} - failure(...) called", name)
+                log.debug("{0} - failure(...) called", name)
                 rethrow(error)
             }
         }
@@ -252,7 +250,7 @@ class GrizzlyHttpContainer(@Volatile private var appHandler: ApplicationHandler?
     override fun service(request: Request, response: Response) {
         val responseWriter = ResponseWriter(response, configSetStatusOverSendError)
         try {
-            logger.debugLog("GrizzlyHttpContainer.service(...) started")
+            log.debug("GrizzlyHttpContainer.service(...) started")
             val baseUri = getBaseUri(request)
             val requestUri = getRequestUri(request)
             val requestContext = ContainerRequest(baseUri,
@@ -270,7 +268,7 @@ class GrizzlyHttpContainer(@Volatile private var appHandler: ApplicationHandler?
             }
             appHandler!!.handle(requestContext)
         } finally {
-            logger.debugLog("GrizzlyHttpContainer.service(...) finished")
+            log.debug("GrizzlyHttpContainer.service(...) finished")
         }
     }
 

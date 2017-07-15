@@ -58,8 +58,8 @@ abstract class MSBuilder {
             return LocatorFactoryHK2Impl {
                 this.packages = packagesHolder
                 bind(*bindersHolder.toTypedArray())
-                bind(propertiesHolder::build, PropertiesService::class.java)
-                bind({ locator -> BaseMicroService(services.build(locator), locator) }, MicroService::class.java)
+                bind(propertiesHolder::build, PropertiesService::class)
+                bind({ locator -> BaseMicroService(services.build(locator), locator) }, MicroService::class)
             }.make()
         } catch(e: Exception) {
             return onConfigurationError(Locator.current)
@@ -67,7 +67,7 @@ abstract class MSBuilder {
     }
 
     private fun buildService(locator: Locator?): MicroService {
-        val service = locator?.service(MicroService::class.java) ?: onConfigurationError(locator)
+        val service = locator?.service(MicroService::class) ?: onConfigurationError(locator)
         if (service is BaseMicroService) {
             service.name = titleHolder.get(locator!!)!!
             service.beforeStart.addAll(beforeStart.list)
@@ -81,7 +81,7 @@ abstract class MSBuilder {
 
     private fun <T> onConfigurationError(locator: Locator?) : T {
         val errorMessage = locator
-                ?.service(ErrorHandler::class.java)
+                ?.service(ErrorHandler::class)
                 ?.latestError
                 ?.message
                 ?: "Unknown error"
@@ -111,9 +111,9 @@ open class ServicesHolder {
 }
 
 class ServiceHolder {
-    private val clazz = EmbeddedServiceFactory::class.java
-    private var holder: Holder<EmbeddedService?> = Holder.none()
-    private var propertiesHolder: Holder<Any?> = Holder.wrap(null)
+    private val clazz = EmbeddedServiceFactory::class
+    private var holder: Holder<EmbeddedService> = Holder.none()
+    private var propertiesHolder: Holder<Any> = Holder.wrap(null)
     val beforeStart = HookHolder()
     val afterStart = HookHolder()
     var afterStop = HookHolder()
@@ -143,22 +143,22 @@ class ServiceHolder {
             this.holder = makeServiceHolder()
         }
 
-    private fun makeServiceHolder(): Holder<EmbeddedService?> {
+    private fun makeServiceHolder(): Holder<EmbeddedService> {
         return Holder.get {
             locator ->
             locator
-                    .locate(typeHolder ?: "unknown", clazz)
+                    .locate(clazz, typeHolder ?: "unknown")
                     .make(propertiesHolder) ?:
                     throw IllegalStateException("Service '$typeHolder' is not configured\n")
         }
     }
 
-    private fun propertiesKey(value: String): Holder<Any?> {
+    private fun propertiesKey(value: String): Holder<Any> {
         val key: String = if (value.startsWith(":"))
             value.substringAfter(":")
         else
             throw IllegalArgumentException("A Key Name must be started with ':'")
-        return Holder.get<Any?> { locator, clazz -> locator.properties(key, clazz)!! }
+        return Holder.get<Any> { locator, clazz -> locator.properties(key, clazz)!! }
     }
 
     fun build(locator: Locator): EmbeddedService? {
@@ -175,7 +175,6 @@ class ServiceHolder {
 }
 
 class PropertiesHolder {
-    private val clazz = PropertiesServiceFactory::class.java
     var format: String = "Hocon"
     var uri: URI? = null
     var rootKey: String? = null
@@ -185,7 +184,7 @@ class PropertiesHolder {
         }
     fun build(locator: Locator): PropertiesService {
         val source = PropertiesSource(format, uri, rootKey)
-        val factory: PropertiesServiceFactory = locator.locate(format, clazz)
+        val factory: PropertiesServiceFactory = locator.locate(PropertiesServiceFactory::class, format)
         return factory.make(source)
     }
 }

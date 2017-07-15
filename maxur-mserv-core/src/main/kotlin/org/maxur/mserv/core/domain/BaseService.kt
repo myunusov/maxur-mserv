@@ -1,9 +1,11 @@
 package org.maxur.mserv.core.domain
 
 import org.maxur.mserv.core.Locator
+import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
+import kotlin.reflect.KParameter
 import kotlin.reflect.KType
-import kotlin.reflect.jvm.javaType
+import kotlin.reflect.full.isSubclassOf
 
 
 abstract class BaseService(val locator: Locator) {
@@ -15,7 +17,7 @@ abstract class BaseService(val locator: Locator) {
     var onError: MutableList<KFunction<Any>> = ArrayList()
 
     protected var state: BaseService.State = BaseService.State.STOPPED
-    private set
+        private set
 
     /**
      * The service name
@@ -74,6 +76,7 @@ abstract class BaseService(val locator: Locator) {
             override fun stop(service: BaseService, locator: Locator) = Unit
             override fun restart(service: BaseService, locator: Locator) = launch(service, locator)
         };
+
         abstract fun start(service: BaseService, locator: Locator)
         abstract fun stop(service: BaseService, locator: Locator)
         abstract fun restart(service: BaseService, locator: Locator)
@@ -81,58 +84,53 @@ abstract class BaseService(val locator: Locator) {
         protected fun shutdown(service: BaseService, locator: Locator) {
             try {
                 service.shutdown()
-                service.beforeStop.forEach { call(it, service, locator) }
+                service.beforeStop.forEach {
+                    call(it, locator, service)
+                }
                 service.state = BaseService.State.STOPPED
-                service.afterStop.forEach { call(it, service, locator) }
+                service.afterStop.forEach {
+                    call(it, locator, service)
+                }
             } catch(e: Exception) {
-                service.onError.forEach { error(it, service, locator, e) }
+                service.onError.forEach {
+                    call(it, locator, service, e)
+                }
             }
         }
-        protected fun launch(service: BaseService, locator: Locator) {
-            try {
-                service.beforeStart.forEach { call(it, service, locator) }
-                service.launch()
-                service.afterStart.forEach { call(it, service, locator) }
-                service.state = BaseService.State.STARTED
-            } catch(e: Exception) {
-                service.onError.forEach { error(it, service, locator, e) }
-            }
+
+        protected fun launch(service: BaseService, locator: Locator) = try {
+            service.beforeStart.forEach { call(it, locator, service) }
+            service.launch()
+            service.afterStart.forEach { call(it, locator, service) }
+            service.state = BaseService.State.STARTED
+        } catch(e: Exception) {
+            service.onError.forEach { call(it, locator, service, e) }
         }
+
         protected fun relaunch(service: BaseService, locator: Locator) {
             try {
-                service.beforeStop.forEach { call(it, service, locator) }
+                service.beforeStop.forEach { call(it, locator, service) }
                 service.relaunch()
-                service.afterStart.forEach { call(it, service, locator) }
+                service.afterStart.forEach { call(it, locator, service) }
                 service.state = BaseService.State.STARTED
             } catch(e: Exception) {
-                service.onError.forEach { error(it, service, locator, e) }
+                service.onError.forEach { call(it, locator, service, e) }
             }
         }
 
-        private fun call(func: KFunction<Any>, service: BaseService, locator: Locator) {
-            val params = func.parameters.map {
-                param ->
-                when {
-                    isInheriting(param.type, service.javaClass) -> service
-                    else ->  locator.service(param.type.javaType as Class<*>)
-                }
-            }
-            func.call(*params.toTypedArray())
+        private fun call(func: KFunction<Any>, locator: Locator, vararg values: Any) {
+            val args = func.parameters.map { match(locator, it, *values) }.toTypedArray()
+            func.call(*args)
         }
 
-        private fun error(func: KFunction<Any>, service: BaseService, locator: Locator, exception: Exception) {
-            val params = func.parameters.map {
-                param ->
-                when {
-                    isInheriting(param.type, Exception::class.java) -> exception
-                    isInheriting(param.type, service.javaClass) -> service
-                    else ->  locator.service(param.type.javaType as Class<*>)
-                }
-            }
-            func.call(*params.toTypedArray())
-        }
+        private fun match(locator: Locator, param: KParameter, vararg values: Any): Any? =
+                values.filter { isApplicable(param, it) }.firstOrNull() ?: locator.service(param)
 
-        private fun isInheriting(type: KType, clazz: Class<*>) = (type.javaType as Class<*>).isAssignableFrom(clazz)
+        @Suppress("UNCHECKED_CAST")
+        private fun isApplicable(type: KType, clazz: KClass<out Any>) =
+                clazz.isSubclassOf(type.classifier as KClass<Any>)
+
+        private fun isApplicable(param: KParameter, value: Any) = isApplicable(param.type, value::class)
 
     }
 

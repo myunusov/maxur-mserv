@@ -41,11 +41,11 @@ class WebServerGrizzlyFactoryImpl @Inject constructor(val locator: Locator) : Em
         }
     }
 
-    override fun make(properties: Holder<Any?>): EmbeddedService? {
+    override fun make(properties: Holder<Any>): EmbeddedService? {
         // TODO mov this logic to domain
         val webAppProperties: WebAppProperties = properties.get(locator)!!
         val restServiceName = webAppProperties.rest!!.name
-        val restConfig: RestResourceConfig = locator.service(RestResourceConfig::class.java, restServiceName) ?:
+        val restConfig: RestResourceConfig = locator.service(RestResourceConfig::class, restServiceName) ?:
                 return resourceConfigNotFoundError(locator, restServiceName ?: "undefined")
 
         val staticContent = ArrayList<StaticContent>()
@@ -97,7 +97,7 @@ class WebServerGrizzlyFactoryImpl @Inject constructor(val locator: Locator) : Em
     }
 
     private fun resourceConfigNotFoundError(locator: Locator, name: String): EmbeddedService? {
-        val list = locator.names(ResourceConfig::class.java)
+        val list = locator.names(ResourceConfig::class)
         throw IllegalStateException(
                 "Resource Config '$name' is not supported. Try one from this list: $list or create one"
         )
