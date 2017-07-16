@@ -17,15 +17,13 @@ import org.glassfish.grizzly.http.util.Header
 import org.glassfish.grizzly.http.util.HttpStatus
 import org.glassfish.grizzly.http.util.MimeType
 import org.glassfish.grizzly.memory.MemoryManager
-import org.glassfish.jersey.internal.util.ExtendedLogger
 import org.maxur.mserv.core.embedded.properties.Path
 import org.maxur.mserv.core.embedded.properties.StaticContent
+import org.slf4j.LoggerFactory
 import java.io.*
 import java.net.*
 import java.nio.file.Paths
 import java.util.jar.JarEntry
-import java.util.logging.Level
-import java.util.logging.Logger
 
 /**
  * [HttpHandler], which processes requests to a static resources resolved
@@ -46,12 +44,7 @@ class StaticHttpHandler(
 ) : StaticHttpHandlerBase() {
 
     companion object {
-        val log = ExtendedLogger(Logger.getLogger(StaticHttpHandler::class.java.name), Level.FINEST)
-        fun fine(msg: String) {
-            if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, msg)
-            }
-        }
+        val log: org.slf4j.Logger = LoggerFactory.getLogger(StaticHttpHandler::class.java)
     }
 
     private val resourceLocator: ResourceLocator = ResourceLocator(classLoader, staticContent)
@@ -69,7 +62,7 @@ class StaticHttpHandler(
         resourceLocator.find(resourcePath)?.let {
             if (it.isExist()) return it.handle(request, response)
         }
-        fine("Resource not found $resourcePath")
+        log.trace("Resource not found $resourcePath")
         return false
     }
 
@@ -270,7 +263,7 @@ class StaticHttpHandler(
         }
 
         private fun methodIsNotAllowed(resource: String, request: Request, response: Response): Boolean {
-            fine("File found $resource, but HTTP method ${request.method} is not allowed")
+            log.trace("File found $resource, but HTTP method ${request.method} is not allowed")
             response.setStatus(HttpStatus.METHOD_NOT_ALLOWED_405)
             response.setHeader(Header.Allow, "GET")
             return true
@@ -313,7 +306,7 @@ class StaticHttpHandler(
             private val mm: MemoryManager<*> = response.getRequest().context.memoryManager
             @Throws(Exception::class)
             override fun onWritePossible() {
-                log.log(Level.FINE, "[onWritePossible]")
+                log.trace("[onWritePossible]")
                 // send CHUNK of data
                 val isWriteMore = sendChunk()
                 if (isWriteMore) {
@@ -323,7 +316,7 @@ class StaticHttpHandler(
             }
 
             override fun onError(t: Throwable) {
-                log.log(Level.FINE, "[onError] ", t)
+                log.trace("[onError] ", t)
                 response.setStatus(500, t.message)
                 complete(true)
             }

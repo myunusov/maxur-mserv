@@ -13,6 +13,7 @@ import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.annotation.Value
 import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
 import javax.inject.Singleton
+import kotlin.reflect.KClass
 
 /**
  * @author myunusov
@@ -55,8 +56,8 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
         return this
     }
 
-    fun bind(func: (Locator) -> Any, clazz: Class<*>) {
-        binders.add(ServiceBinder(func, clazz))
+    fun bind(func: (Locator) -> Any, clazz: KClass<out Any>) {
+        binders.add(ServiceBinder(func, clazz.java))
     }
 
     private class ServiceBinder(val func: (Locator) -> Any, val clazz: Class<*>) : AbstractBinder() {

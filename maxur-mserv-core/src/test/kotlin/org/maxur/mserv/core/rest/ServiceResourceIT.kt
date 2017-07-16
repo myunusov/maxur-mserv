@@ -12,6 +12,7 @@ import org.mockito.junit.MockitoJUnitRunner
 import java.io.IOException
 import javax.ws.rs.client.Entity
 import javax.ws.rs.core.MediaType
+import kotlin.reflect.KClass
 
 
 @RunWith(MockitoJUnitRunner::class)
@@ -20,7 +21,7 @@ class ServiceResourceIT : AbstractResourceAT() {
     @Mock
     private lateinit var service: MicroService
 
-    override fun resourceClass(): Class<*> = ServiceResource::class.java
+    override fun resourceClass(): KClass<out Any> = ServiceResource::class
 
     override fun configurator(): Function1<AbstractBinder, Unit> = { binder: AbstractBinder ->
         binder.bind(service).to(MicroService::class.java)

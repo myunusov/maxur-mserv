@@ -26,6 +26,6 @@ abstract class EmbeddedServiceFactory {
        name = descriptor?.name ?: "Undefined"
     }
 
-    abstract fun make(properties: Holder<Any?>): EmbeddedService?
+    abstract fun make(properties: Holder<Any>): EmbeddedService?
 
 }
