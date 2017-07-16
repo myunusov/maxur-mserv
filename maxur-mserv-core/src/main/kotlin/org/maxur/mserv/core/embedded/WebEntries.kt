@@ -15,7 +15,7 @@ class WebEntries(val url: URI) {
     class WebEntry (val path: String, val pattern: String, val startUrl: String) {
 
         override fun toString(): String {
-            return "$path$pattern$startUrl"
+            return "$path$pattern/$startUrl"
         }
 
     }

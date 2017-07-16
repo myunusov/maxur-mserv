@@ -75,7 +75,7 @@ class WebServerGrizzlyFactoryImpl @Inject constructor(val locator: Locator) : Em
                 Path("docs"),
                 arrayOf(URI("classpath:/META-INF/resources/webjars/swagger-ui/3.0.17/")),
                 "index.html",
-                "/index.html?url=/api/swagger.json"
+                "index.html?url=/api/swagger.json"
         )
     }
 
@@ -84,7 +84,7 @@ class WebServerGrizzlyFactoryImpl @Inject constructor(val locator: Locator) : Em
                 Path("hal"),
                 arrayOf(URI("classpath:/META-INF/resources/webjars/hal-browser/3325375/")),
                 "browser.html",
-                "/#/api/service"
+                "#/api/service"
         )
     }
 

@@ -67,9 +67,9 @@ class BaseMicroService constructor(
 
     override val version: String = MicroService::class.java.`package`.implementationVersion ?: ""
 
-    override fun deferredStop() = postpone({ state.stop(this, locator) })
+    override fun deferredStop() = postpone({ stop() })
 
-    override fun deferredRestart() = postpone({ state.restart(this, locator) })
+    override fun deferredRestart() = postpone({ restart() })
 
     private fun postpone(func: () -> Unit) {
         val pool = Executors.newSingleThreadExecutor { runnable ->

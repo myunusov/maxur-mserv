@@ -8,8 +8,9 @@ interface Locator {
 
     companion object {
         lateinit var current: Locator
-        fun <T : Any> service(clazz: KClass<T>): T? = current.service(clazz)
         fun <T> service(clazz: Class<T>): T? = current.service(clazz)
+        fun <T : Any> service(clazz: KClass<T>): T? = current.service(clazz)
+        fun <T : Any> service(parameter: KParameter): T? = current.service(parameter)
         fun shutdown() = current.shutdown()
     }
 

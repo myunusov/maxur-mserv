@@ -27,18 +27,17 @@ abstract class BaseService(val locator: Locator) {
     /**
      * Start this Service
      */
-    fun start() = state.start(this, locator)
+    fun start() = state.start(this)
 
     /**
      * Immediately shuts down this Service.
      */
-    fun stop() = state.stop(this, locator)
+    fun stop() = state.stop(this)
 
     /**
      * Immediately restart this Service.
      */
-    fun restart() = state.restart(this, locator)
-
+    fun restart() = state.restart(this)
 
     /**
      * shutdown this service.
@@ -64,67 +63,61 @@ abstract class BaseService(val locator: Locator) {
          *  Running application
          */
         STARTED {
-            override fun start(service: BaseService, locator: Locator) = Unit
-            override fun stop(service: BaseService, locator: Locator) = shutdown(service, locator)
-            override fun restart(service: BaseService, locator: Locator) = relaunch(service, locator)
+            override fun start(service: BaseService) = Unit
+            override fun stop(service: BaseService) = shutdown(service)
+            override fun restart(service: BaseService) = relaunch(service)
         },
         /**
          * Stop application
          */
         STOPPED {
-            override fun start(service: BaseService, locator: Locator) = launch(service, locator)
-            override fun stop(service: BaseService, locator: Locator) = Unit
-            override fun restart(service: BaseService, locator: Locator) = launch(service, locator)
+            override fun start(service: BaseService) = launch(service)
+            override fun stop(service: BaseService) = Unit
+            override fun restart(service: BaseService) = launch(service)
         };
 
-        abstract fun start(service: BaseService, locator: Locator)
-        abstract fun stop(service: BaseService, locator: Locator)
-        abstract fun restart(service: BaseService, locator: Locator)
+        abstract fun start(service: BaseService)
+        abstract fun stop(service: BaseService)
+        abstract fun restart(service: BaseService)
 
-        protected fun shutdown(service: BaseService, locator: Locator) {
+        protected fun shutdown(service: BaseService) = check(service, {
+            shutdown()
+            beforeStop.forEach { call(it, service) }
+            state = STOPPED
+            afterStop.forEach { call(it, service) }
+        })
+
+
+        protected fun launch(service: BaseService) = check(service, {
+            beforeStart.forEach { call(it, service) }
+            launch()
+            afterStart.forEach { call(it, service) }
+            state = STARTED
+        })
+
+        protected fun relaunch(service: BaseService) = check(service, {
+            beforeStop.forEach { call(it, service) }
+            relaunch()
+            afterStart.forEach { call(it, service) }
+            state = STARTED
+        })
+
+        private fun check(service: BaseService, function: BaseService.() -> Unit) {
             try {
-                service.shutdown()
-                service.beforeStop.forEach {
-                    call(it, locator, service)
-                }
-                service.state = BaseService.State.STOPPED
-                service.afterStop.forEach {
-                    call(it, locator, service)
-                }
+                service.apply(function)
             } catch(e: Exception) {
-                service.onError.forEach {
-                    call(it, locator, service, e)
-                }
+                service.onError.forEach { call(it, service, e) }
             }
         }
 
-        protected fun launch(service: BaseService, locator: Locator) = try {
-            service.beforeStart.forEach { call(it, locator, service) }
-            service.launch()
-            service.afterStart.forEach { call(it, locator, service) }
-            service.state = BaseService.State.STARTED
-        } catch(e: Exception) {
-            service.onError.forEach { call(it, locator, service, e) }
-        }
-
-        protected fun relaunch(service: BaseService, locator: Locator) {
-            try {
-                service.beforeStop.forEach { call(it, locator, service) }
-                service.relaunch()
-                service.afterStart.forEach { call(it, locator, service) }
-                service.state = BaseService.State.STARTED
-            } catch(e: Exception) {
-                service.onError.forEach { call(it, locator, service, e) }
-            }
-        }
-
-        private fun call(func: KFunction<Any>, locator: Locator, vararg values: Any) {
-            val args = func.parameters.map { match(locator, it, *values) }.toTypedArray()
+        private fun call(func: KFunction<Any>, vararg values: Any) {
+            val args = func.parameters.map { match(it, *values) }.toTypedArray()
             func.call(*args)
         }
 
-        private fun match(locator: Locator, param: KParameter, vararg values: Any): Any? =
-                values.filter { isApplicable(param, it) }.firstOrNull() ?: locator.service(param)
+        private fun match(param: KParameter, vararg values: Any): Any? =
+                values.filter { isApplicable(param, it) }.firstOrNull() ?:
+                        Locator.service(param)
 
         @Suppress("UNCHECKED_CAST")
         private fun isApplicable(type: KType, clazz: KClass<out Any>) =
