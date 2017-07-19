@@ -30,7 +30,7 @@ class StaticHttpHandlerSpec : Spek({
 
         on("valid request of jar") {
             it("should return new StaticHttpHandler instance") {
-                val handler = StaticHttpHandler("web", "classpath:/META-INF/resources/webjars/swagger-ui/3.0.17/")
+                val handler = StaticHttpHandler("web", WebServerGrizzlyFactoryImpl.SWAGGER_URL)
                 val (response, request) = RequestUtil.resreq("/")
                 handler.service(request, response)
                 verify(response).setStatus(HttpStatus.OK_200)
@@ -39,7 +39,7 @@ class StaticHttpHandlerSpec : Spek({
 
         on("valid request of file from jar") {
             it("should return status 200") {
-                val handler = StaticHttpHandler("web", "classpath:/META-INF/resources/webjars/swagger-ui/3.0.17/")
+                val handler = StaticHttpHandler("web", WebServerGrizzlyFactoryImpl.SWAGGER_URL)
                 val (response, request) = RequestUtil.resreq("/index.html")
                 handler.service(request, response)
                 verify(response).setStatus(HttpStatus.OK_200)
@@ -48,7 +48,7 @@ class StaticHttpHandlerSpec : Spek({
 
         on("request of invalid file from jar") {
             it("should return status 404") {
-                val handler = StaticHttpHandler("web", "classpath:/META-INF/resources/webjars/swagger-ui/3.0.17/")
+                val handler = StaticHttpHandler("web", WebServerGrizzlyFactoryImpl.SWAGGER_URL)
                 val (response, request) = RequestUtil.resreq("/error.html")
                 handler.service(request, response)
                 verify(response).sendError(404)

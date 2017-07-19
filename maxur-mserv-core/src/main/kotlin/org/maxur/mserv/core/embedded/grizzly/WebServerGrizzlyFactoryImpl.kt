@@ -35,6 +35,8 @@ import javax.inject.Inject
 class WebServerGrizzlyFactoryImpl @Inject constructor(val locator: Locator) : EmbeddedServiceFactory() {
 
     companion object {
+        val SWAGGER_URL = "classpath:/META-INF/resources/webjars/swagger-ui/3.0.18/"
+        val HAL_URL = "classpath:/META-INF/resources/webjars/hal-browser/3325375/"
         init {
             SLF4JBridgeHandler.removeHandlersForRootLogger()
             SLF4JBridgeHandler.install()
@@ -73,7 +75,7 @@ class WebServerGrizzlyFactoryImpl @Inject constructor(val locator: Locator) : Em
     private fun swaggerContent(): StaticContent {
         return StaticContent(
                 Path("docs"),
-                arrayOf(URI("classpath:/META-INF/resources/webjars/swagger-ui/3.0.17/")),
+                arrayOf(URI(SWAGGER_URL)),
                 "index.html",
                 "index.html?url=/api/swagger.json"
         )
@@ -82,7 +84,7 @@ class WebServerGrizzlyFactoryImpl @Inject constructor(val locator: Locator) : Em
     private fun halContent(): StaticContent {
         return StaticContent(
                 Path("hal"),
-                arrayOf(URI("classpath:/META-INF/resources/webjars/hal-browser/3325375/")),
+                arrayOf(URI(HAL_URL)),
                 "browser.html",
                 "#/api/service"
         )
