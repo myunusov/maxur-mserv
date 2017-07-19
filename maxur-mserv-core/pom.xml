@@ -58,8 +58,8 @@
 
         <hk2.version>2.5.0-b32</hk2.version>
 
-        <swagger.version>1.5.15</swagger.version>
-        <swagger-ui.version>3.0.17</swagger-ui.version>
+        <swagger.version>1.5.16</swagger.version>
+        <swagger-ui.version>3.0.18</swagger-ui.version>
 
         <hal-browser.version>3325375</hal-browser.version>
 
