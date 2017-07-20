@@ -31,15 +31,15 @@ issues]]
 [source,xml]
 ----
 <dependency>
-    <groupId>org.maxur</groupId>
-    <artifactId>maxur-mserv-core</artifactId>
-    <version>0.2.1</version>
+    <groupId>${project.groupId}</groupId>
+    <artifactId>${project.artifactId}</artifactId>
+    <version>${release.version}</version>
 </dependency>
 ----
 
 [source]
 ----
-"compile group: 'org.maxur', name: 'maxur-mserv-core', version: '0.2.1'"
+"compile group: '${project.groupId}', name: '${project.artifactId}', version: '${release.version}'"
 ----
 
 
