@@ -1051,16 +1051,17 @@
                                 .get("metadata/versioning/latest")
                                 .item(0)
                                 .textContent
-                        (new File('maven-version.adoc')).write sprintf( 
-'''<dependency>
+                        (new File('version.adoc')).write sprintf(
+'''tag::maven[]
+<dependency>
     <groupId>${project.groupId}</groupId>
     <artifactId>${project.artifactId}</artifactId>
-    <version>%s</version>
-</dependency>''', result)
-                        (new File('gradle-version.adoc')).write sprintf(
-                                "compile group: '${project.groupId}', name: '${project.artifactId}', version: '%s'", result
-                        )
-                        ]]>
+    <version>%1$s</version>
+</dependency>
+end::maven[]
+tag::gradle[]
+"compile group: '${project.groupId}', name: '${project.artifactId}', version: '%1$s'"
+end::gradle[]''', result)]]>
                     </source>
                 </configuration>
                 <dependencies>
