@@ -81,6 +81,7 @@
         <junit5.version>5.0.0-M4</junit5.version>
         <junit-vintage-engine.version>4.12.0-M4</junit-vintage-engine.version>
         <slf4j.version>1.7.25</slf4j.version>
+        <gmaven-plugin.version>1.5</gmaven-plugin.version>
     </properties>
 
     <profiles>
@@ -1029,6 +1030,57 @@
                 </executions>
             </plugin>
 
+            <plugin>
+                <groupId>org.codehaus.gmaven</groupId>
+                <artifactId>gmaven-plugin</artifactId>
+                <version>${gmaven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <providerSelection>2.0</providerSelection>
+                    <source><![CDATA[
+                        import us.monoid.web.Resty
+                        def result = new Resty()
+                                .xml("http://repo1.maven.org/maven2/org/maxur/maxur-mserv-core/maven-metadata.xml")
+                                .get("metadata/versioning/latest")
+                                .item(0)
+                                .textContent
+                        (new File('maven-version.adoc')).write sprintf( 
+'''<dependency>
+    <groupId>${project.groupId}</groupId>
+    <artifactId>${project.artifactId}</artifactId>
+    <version>%s</version>
+</dependency>''', result)
+                        (new File('gradle-version.adoc')).write sprintf(
+                                "compile group: '${project.groupId}', name: '${project.artifactId}', version: '%s'", result
+                        )
+                        ]]>
+                    </source>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.codehaus.groovy</groupId>
+                        <artifactId>groovy-all</artifactId>
+                        <version>2.4.12</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>us.monoid.web</groupId>
+                        <artifactId>resty</artifactId>
+                        <version>0.3.2</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.ant</groupId>
+                        <artifactId>ant</artifactId>
+                        <version>1.8.2</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
     </build>
 
