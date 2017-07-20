@@ -1,8 +1,7 @@
 image:https://raw.githubusercontent.com/wiki/myunusov/maxur-mserv/maxur-logo.png[Logo]
 
 [[maxur-μservice]]
-Maxur μService
---------------
+= Maxur μService
 
 Yet another microservices framework
 
@@ -28,6 +27,11 @@ pull requests]]
 https://github.com/myunusov/maxur-mserv/issues[image:https://img.shields.io/github/issues-raw/myunusov/maxur-mserv.svg[GitHub
 issues]]
 
+== Installation
+This sample demonstrates how to use this library via Maven or Gradle.
+The `pom.xml` and `build.gradle` files show you the general setup.
+
+=== Maven
 [source,xml]
 ----
 <dependency>
@@ -37,6 +41,7 @@ issues]]
 </dependency>
 ----
 
+=== Gradle
 [source]
 ----
 "compile group: '${project.groupId}', name: '${project.artifactId}', version: '${release.version}'"
