@@ -27,11 +27,44 @@ pull requests]]
 https://github.com/myunusov/maxur-mserv/issues[image:https://img.shields.io/github/issues-raw/myunusov/maxur-mserv.svg[GitHub
 issues]]
 
-== Installation
+Maxur-μservice pulls together stable, mature libraries from the Java ecosystem into a simple, light-weight package.
+It can work with Kotlin or Java services as framework
+
+.Tech Stack
+|===
+|Responsibility |Implementation
+
+|Web Server
+|https://github.com/javaee/grizzly[Grizzly]
+
+|REST Service
+|https://jersey.github.io/[Jersey]
+
+|JSON Parser
+|https://github.com/FasterXML/jackson[Jackson]
+
+|Logger
+|https://logback.qos.ch/[Logback]
+
+|Validator
+|http://hibernate.org/validator/[Hibernate Validator]
+
+|Properties Format
+|https://github.com/typesafehub/config/blob/master/HOCON.md[HOCON]
+
+|===
+
+== Getting Started
+
+=== Prerequisites
+
+Oracle JDK 1.8
+
+=== Installation
 This sample demonstrates how to use this library via Maven or Gradle.
 The `pom.xml` and `build.gradle` files show you the general setup.
 
-=== Maven
+==== Maven
 [source,xml]
 ----
 <dependency>
@@ -41,10 +74,129 @@ The `pom.xml` and `build.gradle` files show you the general setup.
 </dependency>
 ----
 
-=== Gradle
-[source]
+==== Gradle
+[source, groovy]
 ----
-"compile group: 'org.maxur', name: 'maxur-mserv-core', version: '0.2.1'"
+compile group: 'org.maxur', name: 'maxur-mserv-core', version: '0.2.1'
 ----
 
+=== Tutorial
 
+First, add a properties file to service classpath:
+
+[source, hocon]
+----
+DEFAULTS {
+
+  name = "My μService"
+
+  webapp {
+    with-swagger-ui = true
+    with-hal-browser = true
+    url = "http://localhost:8080"
+
+    rest = {
+        path = "api"
+      }
+
+    static-content = [
+      {
+        roots = ["webapp"]
+        path = "webapp"
+      }
+    ]
+  }
+
+}
+----
+
+Then create configuration class
+
+==== Java
+[source, java]
+----
+@Service
+public class Configuration {
+
+    private final String name;
+
+    @Inject
+    ConfigParams(
+        @Value(key = "name")   String name
+    ) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+}
+----
+
+==== Kotlin
+[source, kotlin]
+----
+@Service
+class Configuration @Inject constructor(@Value(key = "name") val name: String)
+----
+
+Then create Launcher
+
+==== Java
+[source, java]
+----
+public final class Launcher {
+
+    private static final  Logger log = LoggerFactory.getLogger(Launcher.class);
+
+    public static void main(String[] args) {
+        Java.service()
+            .title(":name")
+            .packages("org.maxur.mserv.sample")
+            .properties("hocon")
+            .rest()
+            .beforeStart(service -> log.info("Service is started"))
+            .afterStop(service -> log.info("Service is stopped"))
+            .onError(exception -> log.error(exception.getMessage(), exception) )
+            .start();
+    }
+}
+----
+
+==== Kotlin
+[source, kotlin]
+----
+object Launcher {
+
+    private fun log() = LoggerFactory.getLogger(Launcher::class.java)
+
+    @JvmStatic fun main(args: Array<String>) {
+        Kotlin.service {
+            title = ":name"
+            packages = "org.maxur.mserv.sample"
+            properties {
+                format = "hocon"
+            }
+            services += rest {
+                afterStart += this@Launcher::afterWebServiceStart
+            }
+            beforeStart += this@Launcher::beforeStart
+            afterStart += { service ->  log().info("${service.name} is started") }
+            afterStop += { _ ->  log().info("Microservice is stopped") }
+            onError += { exception ->  log().error(exception.message, exception) }
+        }.start()
+    }
+
+    fun beforeStart(configuration: Configuration, propertiesService: PropertiesService) {
+        log().info("Properties Source is '${propertiesService.source.format}'\n")
+        log().info(configuration.toString())
+    }
+
+    fun afterWebServiceStart(service: WebServer) {
+        log().info("${service.name} is started on ${service.baseUri}\"")
+        log().info(service.entries().toString())
+    }
+}
+----
+
+It's All !
