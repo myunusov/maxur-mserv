@@ -70,6 +70,72 @@ class MicroServiceBuilderSpec : Spek({
             }
         }
 
+        on("Build micro-service with Yaml properties without configuration") {
+            it("should return new micro-service with default properties source") {
+                val service = Kotlin.service {
+                    properties {
+                        format = "Yaml"
+                    }
+                }
+                service.should.be.not.`null`
+                val propertiesService = Locator.service(PropertiesService::class)
+                propertiesService.should.be.not.`null`
+                propertiesService!!.source.apply {
+                    format.should.be.equal("Yaml")
+                    rootKey.should.be.equal("/")
+                    uri.should.be.equal(URI("classpath:///application.yaml"))
+                }
+                Locator.shutdown()
+            }
+            it("should return new micro-service with default properties source for java client") {
+                val service = Java.service()
+                        .properties("Yaml")
+                        .build()
+                service.should.be.not.`null`
+                val propertiesService = Locator.service(PropertiesService::class)
+                propertiesService.should.be.not.`null`
+                propertiesService!!.source.apply {
+                    format.should.be.equal("Yaml")
+                    rootKey.should.be.equal("/")
+                    uri.should.be.equal(URI("classpath:///application.yaml"))
+                }
+                Locator.shutdown()
+            }
+        }
+
+        on("Build micro-service with Json properties without configuration") {
+            it("should return new micro-service with default properties source") {
+                val service = Kotlin.service {
+                    properties {
+                        format = "Json"
+                    }
+                }
+                service.should.be.not.`null`
+                val propertiesService = Locator.service(PropertiesService::class)
+                propertiesService.should.be.not.`null`
+                propertiesService!!.source.apply {
+                    format.should.be.equal("Json")
+                    rootKey.should.be.equal("/")
+                    uri.should.be.equal(URI("classpath:///application.json"))
+                }
+                Locator.shutdown()
+            }
+            it("should return new micro-service with default properties source for java client") {
+                val service = Java.service()
+                        .properties("Json")
+                        .build()
+                service.should.be.not.`null`
+                val propertiesService = Locator.service(PropertiesService::class)
+                propertiesService.should.be.not.`null`
+                propertiesService!!.source.apply {
+                    format.should.be.equal("Json")
+                    rootKey.should.be.equal("/")
+                    uri.should.be.equal(URI("classpath:///application.json"))
+                }
+                Locator.shutdown()
+            }
+        }
+
         on("Build micro-service with Hocon properties file by url") {
             it("should return new micro-service") {
                 val service = Kotlin.service {
@@ -140,6 +206,10 @@ class MicroServiceBuilderSpec : Spek({
             }
         }
 
+        afterEachTest {
+            Locator.shutdown()
+        }
+
         on("Build micro-service with Hocon properties with invalid configuration") {
 
             it("should throw error on unknown url scheme") {
@@ -151,6 +221,7 @@ class MicroServiceBuilderSpec : Spek({
                         }
                     }
                 }
+
             }
 
             it("should throw error on unknown url scheme for java client") {
@@ -202,7 +273,6 @@ class MicroServiceBuilderSpec : Spek({
                             .build()
                 }
             }
-
         }
 
         on("Build micro-service with default properties") {

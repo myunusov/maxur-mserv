@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package org.maxur.mserv.core.service.properties.hocon
+package org.maxur.mserv.core.service.properties
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.jasonclawson.jackson.dataformat.hocon.HoconFactory
@@ -9,9 +9,6 @@ import com.typesafe.config.ConfigException
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigObject
 import org.jvnet.hk2.annotations.Service
-import org.maxur.mserv.core.service.properties.PropertiesService
-import org.maxur.mserv.core.service.properties.PropertiesServiceFactory
-import org.maxur.mserv.core.service.properties.PropertiesSource
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -35,22 +32,12 @@ class PropertiesServiceFactoryHoconImpl : PropertiesServiceFactory() {
     }
 
     override fun make(source: PropertiesSource): PropertiesService {
-        val uri: URI? = source.uri
-        val config = when {
-                    uri == null -> ConfigFactory.load()
-                    uri.scheme == null -> loadFrom(File(uri.toString()))
-                    uri.scheme == "file" -> loadFrom(Paths.get(uri).toFile())
-                    else -> throw IllegalArgumentException(
-                            """Unsupported url '${uri.scheme}' to properties source. Must be one of [file]"""
-                    )
-                }
-        val rootKey = getRootKey(source)
         val effectiveSource = effectiveSourceFrom(source)
         try {
-            return PropertiesServiceHoconImpl(config.getConfig(rootKey), effectiveSource)
+            return PropertiesServiceHoconImpl(effectiveSource)
         } catch(e: ConfigException.Missing) {
-            throw IllegalArgumentException (
-                    """The '${effectiveSource.uri}' file not found. Add file '$' with '$rootKey' section"""
+            throw IllegalArgumentException(
+                    """The '${effectiveSource.uri}' file not found. Add it with '${effectiveSource.rootKey}' section"""
             )
         }
     }
@@ -62,25 +49,25 @@ class PropertiesServiceFactoryHoconImpl : PropertiesServiceFactory() {
                     source.rootKey ?: "DEFAULTS"
             )
 
-    private fun loadFrom(file: File): Config {
-        if (!file.exists()) {
-            throw IllegalArgumentException("Properties file '${file.absolutePath}' is not found")
-        }
-        return ConfigFactory.parseFile(file)
-    }
-
-    private fun getRootKey(source: PropertiesSource): String {
-        if (source.rootKey != null)
-            return source.rootKey
-        else {
-            log.info("Root key of properties source is not configured. So it's 'DEFAULTS' by default.")
-            return "DEFAULTS"
-        }
-    }
-
-    class PropertiesServiceHoconImpl(val config: Config, override val source: PropertiesSource) : PropertiesService {
+    class PropertiesServiceHoconImpl(override val source: PropertiesSource) : PropertiesService {
 
         private val objectMapper = ObjectMapper(HoconFactory())
+
+        private val config: Config = run {
+            val uri: URI? = source.uri
+            val result = when {
+                uri == null -> ConfigFactory.load()
+                uri.scheme == null -> loadFrom(File(uri.toString()))
+                uri.scheme == "file" -> loadFrom(Paths.get(uri).toFile())
+                uri.scheme == "classpath" -> ConfigFactory.load(
+                        uri.toString().substring("classpath".length + 1).trimStart('/')
+                )
+                else -> throw IllegalArgumentException(
+                        """Unsupported schema '${uri.scheme}' to properties source. Must be one of [file, classpath]"""
+                )
+            }
+            result.getConfig(source.rootKey)
+        }
 
         @Suppress("UNCHECKED_CAST")
         override fun <P> read(key: String, clazz: Class<P>): P? {
@@ -92,6 +79,13 @@ class PropertiesServiceFactoryHoconImpl : PropertiesServiceFactory() {
                 else -> return asObject(key, clazz) as P
             }
         }
+
+        private fun loadFrom(file: File): Config =
+                if (!file.exists())
+                    throw IllegalArgumentException("Properties file '${file.absolutePath}' is not found")
+                else
+                    ConfigFactory.parseFile(file)
+
 
         override fun asURI(key: String): URI? {
             val string = asString(key)
