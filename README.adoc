@@ -44,7 +44,7 @@ The `pom.xml` and `build.gradle` files show you the general setup.
 === Gradle
 [source, groovy]
 ----
-"compile group: 'org.maxur', name: 'maxur-mserv-core', version: '0.2.1'"
+compile group: 'org.maxur', name: 'maxur-mserv-core', version: '0.2.1'
 ----
 
 
