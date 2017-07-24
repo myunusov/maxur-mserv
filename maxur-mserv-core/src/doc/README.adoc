@@ -50,7 +50,7 @@ It can work with Kotlin or Java services as framework
 |http://hibernate.org/validator/[Hibernate Validator]
 
 |Properties Format
-|https://github.com/typesafehub/config/blob/master/HOCON.md[HOCON]
+|https://github.com/typesafehub/config/blob/master/HOCON.md[HOCON] http://yaml.org/[YAML] http://www.json.org/[JSON]
 
 |===
 
