@@ -13,7 +13,6 @@ import org.maxur.mserv.core.embedded.EmbeddedService
 import org.maxur.mserv.core.embedded.EmbeddedServiceFactory
 import org.maxur.mserv.core.service.hk2.ErrorHandler
 import org.maxur.mserv.core.service.hk2.LocatorFactoryHK2Impl
-import org.maxur.mserv.core.service.properties.PropertiesService
 import org.maxur.mserv.core.service.properties.PropertiesServiceFactory
 import org.maxur.mserv.core.service.properties.PropertiesSource
 import java.net.URI
@@ -58,7 +57,7 @@ abstract class MSBuilder {
             return LocatorFactoryHK2Impl {
                 this.packages = packagesHolder
                 bind(*bindersHolder.toTypedArray())
-                bind(propertiesHolder::build, PropertiesService::class)
+                bind(propertiesHolder::build, PropertiesSource::class)
                 bind({ locator -> BaseMicroService(services.build(locator), locator) }, MicroService::class)
             }.make()
         } catch(e: Exception) {
@@ -182,8 +181,8 @@ class PropertiesHolder {
         set(value) {
             uri = URI.create(value)
         }
-    fun build(locator: Locator): PropertiesService {
-        val source = PropertiesSource(format, uri, rootKey)
+    fun build(locator: Locator): PropertiesSource {
+        val source = PropertiesSource.make(format, uri, rootKey)
         val factory: PropertiesServiceFactory = locator.locate(PropertiesServiceFactory::class, format)
         return factory.make(source)
     }

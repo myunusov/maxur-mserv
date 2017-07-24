@@ -8,14 +8,22 @@ import java.io.InputStream
 import java.net.URI
 import java.nio.file.Paths
 
-class PropertiesServiceJacksonImpl(override val source: PropertiesSource, factory: JsonFactory) : PropertiesService {
+class PropertiesServiceJacksonImpl(
+        factory: JsonFactory,
+        val defaultFileName: String,
+        val rawSource: PropertiesSource
+) : PropertiesSource {
+
+    override val format: String get() = rawSource.format
+    override val uri: URI  get() = rawSource.uri ?: URI.create("classpath:///$defaultFileName")
+    override val rootKey: String get() = rawSource.rootKey ?: "/"
 
     val mapper = ObjectMapper(factory)
 
-    var root: JsonNode = jsonNode(source.uri!!)!!
+    lateinit var root: JsonNode
 
-    private fun jsonNode(uri: URI): JsonNode? {
-        return rootNode(uri)?.path(source.rootKey)
+    override fun open() {
+        root = rootNode(uri)?.path(rootKey)!!
     }
 
     private fun rootNode(uri: URI): JsonNode? = when {
