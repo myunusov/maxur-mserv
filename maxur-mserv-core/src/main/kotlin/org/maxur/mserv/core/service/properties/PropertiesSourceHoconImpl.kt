@@ -9,8 +9,9 @@ import java.io.File
 import java.io.IOException
 import java.net.URI
 import java.nio.file.Paths
+import java.time.Duration
 
-class PropertiesServiceHoconImpl(val rawSource: PropertiesSource) : PropertiesSource {
+internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource) : PropertiesSource {
 
     override val format: String get() = "Hocon"
     override val uri: URI get() = rawSource.uri ?: URI.create("classpath:///application.conf")
@@ -36,25 +37,26 @@ class PropertiesServiceHoconImpl(val rawSource: PropertiesSource) : PropertiesSo
             rawSource.uri == null -> ConfigFactory.load()
             uri.scheme == null -> loadFrom(File(uri.toString()))
             uri.scheme == "file" -> loadFrom(Paths.get(uri).toFile())
-            uri.scheme == "classpath" -> ConfigFactory.load(
-                    uri.toString().substring("classpath".length + 1).trimStart('/')
-            )
+            uri.scheme == "classpath" -> ConfigFactory.load(path())
             else -> throw IllegalArgumentException(
                     """Unsupported schema '${uri.scheme}' to properties source. Must be one of [file, classpath]"""
             )
         }
     }
 
+    private fun path() = uri.toString().substring("classpath".length + 1).trimStart('/')
+
     @Suppress("UNCHECKED_CAST")
-    override fun <P> read(key: String, clazz: Class<P>): P? {
-        when (clazz) {
-            String::class.java -> return asString(key) as P
-            Integer::class.java -> return asInteger(key) as P
-            Long::class.java -> return asLong(key) as P
-            URI::class.java -> return asURI(key) as P
-            else -> return asObject(key, clazz) as P
-        }
-    }
+    override fun <P> read(key: String, clazz: Class<P>): P? =
+            when (clazz) {
+                String::class.java -> asString(key) as P?
+                Integer::class.java -> asInteger(key) as P?
+                Long::class.java -> asLong(key) as P?
+                URI::class.java -> asURI(key) as P?
+                Double::class.java -> root?.getDouble(key) as P?
+                Duration::class.java -> root?.getDuration(key) as P?
+                else -> asObject(key, clazz) as P?
+            }
 
     private fun loadFrom(file: File): Config =
             if (!file.exists())
@@ -75,8 +77,13 @@ class PropertiesServiceHoconImpl(val rawSource: PropertiesSource) : PropertiesSo
         try {
             return getValue(key, { it?.getObject(key) })
                     ?.let { objectMapper.readValue(it.render(), clazz) }
-        } catch (e: IOException) {
-            throw IllegalStateException("Configuration parameter '$key' is not parsed.", e)
+        } catch (e: Exception) {
+            when (e) {
+                is IOException, is ConfigException.WrongType -> {
+                    throw IllegalStateException("Configuration parameter '$key' is not parsed.", e)
+                }
+                else -> throw e
+            }
         }
     }
 

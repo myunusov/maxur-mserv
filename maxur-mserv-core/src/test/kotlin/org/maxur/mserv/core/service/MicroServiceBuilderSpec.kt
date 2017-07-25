@@ -2,9 +2,9 @@ package org.maxur.mserv.core.service
 
 import com.winterbe.expekt.should
 import org.jetbrains.spek.api.Spek
+import org.jetbrains.spek.api.dsl.context
 import org.jetbrains.spek.api.dsl.describe
 import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
 import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.service.msbuilder.Java
 import org.maxur.mserv.core.service.msbuilder.Kotlin
@@ -20,7 +20,7 @@ class MicroServiceBuilderSpec : Spek({
             Locator.shutdown()
         }
 
-        on("Build micro-service without properties") {
+        context("Build micro-service without properties") {
             it("should return new micro-service") {
                 val service = Kotlin.service {
                     withoutProperties()
@@ -41,9 +41,19 @@ class MicroServiceBuilderSpec : Spek({
                 source!!.format.should.be.equal("None")
                 source.isOpened.should.be.`false`
             }
+            it("should throw exception on configure none properties source") {
+                assertFailsWith<IllegalStateException> {
+                    val service = Kotlin.service {
+                        properties {
+                            format = "None"
+                            url = "file:///file.cfg"
+                        }
+                    }
+                }
+            }
         }
 
-        on("Build micro-service with Hocon properties without configuration") {
+        context("Build micro-service with Hocon properties without configuration") {
             it("should return new micro-service with default properties source") {
                 val service = Kotlin.service {
                     properties {
@@ -76,7 +86,7 @@ class MicroServiceBuilderSpec : Spek({
             }
         }
 
-        on("Build micro-service with Yaml properties without configuration") {
+        context("Build micro-service with Yaml properties without configuration") {
             it("should return new micro-service with default properties source") {
                 val service = Kotlin.service {
                     properties {
@@ -89,7 +99,7 @@ class MicroServiceBuilderSpec : Spek({
                 source!!.apply {
                     isOpened.should.be.`true`
                     format.should.be.equal("Yaml")
-                    rootKey.should.be.equal("/")
+                    rootKey.should.be.`null`
                     uri.should.be.equal(URI("classpath:///application.yaml"))
                 }
             }
@@ -103,13 +113,13 @@ class MicroServiceBuilderSpec : Spek({
                 source!!.apply {
                     isOpened.should.be.`true`
                     format.should.be.equal("Yaml")
-                    rootKey.should.be.equal("/")
+                    rootKey.should.be.`null`
                     uri.should.be.equal(URI("classpath:///application.yaml"))
                 }
             }
         }
 
-        on("Build micro-service with Json properties without configuration") {
+        context("Build micro-service with Json properties without configuration") {
             it("should return new micro-service with default properties source") {
                 val service = Kotlin.service {
                     properties {
@@ -122,7 +132,7 @@ class MicroServiceBuilderSpec : Spek({
                 source!!.apply {
                     isOpened.should.be.`true`
                     format.should.be.equal("Json")
-                    rootKey.should.be.equal("/")
+                    rootKey.should.be.`null`
                     uri.should.be.equal(URI("classpath:///application.json"))
                 }
             }
@@ -136,13 +146,13 @@ class MicroServiceBuilderSpec : Spek({
                 source!!.apply {
                     isOpened.should.be.`true`
                     format.should.be.equal("Json")
-                    rootKey.should.be.equal("/")
+                    rootKey.should.be.`null`
                     uri.should.be.equal(URI("classpath:///application.json"))
                 }
             }
         }
 
-        on("Build micro-service with Hocon properties file by url") {
+        context("Build micro-service with Hocon properties file by url") {
             it("should return new micro-service") {
                 val service = Kotlin.service {
                     properties {
@@ -177,7 +187,7 @@ class MicroServiceBuilderSpec : Spek({
             }
         }
 
-        on("Build micro-service with Hocon properties and rootKey") {
+        context("Build micro-service with Hocon properties and rootKey") {
             it("should return new micro-service ") {
                 val service = Kotlin.service {
                     properties {
@@ -212,7 +222,7 @@ class MicroServiceBuilderSpec : Spek({
             }
         }
 
-        on("Build micro-service with Hocon properties with invalid configuration") {
+        context("Build micro-service with Hocon properties with invalid configuration") {
 
             it("should throw error on unknown format") {
                 assertFailsWith<IllegalStateException> {
@@ -280,7 +290,7 @@ class MicroServiceBuilderSpec : Spek({
             }
         }
 
-        on("Build micro-service with default properties") {
+        context("Build micro-service with default properties") {
             it("should return new micro-service") {
                 val service = Kotlin.service {
                 }
@@ -297,7 +307,13 @@ class MicroServiceBuilderSpec : Spek({
 
 
     describe("a rest micro-service") {
-
+        it("should return new micro-service") {
+            val service = Kotlin.service {
+                withoutProperties()
+                rest {  }
+            }
+            service.should.be.not.`null`
+        }
     }
 
 })

@@ -5,6 +5,7 @@ package org.maxur.mserv.core.service.properties
 import org.jvnet.hk2.annotations.Contract
 import org.maxur.mserv.core.Locator
 import java.net.URI
+import kotlin.reflect.KClass
 
 /**
  * Represent the Properties source configuration.
@@ -17,7 +18,7 @@ import java.net.URI
 interface PropertiesSource {
 
     companion object {
-        fun make(format: String?, uri: URI?, rootKey: String?): PropertiesSource
+        fun make(format: String?, uri: URI? = null, rootKey: String? = null): PropertiesSource
                 = RawPropertiesSource(format, uri, rootKey)
     }
 
@@ -70,6 +71,17 @@ interface PropertiesSource {
      * @return properties by key
      */
     fun asURI(key: String): URI?
+
+    /**
+     * return properties by key
+     *
+     * @param key properties key
+     *
+     * @param clazz properties type
+     * *
+     * @return properties by key
+     */
+    fun <P: Any> read(key: String, clazz: KClass<P>): P? = read(key, clazz.java)
 
     /**
      * return properties by key
