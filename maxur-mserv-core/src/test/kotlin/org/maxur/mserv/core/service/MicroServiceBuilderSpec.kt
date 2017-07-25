@@ -16,14 +16,20 @@ class MicroServiceBuilderSpec : Spek({
 
     describe("a empty micro-service") {
 
+        afterEachTest {
+            Locator.shutdown()
+        }
+
         on("Build micro-service without properties") {
             it("should return new micro-service") {
-                val service = Kotlin.service { withoutProperties() }
+                val service = Kotlin.service {
+                    withoutProperties()
+                }
                 service.should.be.not.`null`
                 val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
                 source!!.format.should.be.equal("None")
-                Locator.shutdown()
+                source.isOpened.should.be.`false`
             }
             it("should return new micro-service for java client") {
                 val service = Java.service()
@@ -33,7 +39,7 @@ class MicroServiceBuilderSpec : Spek({
                 val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
                 source!!.format.should.be.equal("None")
-                Locator.shutdown()
+                source.isOpened.should.be.`false`
             }
         }
 
@@ -48,11 +54,11 @@ class MicroServiceBuilderSpec : Spek({
                 val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
                 source!!.apply {
+                    isOpened.should.be.`true`
                     format.should.be.equal("Hocon")
                     rootKey.should.be.equal("DEFAULTS")
                     uri.should.be.equal(URI("classpath:///application.conf"))
                 }
-                Locator.shutdown()
             }
             it("should return new micro-service with default properties source for java client") {
                 val service = Java.service()
@@ -62,11 +68,11 @@ class MicroServiceBuilderSpec : Spek({
                 val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
                 source!!.apply {
+                    isOpened.should.be.`true`
                     format.should.be.equal("Hocon")
                     rootKey.should.be.equal("DEFAULTS")
                     uri.should.be.equal(URI("classpath:///application.conf"))
                 }
-                Locator.shutdown()
             }
         }
 
@@ -81,11 +87,11 @@ class MicroServiceBuilderSpec : Spek({
                 val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
                 source!!.apply {
+                    isOpened.should.be.`true`
                     format.should.be.equal("Yaml")
                     rootKey.should.be.equal("/")
                     uri.should.be.equal(URI("classpath:///application.yaml"))
                 }
-                Locator.shutdown()
             }
             it("should return new micro-service with default properties source for java client") {
                 val service = Java.service()
@@ -95,11 +101,11 @@ class MicroServiceBuilderSpec : Spek({
                 val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
                 source!!.apply {
+                    isOpened.should.be.`true`
                     format.should.be.equal("Yaml")
                     rootKey.should.be.equal("/")
                     uri.should.be.equal(URI("classpath:///application.yaml"))
                 }
-                Locator.shutdown()
             }
         }
 
@@ -114,11 +120,11 @@ class MicroServiceBuilderSpec : Spek({
                 val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
                 source!!.apply {
+                    isOpened.should.be.`true`
                     format.should.be.equal("Json")
                     rootKey.should.be.equal("/")
                     uri.should.be.equal(URI("classpath:///application.json"))
                 }
-                Locator.shutdown()
             }
             it("should return new micro-service with default properties source for java client") {
                 val service = Java.service()
@@ -128,11 +134,11 @@ class MicroServiceBuilderSpec : Spek({
                 val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
                 source!!.apply {
+                    isOpened.should.be.`true`
                     format.should.be.equal("Json")
                     rootKey.should.be.equal("/")
                     uri.should.be.equal(URI("classpath:///application.json"))
                 }
-                Locator.shutdown()
             }
         }
 
@@ -148,11 +154,11 @@ class MicroServiceBuilderSpec : Spek({
                 val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
                 source!!.apply {
+                    isOpened.should.be.`true`
                     format.should.be.equal("Hocon")
                     rootKey.should.be.equal("DEFAULTS")
                     uri.should.be.equal(URI("src/test/resources/application.conf"))
                 }
-                Locator.shutdown()
             }
             it("should return new micro-service for java client") {
                 val service = Java.service()
@@ -163,11 +169,11 @@ class MicroServiceBuilderSpec : Spek({
                 val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
                 source!!.apply {
+                    isOpened.should.be.`true`
                     format.should.be.equal("Hocon")
                     rootKey.should.be.equal("DEFAULTS")
                     uri.should.be.equal(URI("src/test/resources/application.conf"))
                 }
-                Locator.shutdown()
             }
         }
 
@@ -183,11 +189,11 @@ class MicroServiceBuilderSpec : Spek({
                 val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
                 source!!.apply {
+                    isOpened.should.be.`true`
                     format.should.be.equal("Hocon")
                     rootKey.should.be.equal("USER")
                     uri.should.be.equal(URI("classpath:///application.conf"))
                 }
-                Locator.shutdown()
             }
             it("should return new micro-service for java client") {
                 val service = Java.service()
@@ -198,20 +204,26 @@ class MicroServiceBuilderSpec : Spek({
                 val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
                 source!!.apply {
+                    isOpened.should.be.`true`
                     format.should.be.equal("Hocon")
                     rootKey.should.be.equal("USER")
                     uri.should.be.equal(URI("classpath:///application.conf"))
                 }
-                Locator.shutdown()
             }
-        }
-
-        afterEachTest {
-            Locator.shutdown()
         }
 
         on("Build micro-service with Hocon properties with invalid configuration") {
 
+            it("should throw error on unknown format") {
+                assertFailsWith<IllegalStateException> {
+                    Kotlin.service {
+                        properties {
+                            format = "Error"
+                            url = "file:///file.cfg"
+                        }
+                    }
+                }
+            }
             it("should throw error on unknown url scheme") {
                 assertFailsWith<IllegalStateException> {
                     Kotlin.service {
@@ -221,9 +233,7 @@ class MicroServiceBuilderSpec : Spek({
                         }
                     }
                 }
-
             }
-
             it("should throw error on unknown url scheme for java client") {
                 assertFailsWith<IllegalStateException> {
                     Java.service()
@@ -232,7 +242,6 @@ class MicroServiceBuilderSpec : Spek({
                             .build()
                 }
             }
-
             it("should throw error on unknown file") {
                 assertFailsWith<IllegalStateException> {
                     Kotlin.service {
@@ -243,7 +252,6 @@ class MicroServiceBuilderSpec : Spek({
                     }
                 }
             }
-
             it("should throw error on unknown file for java client") {
                 assertFailsWith<IllegalStateException> {
                     Java.service()
@@ -252,8 +260,6 @@ class MicroServiceBuilderSpec : Spek({
                             .build()
                 }
             }
-
-
             it("should throw error on unknown root key") {
                 assertFailsWith<IllegalStateException> {
                     Kotlin.service {
@@ -264,7 +270,6 @@ class MicroServiceBuilderSpec : Spek({
                     }
                 }
             }
-
             it("should throw error on unknown root key for java client") {
                 assertFailsWith<IllegalStateException> {
                     Java.service()
@@ -283,9 +288,8 @@ class MicroServiceBuilderSpec : Spek({
                 val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
                 source!!.apply {
-                    format.should.be.equal("Hocon")
-                    rootKey.should.be.equal("DEFAULTS")
-                    uri.should.be.equal(URI("classpath:///application.conf"))
+                    format.should.be.satisfy { arrayOf("Hocon", "Yaml", "Json").contains(it) }
+                    isOpened.should.be.`true`
                 }
             }
         }

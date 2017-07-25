@@ -17,24 +17,31 @@ class PropertiesServiceHoconImpl(val rawSource: PropertiesSource) : PropertiesSo
     override val rootKey: String get() = rawSource.rootKey ?: "DEFAULTS"
 
     private val objectMapper = ObjectMapper(HoconFactory())
-    private var config: Config
-    
+
+    private var root: Config?
+
+    override val isOpened: Boolean
+        get() = root != null
+
     init {
         try {
-            val result = when {
-                rawSource.uri == null -> ConfigFactory.load()
-                uri.scheme == null -> loadFrom(File(uri.toString()))
-                uri.scheme == "file" -> loadFrom(Paths.get(uri).toFile())
-                uri.scheme == "classpath" -> ConfigFactory.load(
-                        uri.toString().substring("classpath".length + 1).trimStart('/')
-                )
-                else -> throw IllegalArgumentException(
-                        """Unsupported schema '${uri.scheme}' to properties source. Must be one of [file, classpath]"""
-                )
-            }
-            config = result.getConfig(rootKey)
+            root = rootNode().getConfig(rootKey)
         } catch(e: ConfigException.Missing) {
-            throw IllegalArgumentException("""The '$uri' file not found. Add it with '$rootKey' section""")
+            root = null
+        }
+    }
+
+    private fun rootNode(): Config {
+        return when {
+            rawSource.uri == null -> ConfigFactory.load()
+            uri.scheme == null -> loadFrom(File(uri.toString()))
+            uri.scheme == "file" -> loadFrom(Paths.get(uri).toFile())
+            uri.scheme == "classpath" -> ConfigFactory.load(
+                    uri.toString().substring("classpath".length + 1).trimStart('/')
+            )
+            else -> throw IllegalArgumentException(
+                    """Unsupported schema '${uri.scheme}' to properties source. Must be one of [file, classpath]"""
+            )
         }
     }
 
@@ -73,21 +80,13 @@ class PropertiesServiceHoconImpl(val rawSource: PropertiesSource) : PropertiesSo
         }
     }
 
-    override fun asString(key: String): String? {
-        return getValue(key, { it?.getString(key) })
-    }
-
-    override fun asLong(key: String): Long? {
-        return getValue(key, { it?.getLong(key) })
-    }
-
-    override fun asInteger(key: String): Int? {
-        return getValue(key, { it?.getInt(key) })
-    }
+    override fun asString(key: String): String? = getValue(key, { it?.getString(key) })
+    override fun asLong(key: String): Long? = getValue(key, { it?.getLong(key) })
+    override fun asInteger(key: String): Int? = getValue(key, { it?.getInt(key) })
 
     private fun <T> getValue(key: String, transform: (Config?) -> T?): T? {
         try {
-            return transform.invoke(config)
+            return transform.invoke(root)
         } catch (e: ConfigException.Missing) {
             throw IllegalStateException("Configuration parameter '$key' is not found.", e)
         }

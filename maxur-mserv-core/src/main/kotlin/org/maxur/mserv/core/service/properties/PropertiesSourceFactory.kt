@@ -42,13 +42,13 @@ class PropertiesSourceFactoryNullImpl : PropertiesSourceFactory() {
 @Service(name = "Json")
 class PropertiesSourceFactoryJsonImpl : PropertiesSourceFactory() {
     override fun make(source: PropertiesSource): PropertiesSource =
-            PropertiesServiceJacksonImpl(JsonFactory(), "application.json", source)
+            PropertiesServiceJacksonImpl(JsonFactory(), "json", source)
 }
 
 @Service(name = "Yaml")
 class PropertiesSourceFactoryYamlImpl : PropertiesSourceFactory() {
     override fun make(source: PropertiesSource): PropertiesSource =
-            PropertiesServiceJacksonImpl(YAMLFactory(), "application.yaml", source)
+            PropertiesServiceJacksonImpl(YAMLFactory(), "yaml", source)
 }
 
 @Service(name = "Hocon")

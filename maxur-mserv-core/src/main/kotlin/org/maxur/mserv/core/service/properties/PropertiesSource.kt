@@ -17,19 +17,23 @@ import java.net.URI
 interface PropertiesSource {
 
     companion object {
-        fun make(format: String, uri: URI?, rootKey: String?): PropertiesSource
+        fun make(format: String?, uri: URI?, rootKey: String?): PropertiesSource
                 = RawPropertiesSource(format, uri, rootKey)
     }
 
-    val format: String
+    val format: String?
     val uri: URI?
     val rootKey: String?
 
     /**
      * open resource
-     *
      */
     fun open(): PropertiesSource = this
+
+    /**
+     * Returns true if resource is opened
+     */
+    val isOpened: Boolean
 
     /**
      * return properties by key
@@ -89,13 +93,35 @@ interface PropertiesSource {
  * @param rootKey the root key of properties
  * @param uri the uri of properties source
  */
-internal data class RawPropertiesSource(override val format: String,
+internal data class RawPropertiesSource(override val format: String?,
                                         override val uri: URI?,
                                         override val rootKey: String?
 ) : PropertiesSource {
-    override fun open() = Locator
-            .service(PropertiesSourceFactory::class, format)!!
-            .make(this)
+
+    val isDefault = format == null
+
+    override fun open(): PropertiesSource =
+            if (isDefault) openDefault() else openDefined(format!!)
+
+    private fun openDefined(format: String): PropertiesSource {
+        val source = Locator
+                .service(PropertiesSourceFactory::class, format)!!
+                .make(this)
+        if (source.isOpened || format.equals("none", true)) {
+            return source
+        }
+        throw IllegalArgumentException("""The '$uri' file not found. Add it with '$rootKey' section""")
+    }
+
+    private fun openDefault(): PropertiesSource {
+        Locator.services(PropertiesSourceFactory::class)
+                .map {
+                    val source = it.make(this)
+                    if (source.isOpened) return source
+                }
+        throw IllegalArgumentException("""Any property file not found. Add it to classpath""")
+    }
+
     override fun asString(key: String): String? = error(key)
     override fun asLong(key: String): Long? = error(key)
     override fun asInteger(key: String): Int? = error(key)
@@ -103,4 +129,7 @@ internal data class RawPropertiesSource(override val format: String,
     override fun <P> read(key: String, clazz: Class<P>): P? = error(key)
     private fun <T> error(key: String): T =
             throw IllegalStateException("Service Configuration is not found. Key '$key' unresolved")
+
+    override val isOpened: Boolean
+        get() = false
 }

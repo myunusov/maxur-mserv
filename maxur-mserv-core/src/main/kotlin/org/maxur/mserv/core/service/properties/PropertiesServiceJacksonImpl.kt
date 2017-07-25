@@ -8,24 +8,22 @@ import java.io.InputStream
 import java.net.URI
 import java.nio.file.Paths
 
-class PropertiesServiceJacksonImpl(
+internal class PropertiesServiceJacksonImpl(
         factory: JsonFactory,
-        val defaultFileName: String,
+        val defaultFormat: String,
         val rawSource: PropertiesSource
 ) : PropertiesSource {
 
-    override val format: String get() = rawSource.format
-    override val uri: URI  get() = rawSource.uri ?: URI.create("classpath:///$defaultFileName")
-    override val rootKey: String get() = rawSource.rootKey ?: "/"
+    override val format get() = defaultFormat.capitalize()
+    override val uri: URI  get() = rawSource.uri ?: URI.create("classpath:///application.$defaultFormat")
+    override val rootKey get() = rawSource.rootKey ?: "/"
 
     private val mapper = ObjectMapper(factory)
-    private var root: JsonNode
+    private var root: JsonNode? = rootNode(uri)?.path(rootKey)
 
-    init {
-        root = rootNode(uri)?.path(rootKey) ?:
-            throw IllegalArgumentException("""The '$uri' file not found. Add it with '$rootKey' section""")
-    }
-
+    override val isOpened: Boolean
+        get() = root != null
+    
     private fun rootNode(uri: URI): JsonNode? = when {
         uri.scheme == null -> mapper.readTree(File(uri.toString()))
         uri.scheme == "file" -> mapper.readTree(Paths.get(uri).toFile())
@@ -41,9 +39,12 @@ class PropertiesServiceJacksonImpl(
                 throw IllegalArgumentException("""Resource '$name' is not found""")
     }
 
-    override fun asString(key: String): String? = root.path(key).asText()
-    override fun asLong(key: String): Long? = root.path(key).asLong()
-    override fun asInteger(key: String): Int? = root.path(key).asInt()
-    override fun asURI(key: String): URI? = mapper.treeToValue(root.path(key), URI::class.java)
-    override fun <P> read(key: String, clazz: Class<P>): P? = mapper.treeToValue(root.path(key), clazz)
+    override fun asString(key: String): String? = root().path(key).asText()
+    override fun asLong(key: String): Long? = root().path(key).asLong()
+    override fun asInteger(key: String): Int? = root().path(key).asInt()
+    override fun asURI(key: String): URI? = mapper.treeToValue(root().path(key), URI::class.java)
+    override fun <P> read(key: String, clazz: Class<P>): P? = mapper.treeToValue(root().path(key), clazz)
+
+    fun root(): JsonNode = root ?: throw IllegalStateException("Resource is closed")
+
 }

@@ -15,8 +15,12 @@ class LocatorHK2Impl @Inject constructor(val locator: ServiceLocator) : Locator 
     @Suppress("UNCHECKED_CAST")
     override fun <T> implementation(): T = locator as T
 
+    @Suppress("UNCHECKED_CAST")
+    override fun <T> services(clazz: Class<*>): List<T> =
+        locator.getAllServices(clazz).map { it as T}
+
     override fun names(clazz: Class<*>): List<String> =
-        locator.getAllServiceHandles(clazz).map({ it.activeDescriptor.name })
+        locator.getAllServiceHandles(clazz).map { it.activeDescriptor.name }
 
     override fun property(key: String): String = locator.getService(PropertiesSource::class.java).asString(key)!!
 

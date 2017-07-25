@@ -173,7 +173,7 @@ class ServiceHolder {
 }
 
 class PropertiesHolder {
-    var format: String = "Hocon"
+    var format: String? = null
     var uri: URI? = null
     var rootKey: String? = null
     var url: String = ""
