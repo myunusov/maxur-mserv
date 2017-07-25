@@ -32,16 +32,14 @@ internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource
         }
     }
 
-    private fun rootNode(): Config {
-        return when {
-            rawSource.uri == null -> ConfigFactory.load()
-            uri.scheme == null -> loadFrom(File(uri.toString()))
-            uri.scheme == "file" -> loadFrom(Paths.get(uri).toFile())
-            uri.scheme == "classpath" -> ConfigFactory.load(path())
-            else -> throw IllegalArgumentException(
-                    """Unsupported schema '${uri.scheme}' to properties source. Must be one of [file, classpath]"""
-            )
-        }
+    private fun rootNode(): Config = when {
+        rawSource.uri == null -> ConfigFactory.load()
+        uri.scheme == null -> loadFrom(File(uri.toString()))
+        uri.scheme == "file" -> loadFrom(Paths.get(uri).toFile())
+        uri.scheme == "classpath" -> ConfigFactory.load(path())
+        else -> throw IllegalArgumentException(
+                """Unsupported schema '${uri.scheme}' to properties source. Must be one of [file, classpath]"""
+        )
     }
 
     private fun path() = uri.toString().substring("classpath".length + 1).trimStart('/')
