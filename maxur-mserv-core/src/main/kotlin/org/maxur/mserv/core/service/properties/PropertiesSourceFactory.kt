@@ -18,7 +18,6 @@ import javax.inject.Inject
  */
 @Contract
 abstract class PropertiesSourceFactory {
-
     @Inject
     @Self
     private var descriptor: ActiveDescriptor<*>? = null
@@ -28,15 +27,12 @@ abstract class PropertiesSourceFactory {
     fun init() {
         name = descriptor?.name ?: "Undefined"
     }
-
-    open fun make(source: PropertiesSource): PropertiesSource = provide(source)
-    protected abstract fun provide(source: PropertiesSource): PropertiesSource
+    abstract fun make(source: PropertiesSource): PropertiesSource
 }
 
 @Service(name = "None")
 class PropertiesSourceFactoryNullImpl : PropertiesSourceFactory() {
-
-    override fun provide(source: PropertiesSource): PropertiesSource {
+    override fun make(source: PropertiesSource): PropertiesSource {
         if (source.isConfigured())
             throw IllegalArgumentException("None properties source is configured")
         return source
@@ -45,19 +41,19 @@ class PropertiesSourceFactoryNullImpl : PropertiesSourceFactory() {
 
 @Service(name = "Json")
 class PropertiesSourceFactoryJsonImpl : PropertiesSourceFactory() {
-    override fun provide(source: PropertiesSource): PropertiesSource =
+    override fun make(source: PropertiesSource): PropertiesSource =
             PropertiesServiceJacksonImpl(JsonFactory(), "application.json", source)
 }
 
 @Service(name = "Yaml")
 class PropertiesSourceFactoryYamlImpl : PropertiesSourceFactory() {
-    override fun provide(source: PropertiesSource): PropertiesSource =
+    override fun make(source: PropertiesSource): PropertiesSource =
             PropertiesServiceJacksonImpl(YAMLFactory(), "application.yaml", source)
 }
 
 @Service(name = "Hocon")
 class PropertiesSourceFactoryHoconImpl : PropertiesSourceFactory() {
-    override fun provide(source: PropertiesSource): PropertiesSource =
+    override fun make(source: PropertiesSource): PropertiesSource =
             PropertiesServiceHoconImpl(source)
 }
 
