@@ -3,7 +3,7 @@ package org.maxur.mserv.sample;
 import org.maxur.mserv.core.Locator;
 import org.maxur.mserv.core.domain.BaseService;
 import org.maxur.mserv.core.service.msbuilder.Java;
-import org.maxur.mserv.core.service.properties.PropertiesService;
+import org.maxur.mserv.core.service.properties.PropertiesSource;
 import org.maxur.mserv.sample.params.ConfigParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,9 +39,9 @@ public final class Launcher {
     
     private static void beforeStart(final BaseService service) {
         final Locator locator = service.getLocator();
-        final PropertiesService propertiesService  = locator.service(PropertiesService.class);
-        if (propertiesService != null) {
-            log.info("Properties Source is '{}'", propertiesService.getSource().getFormat());
+        final PropertiesSource config  = locator.service(PropertiesSource.class);
+        if (config != null) {
+            log.info("Properties Source is '{}'", config.getFormat());
             final ConfigParams configParams = locator.service(ConfigParams.class);
             if (configParams != null) {
                 configParams.log();
