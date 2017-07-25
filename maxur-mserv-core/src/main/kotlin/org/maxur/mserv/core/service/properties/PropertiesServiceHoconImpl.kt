@@ -15,11 +15,11 @@ class PropertiesServiceHoconImpl(val rawSource: PropertiesSource) : PropertiesSo
     override val format: String get() = "Hocon"
     override val uri: URI get() = rawSource.uri ?: URI.create("classpath:///application.conf")
     override val rootKey: String get() = rawSource.rootKey ?: "DEFAULTS"
-    private val objectMapper = ObjectMapper(HoconFactory())
 
-    private lateinit var config: Config
+    private val objectMapper = ObjectMapper(HoconFactory())
+    private var config: Config
     
-    override fun open() {
+    init {
         try {
             val result = when {
                 rawSource.uri == null -> ConfigFactory.load()

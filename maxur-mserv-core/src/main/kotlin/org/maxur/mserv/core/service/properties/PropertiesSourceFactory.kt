@@ -17,31 +17,26 @@ import javax.inject.Inject
  * @since <pre>24.06.2017</pre>
  */
 @Contract
-abstract class PropertiesServiceFactory {
+abstract class PropertiesSourceFactory {
 
     @Inject
     @Self
     private var descriptor: ActiveDescriptor<*>? = null
 
     lateinit var name: String
-
     @PostConstruct
     fun init() {
         name = descriptor?.name ?: "Undefined"
     }
 
-    open fun make(source: PropertiesSource): PropertiesSource {
-        val result = propertiesSource(source)
-        result.open()
-        return result
-    }
-    protected abstract fun propertiesSource(source: PropertiesSource): PropertiesSource
+    open fun make(source: PropertiesSource): PropertiesSource = provide(source)
+    protected abstract fun provide(source: PropertiesSource): PropertiesSource
 }
 
 @Service(name = "None")
-class PropertiesServiceFactoryNullImpl : PropertiesServiceFactory() {
+class PropertiesSourceFactoryNullImpl : PropertiesSourceFactory() {
 
-    override fun propertiesSource(source: PropertiesSource): PropertiesSource {
+    override fun provide(source: PropertiesSource): PropertiesSource {
         if (source.isConfigured())
             throw IllegalArgumentException("None properties source is configured")
         return source
@@ -49,20 +44,20 @@ class PropertiesServiceFactoryNullImpl : PropertiesServiceFactory() {
 }
 
 @Service(name = "Json")
-class PropertiesServiceFactoryJsonImpl : PropertiesServiceFactory() {
-    override fun propertiesSource(source: PropertiesSource): PropertiesSource =
+class PropertiesSourceFactoryJsonImpl : PropertiesSourceFactory() {
+    override fun provide(source: PropertiesSource): PropertiesSource =
             PropertiesServiceJacksonImpl(JsonFactory(), "application.json", source)
 }
 
 @Service(name = "Yaml")
-class PropertiesServiceFactoryYamlImpl : PropertiesServiceFactory() {
-    override fun propertiesSource(source: PropertiesSource): PropertiesSource =
+class PropertiesSourceFactoryYamlImpl : PropertiesSourceFactory() {
+    override fun provide(source: PropertiesSource): PropertiesSource =
             PropertiesServiceJacksonImpl(YAMLFactory(), "application.yaml", source)
 }
 
 @Service(name = "Hocon")
-class PropertiesServiceFactoryHoconImpl : PropertiesServiceFactory() {
-    override fun propertiesSource(source: PropertiesSource): PropertiesSource =
+class PropertiesSourceFactoryHoconImpl : PropertiesSourceFactory() {
+    override fun provide(source: PropertiesSource): PropertiesSource =
             PropertiesServiceHoconImpl(source)
 }
 

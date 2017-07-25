@@ -3,6 +3,7 @@
 package org.maxur.mserv.core.service.properties
 
 import org.jvnet.hk2.annotations.Contract
+import org.maxur.mserv.core.Locator
 import java.net.URI
 
 /**
@@ -28,7 +29,7 @@ interface PropertiesSource {
      * open resource
      *
      */
-    fun open()
+    fun open(): PropertiesSource = this
 
     /**
      * return properties by key
@@ -76,7 +77,7 @@ interface PropertiesSource {
      * @return properties by key
      */
     fun <P> read(key: String, clazz: Class<P>): P?
-    
+
     /**
      * It returns true when properties is configured
      */
@@ -92,7 +93,9 @@ internal data class RawPropertiesSource(override val format: String,
                                         override val uri: URI?,
                                         override val rootKey: String?
 ) : PropertiesSource {
-    override fun open() = Unit
+    override fun open() = Locator
+            .service(PropertiesSourceFactory::class, format)!!
+            .make(this)
     override fun asString(key: String): String? = error(key)
     override fun asLong(key: String): Long? = error(key)
     override fun asInteger(key: String): Int? = error(key)

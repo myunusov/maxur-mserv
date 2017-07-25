@@ -18,12 +18,12 @@ class PropertiesServiceJacksonImpl(
     override val uri: URI  get() = rawSource.uri ?: URI.create("classpath:///$defaultFileName")
     override val rootKey: String get() = rawSource.rootKey ?: "/"
 
-    val mapper = ObjectMapper(factory)
+    private val mapper = ObjectMapper(factory)
+    private var root: JsonNode
 
-    lateinit var root: JsonNode
-
-    override fun open() {
-        root = rootNode(uri)?.path(rootKey)!!
+    init {
+        root = rootNode(uri)?.path(rootKey) ?:
+            throw IllegalArgumentException("""The '$uri' file not found. Add it with '$rootKey' section""")
     }
 
     private fun rootNode(uri: URI): JsonNode? = when {
