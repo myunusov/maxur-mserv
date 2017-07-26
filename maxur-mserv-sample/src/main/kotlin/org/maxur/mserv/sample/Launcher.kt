@@ -2,7 +2,7 @@ package org.maxur.mserv.sample
 
 import org.maxur.mserv.core.embedded.WebServer
 import org.maxur.mserv.core.service.msbuilder.Kotlin
-import org.maxur.mserv.core.service.properties.PropertiesService
+import org.maxur.mserv.core.service.properties.PropertiesSource
 import org.maxur.mserv.sample.params.ConfigParams
 import org.slf4j.LoggerFactory
 
@@ -40,8 +40,8 @@ object Launcher {
         }.start()
     }
 
-    fun beforeStart(configParams: ConfigParams, propertiesService: PropertiesService) {
-        log().info("Properties Source is '${propertiesService.source.format}'\n")
+    fun beforeStart(configParams: ConfigParams, config: PropertiesSource) {
+        log().info("Properties Source is '${config.format}'\n")
         configParams.log()
     }
 

@@ -10,7 +10,9 @@ interface Locator {
         lateinit var current: Locator
         fun <T> service(clazz: Class<T>): T? = current.service(clazz)
         fun <T : Any> service(clazz: KClass<T>): T? = current.service(clazz)
+        fun <T : Any> service(clazz: KClass<T>, name: String): T? = current.service(clazz, name)
         fun <T : Any> service(parameter: KParameter): T? = current.service(parameter)
+        fun <T : Any> services(clazz: KClass<T>): List<T> = current.services(clazz)
         fun shutdown() = current.shutdown()
     }
 
@@ -27,9 +29,13 @@ interface Locator {
 
     fun <T : Any> service(parameter: KParameter): T? = service(parameter.type.classifier as KClass<T>)
 
+    fun <T : Any> service(clazz: KClass<T>, name: String?): T? = service(clazz.java, name)
+
     fun <T> service(clazz: Class<T>, name: String?): T?
 
-    fun <T : Any> service(clazz: KClass<T>, name: String?): T? = service(clazz.java, name)
+    fun <T : Any> services(clazz: KClass<T>): List<T> = services(clazz.java)
+
+    fun <T> services(clazz: Class<*>): List<T>
 
     fun names(clazz: Class<*>): List<String>
 

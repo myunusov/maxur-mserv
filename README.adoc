@@ -50,7 +50,7 @@ It can work with Kotlin or Java services as framework
 |http://hibernate.org/validator/[Hibernate Validator]
 
 |Properties Format
-|https://github.com/typesafehub/config/blob/master/HOCON.md[HOCON]
+|https://github.com/typesafehub/config/blob/master/HOCON.md[HOCON] http://yaml.org/[YAML] http://www.json.org/[JSON]
 
 |===
 
@@ -70,14 +70,14 @@ The `pom.xml` and `build.gradle` files show you the general setup.
 <dependency>
     <groupId>org.maxur</groupId>
     <artifactId>maxur-mserv-core</artifactId>
-    <version>0.2.1</version>
+    <version>0.3-SNAPSHOT</version>
 </dependency>
 ----
 
 ==== Gradle
 [source, groovy]
 ----
-compile group: 'org.maxur', name: 'maxur-mserv-core', version: '0.2.1'
+compile group: 'org.maxur', name: 'maxur-mserv-core', version: '0.3-SNAPSHOT'
 ----
 
 === Tutorial
