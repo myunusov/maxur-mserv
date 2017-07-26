@@ -38,21 +38,24 @@ internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource
                 when (rawSource.uri!!.scheme) {
                     null -> loadFrom(File(uri.toString()))
                     "file" -> loadFrom(Paths.get(uri).toFile())
-                    "classpath" -> ConfigFactory.load(path())
+                    "classpath" -> ConfigFactory.load(uri!!.withoutScheme())
                     else -> throw IllegalArgumentException(
                             "Unsupported schema '${rawSource.uri!!.scheme}' to properties source. " +
                                     "Must be one of [file, classpath]"
                     )
                 }
 
-
-    private fun path() = rawSource.uri!!.toString().substring("classpath".length + 1).trimStart('/')
+    private fun URI.withoutScheme() =
+            if (scheme.isNullOrEmpty())
+                toString()  
+            else
+                toString().substring(scheme.length + 1).trimStart('/')
 
     @Suppress("UNCHECKED_CAST")
     override fun <P> read(key: String, clazz: Class<P>): P? =
             when (clazz) {
                 String::class.java -> asString(key) as P?
-                Integer::class.java -> asInteger(key) as P?
+                Int::class.java, Integer::class.java -> asInteger(key) as P?
                 Long::class.java -> asLong(key) as P?
                 URI::class.java -> asURI(key) as P?
                 Double::class.java -> root?.getDouble(key) as P?

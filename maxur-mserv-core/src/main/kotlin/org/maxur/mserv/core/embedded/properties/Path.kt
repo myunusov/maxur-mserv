@@ -1,6 +1,6 @@
 package org.maxur.mserv.core.embedded.properties
 
-class Path(val path: String) {
+data class Path(val path: String) {
 
     val contextPath: String = run {
         // Map the path to the processor.

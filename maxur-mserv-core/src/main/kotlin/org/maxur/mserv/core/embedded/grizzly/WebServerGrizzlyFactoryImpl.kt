@@ -35,7 +35,7 @@ import javax.inject.Inject
 class WebServerGrizzlyFactoryImpl @Inject constructor(val locator: Locator) : EmbeddedServiceFactory() {
 
     companion object {
-        val SWAGGER_URL = "classpath:/META-INF/resources/webjars/swagger-ui/3.0.18/"
+        val SWAGGER_URL = "classpath:/META-INF/resources/webjars/swagger-ui/3.0.20/"
         val HAL_URL = "classpath:/META-INF/resources/webjars/hal-browser/3325375/"
         init {
             SLF4JBridgeHandler.removeHandlersForRootLogger()

@@ -52,7 +52,7 @@
 
         <dokka.version>0.9.15</dokka.version>
 
-        <jackson.version>2.8.7</jackson.version>
+        <jackson.version>2.8.9</jackson.version>
         <jackson-dataformat-hal.version>1.0.1</jackson-dataformat-hal.version>
 
         <jersey.version>2.25.1</jersey.version>
@@ -60,12 +60,12 @@
         <hk2.version>2.5.0-b32</hk2.version>
 
         <swagger.version>1.5.16</swagger.version>
-        <swagger-ui.version>3.0.18</swagger-ui.version>
+        <swagger-ui.version>3.0.20</swagger-ui.version>
 
         <hal-browser.version>3325375</hal-browser.version>
 
         <javax.servlet-api.version>3.1.0</javax.servlet-api.version>
-        <grizzly.version>2.3.31</grizzly.version>
+        <grizzly.version>2.4.0</grizzly.version>
 
         <hocon.config.version>1.3.1</hocon.config.version>
 
@@ -1109,7 +1109,7 @@
                     <dependency>
                         <groupId>org.apache.ant</groupId>
                         <artifactId>ant</artifactId>
-                        <version>1.8.2</version>
+                        <version>1.10.1</version>
                     </dependency>
                 </dependencies>
             </plugin>
