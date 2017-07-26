@@ -50,11 +50,16 @@ class PropertiesSourceHoconImplSpec : Spek({
 
             it("should return value of properties by it's key") {
                 sut.asString("name").should.be.equal("μService")
-                sut.asLong("id").should.be.equal(1L)
+                sut.read("name", String::class).should.be.equal("μService")
                 sut.asInteger("id").should.be.equal(1)
+                sut.read("id", Integer::class).should.be.equal(1 as Integer)
+                sut.asLong("id").should.be.equal(1L)
+                sut.read("id", Long::class).should.be.equal(1L)
+                sut.asURI("url").should.be.equal(URI("file:///file.txt"))
+                sut.read("url", URI::class).should.be.equal(URI("file:///file.txt"))
+
                 sut.read("id", Double::class).should.be.equal(1.0)
                 sut.read("time", Duration::class).should.be.equal(Duration.of(1, ChronoUnit.SECONDS))
-                sut.asURI("url").should.be.equal(URI("file:///file.txt"))
             }
             it("should throw exception when properties is not found") {
                 assertFailsWith<IllegalStateException> {
