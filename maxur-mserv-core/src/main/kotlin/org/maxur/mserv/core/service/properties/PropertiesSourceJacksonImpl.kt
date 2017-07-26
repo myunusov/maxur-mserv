@@ -4,9 +4,7 @@ import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
+import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
 import java.io.File
 import java.io.InputStream
 import java.net.URI
@@ -22,10 +20,7 @@ internal class PropertiesSourceJacksonImpl(
     override val uri: URI get() = rawSource.uri ?: URI.create("classpath:///application.$defaultFormat")
     override val rootKey get() = rawSource.rootKey
 
-    private val mapper = ObjectMapper(factory)
-            .registerModule( ParameterNamesModule())
-            .registerModule( Jdk8Module())
-            .registerModule( JavaTimeModule())
+    private val mapper = ObjectMapperProvider.config(ObjectMapper(factory))
     private var root: JsonNode? =
             if (rawSource.rootKey != null)
                 rootNode(uri)?.get(rawSource.rootKey)
@@ -38,20 +33,17 @@ internal class PropertiesSourceJacksonImpl(
     private fun rootNode(uri: URI): JsonNode? = when {
         uri.scheme == null -> mapper.readTree(File(uri.toString()))
         uri.scheme == "file" -> mapper.readTree(Paths.get(uri).toFile())
-        uri.scheme == "classpath" -> mapper.readTree(inputStreamByResource(uri))
+        uri.scheme == "classpath" -> inputStreamByResource(uri)?.let { mapper.readTree(it) }
         else -> throw IllegalArgumentException(
                 """Unsupported schema '${uri.scheme}' to properties source. Must be one of [file, classpath]"""
         )
     }
 
-    private fun inputStreamByResource(uri: URI): InputStream {
-        val name = "/" + uri.toString().substring("classpath".length + 1).trimStart('/')
-        return this::class.java.getResourceAsStream(name) ?:
-                throw IllegalArgumentException("""Resource '$name' is not found""")
-    }
-
-
-
+    private fun inputStreamByResource(uri: URI): InputStream? =
+            this::class.java.getResourceAsStream(
+                    "/" + uri.toString().substring("classpath".length + 1).trimStart('/')
+            )
+    
     override fun asString(key: String): String? = node(key).asText()
     override fun asLong(key: String): Long? = node(key).asLong()
     override fun asInteger(key: String): Int? = node(key).asInt()

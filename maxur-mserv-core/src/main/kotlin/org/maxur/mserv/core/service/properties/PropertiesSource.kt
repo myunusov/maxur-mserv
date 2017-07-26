@@ -110,10 +110,8 @@ internal data class RawPropertiesSource(override val format: String?,
                                         override val rootKey: String?
 ) : PropertiesSource {
 
-    val isDefault = format == null
-
     override fun open(): PropertiesSource =
-            if (isDefault) openDefault() else openDefined(format!!)
+            if (format == null) openDefault() else openDefined(format)
 
     private fun openDefined(format: String): PropertiesSource {
         val source = Locator

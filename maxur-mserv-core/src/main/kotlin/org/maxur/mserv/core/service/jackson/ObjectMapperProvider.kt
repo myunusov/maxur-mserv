@@ -13,10 +13,8 @@ import org.glassfish.hk2.api.Factory
 
 class ObjectMapperProvider : Factory<ObjectMapper> {
 
-    private val objectMapper: ObjectMapper = ObjectMapper()
-
-    init {
-        objectMapper
+    companion object {
+        fun config(objectMapper: ObjectMapper): ObjectMapper = objectMapper
                 .setVisibility(PropertyAccessor.SETTER, JsonAutoDetect.Visibility.NONE)
                 .setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE)
                 .setVisibility(PropertyAccessor.IS_GETTER, JsonAutoDetect.Visibility.NONE)
@@ -28,6 +26,8 @@ class ObjectMapperProvider : Factory<ObjectMapper> {
                 .registerModule(JacksonHALModule())
                 .registerModule(ParameterNamesModule())
     }
+
+    private val objectMapper: ObjectMapper = config(ObjectMapper())
 
     override fun dispose(instance: ObjectMapper?) = Unit
     override fun provide(): ObjectMapper = objectMapper
