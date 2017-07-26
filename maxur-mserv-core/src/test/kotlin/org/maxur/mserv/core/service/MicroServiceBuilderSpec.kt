@@ -67,7 +67,7 @@ class MicroServiceBuilderSpec : Spek({
                     isOpened.should.be.`true`
                     format.should.be.equal("Hocon")
                     rootKey.should.be.equal("DEFAULTS")
-                    uri.should.be.equal(URI("classpath:///application.conf"))
+                    uri.should.be.satisfy { it.toString().endsWith("application.conf") }
                 }
             }
             it("should return new micro-service with default properties source for java client") {
@@ -81,7 +81,7 @@ class MicroServiceBuilderSpec : Spek({
                     isOpened.should.be.`true`
                     format.should.be.equal("Hocon")
                     rootKey.should.be.equal("DEFAULTS")
-                    uri.should.be.equal(URI("classpath:///application.conf"))
+                    uri.should.be.satisfy { it.toString().endsWith("application.conf") }
                 }
             }
         }
@@ -167,7 +167,7 @@ class MicroServiceBuilderSpec : Spek({
                     isOpened.should.be.`true`
                     format.should.be.equal("Hocon")
                     rootKey.should.be.equal("DEFAULTS")
-                    uri.should.be.equal(URI("src/test/resources/application.conf"))
+                    uri.should.be.satisfy { it.toString().endsWith("src/test/resources/application.conf") }
                 }
             }
             it("should return new micro-service for java client") {
@@ -182,7 +182,7 @@ class MicroServiceBuilderSpec : Spek({
                     isOpened.should.be.`true`
                     format.should.be.equal("Hocon")
                     rootKey.should.be.equal("DEFAULTS")
-                    uri.should.be.equal(URI("src/test/resources/application.conf"))
+                    uri.should.be.satisfy { it.toString().endsWith("src/test/resources/application.conf") }
                 }
             }
         }
@@ -202,7 +202,7 @@ class MicroServiceBuilderSpec : Spek({
                     isOpened.should.be.`true`
                     format.should.be.equal("Hocon")
                     rootKey.should.be.equal("USER")
-                    uri.should.be.equal(URI("classpath:///application.conf"))
+                    uri.should.be.satisfy { it.toString().endsWith("application.conf") }
                 }
             }
             it("should return new micro-service for java client") {
@@ -217,7 +217,7 @@ class MicroServiceBuilderSpec : Spek({
                     isOpened.should.be.`true`
                     format.should.be.equal("Hocon")
                     rootKey.should.be.equal("USER")
-                    uri.should.be.equal(URI("classpath:///application.conf"))
+                    uri.should.be.satisfy { it.toString().endsWith("application.conf") }
                 }
             }
         }

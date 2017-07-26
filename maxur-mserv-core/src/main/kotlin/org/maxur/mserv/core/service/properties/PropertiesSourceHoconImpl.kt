@@ -5,6 +5,7 @@ import com.jasonclawson.jackson.dataformat.hocon.HoconFactory
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigException
 import com.typesafe.config.ConfigFactory
+import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
 import java.io.File
 import java.io.IOException
 import java.net.URI
@@ -14,35 +15,38 @@ import java.time.Duration
 internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource) : PropertiesSource {
 
     override val format: String get() = "Hocon"
-    override val uri: URI get() = rawSource.uri ?: URI.create("classpath:///application.conf")
-    override val rootKey: String get() = rawSource.rootKey ?: "DEFAULTS"
 
-    private val objectMapper = ObjectMapper(HoconFactory())
+    override val rootKey: String get() =  rawSource.rootKey ?: "DEFAULTS"
 
-    private var root: Config?
+    private var root: Config? = try {
+        rootNode().getConfig(rootKey)
+    } catch(e: ConfigException.Missing) {
+        null
+    }
 
     override val isOpened: Boolean
         get() = root != null
 
-    init {
-        try {
-            root = rootNode().getConfig(rootKey)
-        } catch(e: ConfigException.Missing) {
-            root = null
-        }
-    }
+    override val uri: URI? get() = root?.origin()?.url()?.toURI() ?: rawSource.uri
 
-    private fun rootNode(): Config = when {
-        rawSource.uri == null -> ConfigFactory.load()
-        uri.scheme == null -> loadFrom(File(uri.toString()))
-        uri.scheme == "file" -> loadFrom(Paths.get(uri).toFile())
-        uri.scheme == "classpath" -> ConfigFactory.load(path())
-        else -> throw IllegalArgumentException(
-                """Unsupported schema '${uri.scheme}' to properties source. Must be one of [file, classpath]"""
-        )
-    }
+    private val mapper = ObjectMapperProvider.config(ObjectMapper(HoconFactory()))
 
-    private fun path() = uri.toString().substring("classpath".length + 1).trimStart('/')
+    private fun rootNode(): Config =
+            if (rawSource.uri == null)
+                ConfigFactory.load()
+            else
+                when (rawSource.uri!!.scheme) {
+                    null -> loadFrom(File(uri.toString()))
+                    "file" -> loadFrom(Paths.get(uri).toFile())
+                    "classpath" -> ConfigFactory.load(path())
+                    else -> throw IllegalArgumentException(
+                            "Unsupported schema '${rawSource.uri!!.scheme}' to properties source. " +
+                                    "Must be one of [file, classpath]"
+                    )
+                }
+
+
+    private fun path() = rawSource.uri!!.toString().substring("classpath".length + 1).trimStart('/')
 
     @Suppress("UNCHECKED_CAST")
     override fun <P> read(key: String, clazz: Class<P>): P? =
@@ -74,7 +78,7 @@ internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource
     private fun asObject(key: String, clazz: Class<*>): Any? {
         try {
             return getValue(key, { it?.getObject(key) })
-                    ?.let { objectMapper.readValue(it.render(), clazz) }
+                    ?.let { mapper.readValue(it.render(), clazz) }
         } catch (e: Exception) {
             when (e) {
                 is IOException, is ConfigException.WrongType -> {
