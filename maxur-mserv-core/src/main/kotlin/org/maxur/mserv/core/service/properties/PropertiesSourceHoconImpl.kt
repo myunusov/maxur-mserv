@@ -80,7 +80,7 @@ internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource
 
     private fun asObject(key: String, clazz: Class<*>): Any? {
         try {
-            return getValue(key, { it?.getObject(key) })
+            return getValue(key, { it.getObject(key) })
                     ?.let { mapper.readValue(it.render(), clazz) }
         } catch (e: Exception) {
             when (e) {
@@ -92,16 +92,15 @@ internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource
         }
     }
 
-    override fun asString(key: String): String? = getValue(key, { it?.getString(key) })
-    override fun asLong(key: String): Long? = getValue(key, { it?.getLong(key) })
-    override fun asInteger(key: String): Int? = getValue(key, { it?.getInt(key) })
+    override fun asString(key: String): String? = getValue(key, { it.getString(key) })
+    override fun asLong(key: String): Long? = getValue(key, { it.getLong(key) })
+    override fun asInteger(key: String): Int? = getValue(key, { it.getInt(key) })
 
-    private fun <T> getValue(key: String, transform: (Config?) -> T?): T? {
+    private fun <T> getValue(key: String, transform: (Config) -> T?): T? =
         try {
-            return transform.invoke(root)
+            root?.let { transform.invoke(it) }
         } catch (e: ConfigException.Missing) {
             throw IllegalStateException("Configuration parameter '$key' is not found.", e)
         }
-    }
 
 }
