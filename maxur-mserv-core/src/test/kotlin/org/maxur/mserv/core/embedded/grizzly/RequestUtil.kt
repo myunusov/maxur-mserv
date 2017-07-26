@@ -31,8 +31,8 @@ object RequestUtil {
 
         val chainContext = mock<FilterChainContext> {
             on { filterChain } doReturn chain
-            on { connection } doReturn mock<Connection<Any>>(Connection::class.qualifiedName!!)
-            on { memoryManager } doReturn mock<MemoryManager<Buffer>>(MemoryManager::class.qualifiedName!!)
+            on { connection } doReturn mock<Connection<Any>>(name = Connection::class.qualifiedName!!)
+            on { memoryManager } doReturn mock<MemoryManager<Buffer>>(name = MemoryManager::class.qualifiedName!!)
         }
 
         val responsePacket = mock<HttpResponsePacket> {
