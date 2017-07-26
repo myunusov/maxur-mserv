@@ -43,10 +43,20 @@ class MicroServiceBuilderSpec : Spek({
             }
             it("should throw exception on configure none properties source") {
                 assertFailsWith<IllegalStateException> {
-                    val service = Kotlin.service {
+                    Kotlin.service {
                         properties {
                             format = "None"
                             url = "file:///file.cfg"
+                        }
+                    }
+                }
+            }
+            it("should throw exception on configure none properties source") {
+                assertFailsWith<IllegalStateException> {
+                    Kotlin.service {
+                        properties {
+                            format = "None"
+                            rootKey = "defaults"
                         }
                     }
                 }

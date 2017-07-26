@@ -24,6 +24,7 @@ class PropertiesSourceHoconImplSpec : Spek({
                 sut.format.should.be.equal("Hocon")
                 sut.isOpened.should.be.`true`
                 sut.uri.should.be.satisfy { it.toString().endsWith("application.conf") }
+                sut.open().should.be.equal(sut)
             }
             it("should return opened source with classpath url") {
                 val rawSource = PropertiesSource.make("Hocon", URI("classpath://application.conf"))
