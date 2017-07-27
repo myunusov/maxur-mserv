@@ -12,43 +12,40 @@ import java.time.temporal.ChronoUnit
 import kotlin.test.assertFailsWith
 
 
-class PropertiesSourceHoconImplSpec : Spek({
+class PropertiesHoconImplSpec : Spek({
 
     describe("a Properties Source as Hocon File") {
 
+        fun hocon(uri: URI?= null, root: String? = null): PropertiesSource = object : PropertiesSource {
+            override val format: String? get() = "Hocon"
+            override val uri: URI? get() = uri
+            override val rootKey: String? get() = root
+        }
+
         context("Load properties source by url") {
             it("should return opened source with url by default") {
-                val rawSource = PropertiesSource.make("Hocon")
-                val sut = PropertiesSourceHoconImpl(rawSource)
+                val sut = PropertiesSourceHoconImpl(hocon())
                 sut.should.be.not.`null`
-                sut.format.should.be.equal("Hocon")
-                sut.isOpened.should.be.`true`
+                (sut as PropertiesSource).format.should.be.equal("Hocon")
                 sut.uri.should.be.satisfy { it.toString().endsWith("application.conf") }
-                sut.open().should.be.equal(sut)
             }
             it("should return opened source with classpath url") {
-                val rawSource = PropertiesSource.make("Hocon", URI("classpath://application.conf"))
-                val sut = PropertiesSourceHoconImpl(rawSource)
+                val sut = PropertiesSourceHoconImpl(hocon(URI("classpath://application.conf")))
                 sut.should.be.not.`null`
-                sut.format.should.be.equal("Hocon")
-                sut.isOpened.should.be.`true`
+                (sut as PropertiesSource).format.should.be.equal("Hocon")
                 sut.uri.should.be.satisfy { it.toString().endsWith("application.conf") }
             }
             it("should return opened source with url by default") {
-                val path = PropertiesSourceHoconImplSpec::class.java.getResource("/application.conf").path
-                val rawSource = PropertiesSource.make("Hocon", URL(path).toURI())
-                val sut = PropertiesSourceHoconImpl(rawSource)
+                val path = PropertiesHoconImplSpec::class.java.getResource("/application.conf").path
+                val sut = PropertiesSourceHoconImpl(hocon(URL(path).toURI()))
                 sut.should.be.not.`null`
-                sut.format.should.be.equal("Hocon")
-                sut.isOpened.should.be.`true`
+                (sut as PropertiesSource).format.should.be.equal("Hocon")
                 sut.uri.should.be.satisfy { it.toString().endsWith("application.conf") }
             }
         }
 
         context("Load properties source from file") {
-            val rawSource = PropertiesSource.make("Hocon")
-            val sut = PropertiesSourceHoconImpl(rawSource)
-
+            val sut = PropertiesSourceHoconImpl(hocon())
             it("should return value of properties by it's key") {
                 sut.asString("name").should.be.equal("μService")
                 sut.read("name", String::class).should.be.equal("μService")

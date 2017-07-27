@@ -4,7 +4,7 @@ import org.glassfish.hk2.api.Injectee
 import org.glassfish.hk2.api.InjectionResolver
 import org.glassfish.hk2.api.ServiceHandle
 import org.maxur.mserv.core.annotation.Value
-import org.maxur.mserv.core.service.properties.PropertiesSource
+import org.maxur.mserv.core.service.properties.Properties
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Constructor
@@ -20,7 +20,7 @@ import javax.inject.Inject
  * @version 1.0
  * @since <pre>12.06.2017</pre>
  */
-class PropertiesInjectionResolver @Inject constructor(val service: PropertiesSource) : InjectionResolver<Value> {
+class PropertiesInjectionResolver @Inject constructor(val service: Properties) : InjectionResolver<Value> {
 
     companion object {
         val log: Logger = LoggerFactory.getLogger(PropertiesInjectionResolver::class.java)
