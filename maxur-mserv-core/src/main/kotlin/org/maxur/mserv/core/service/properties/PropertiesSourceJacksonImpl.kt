@@ -28,10 +28,10 @@ internal class PropertiesSourceJacksonImpl(
                 rootNode(uri)
             ) ?: throw IllegalStateException("The properties source is not found")
 
-    private fun rootNode(uri: URI): JsonNode? = when {
-        uri.scheme == null -> mapper.readTree(File(uri.toString()))
-        uri.scheme == "file" -> mapper.readTree(Paths.get(uri).toFile())
-        uri.scheme == "classpath" -> inputStreamByResource(uri)?.let { mapper.readTree(it) }
+    private fun rootNode(uri: URI): JsonNode? = when(uri.scheme) {
+         null -> mapper.readTree(File(uri.toString()))
+        "file" -> mapper.readTree(Paths.get(uri).toFile())
+        "classpath" -> inputStreamByResource(uri)?.let { mapper.readTree(it) }
         else -> throw IllegalArgumentException(
                 """Unsupported schema '${uri.scheme}' to properties source. Must be one of [file, classpath]"""
         )

@@ -1,9 +1,11 @@
 package org.maxur.mserv.core.service.properties
 
+import com.winterbe.expekt.should
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.context
 import org.jetbrains.spek.api.dsl.describe
 import org.jetbrains.spek.api.dsl.it
+import org.maxur.mserv.core.utils.fold
 import java.net.URI
 import kotlin.test.assertFailsWith
 
@@ -19,8 +21,11 @@ class PropertiesSourceNoneImplSpec : Spek({
         }
 
         context("create new properties source") {
-            val sut = PropertiesFactoryNullImpl().make(none())
+            val sut = PropertiesFactoryNullImpl().make(none()).fold( {null}, { it } )
+
             it("should throw exception when properties is read") {
+                sut.should.be.not.`null`
+                sut!!
                 assertFailsWith<IllegalStateException> {
                     sut.asString("name")
                 }
@@ -37,7 +42,6 @@ class PropertiesSourceNoneImplSpec : Spek({
                     sut.read("url", URI::class)
                 }
             }
-
         }
     }
 

@@ -3,6 +3,7 @@
 package org.maxur.mserv.core.service.properties
 
 import org.maxur.mserv.core.Locator
+import org.maxur.mserv.core.utils.fold
 import java.net.URI
 
 /**
@@ -15,6 +16,14 @@ import java.net.URI
 interface PropertiesSource {
 
     companion object {
+
+        /**
+         * Open properties resource.
+         *
+         * @param format the properties format
+         * @param rootKey the root key of properties
+         * @param uri the uri of properties source
+         */
         fun open(format: String?, uri: URI? = null, rootKey: String? = null): Properties =
             BasePropertiesSource(format, uri, rootKey).open()
     }
@@ -30,17 +39,12 @@ interface PropertiesSource {
 
 }
 
-/**
- * @param format the properties format
- * @param rootKey the root key of properties
- * @param uri the uri of properties source
- */
+
 private data class BasePropertiesSource(override val format: String?,
                                          override val uri: URI?,
                                          override val rootKey: String?
 ) : PropertiesSource {
-
-    /**
+     /**
      * open resource
      */
     fun open(): Properties =
@@ -48,20 +52,25 @@ private data class BasePropertiesSource(override val format: String?,
 
     private fun openDefined(format: String): Properties {
         return Locator
-                .service(PropertiesFactory::class, format)!!
-                .make(this) ?:
-                throw IllegalArgumentException("""The '$uri' file not found. Add it with '$rootKey' section""")
+            .service(PropertiesFactory::class, format)!!
+            .make(this)
+            .fold (
+                { e -> throw IllegalArgumentException("The '$uri' file not found. Add it with '$rootKey' section", e) },
+                { it }
+            )
     }
 
     private fun openDefault(): Properties {
         Locator.services(PropertiesFactory::class)
-                .filter { !(it is PropertiesFactoryNullImpl) }
-                .map {
-                    val properties = it.make(this)
-                    if (properties != null) return properties
-                }
+            .filter { it !is PropertiesFactoryNullImpl }
+            .map {
+                it.make(this)
+                        .fold (
+                        { },
+                        { return it }
+                )
+            }
         throw IllegalArgumentException("""Any property file not found. Add it to classpath""")
     }
-
-
+    
 }
