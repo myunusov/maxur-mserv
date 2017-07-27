@@ -2,7 +2,7 @@ package org.maxur.mserv.core.service.hk2
 
 import org.glassfish.hk2.api.ServiceLocator
 import org.maxur.mserv.core.Locator
-import org.maxur.mserv.core.service.properties.PropertiesSource
+import org.maxur.mserv.core.service.properties.Properties
 import javax.inject.Inject
 
 
@@ -22,10 +22,10 @@ class LocatorHK2Impl @Inject constructor(val locator: ServiceLocator) : Locator 
     override fun names(clazz: Class<*>): List<String> =
         locator.getAllServiceHandles(clazz).map { it.activeDescriptor.name }
 
-    override fun property(key: String): String = locator.getService(PropertiesSource::class.java).asString(key)!!
+    override fun property(key: String): String = locator.getService(Properties::class.java).asString(key)!!
 
     override fun <R> properties(key: String, clazz: Class<R>): R? {
-        return locator.getService(PropertiesSource::class.java).read(key, clazz)
+        return locator.getService(Properties::class.java).read(key, clazz)
     }
 
     override fun <T> service(clazz: Class<T>): T? = locator.getService<T>(clazz)

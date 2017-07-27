@@ -14,21 +14,19 @@ internal class PropertiesSourceJacksonImpl(
         factory: JsonFactory,
         private val defaultFormat: String,
         private val rawSource: PropertiesSource
-) : PropertiesSource {
+) : Properties, PropertiesSource {
 
     override val format get() = defaultFormat.capitalize()
     override val uri: URI get() = rawSource.uri ?: URI.create("classpath:///application.$defaultFormat")
     override val rootKey get() = rawSource.rootKey
 
     private val mapper = ObjectMapperProvider.config(ObjectMapper(factory))
-    private var root: JsonNode? =
+    private var root: JsonNode = (
             if (rawSource.rootKey != null)
                 rootNode(uri)?.get(rawSource.rootKey)
             else
                 rootNode(uri)
-
-    override val isOpened: Boolean
-        get() = root != null
+            ) ?: throw IllegalStateException("The properties source is not found")
 
     private fun rootNode(uri: URI): JsonNode? = when {
         uri.scheme == null -> mapper.readTree(File(uri.toString()))
@@ -43,7 +41,7 @@ internal class PropertiesSourceJacksonImpl(
             this::class.java.getResourceAsStream(
                     "/" + uri.toString().substring("classpath".length + 1).trimStart('/')
             )
-    
+
     override fun asString(key: String): String? = node(key).asText()
     override fun asLong(key: String): Long? = node(key).asLong()
     override fun asInteger(key: String): Int? = node(key).asInt()
@@ -58,6 +56,7 @@ internal class PropertiesSourceJacksonImpl(
 
     private fun node(key: String) = root().get(key) ?:
             throw IllegalStateException("Configuration parameter '$key' is not found.")
+
     fun root(): JsonNode = root ?: throw IllegalStateException("Resource '$uri' is closed")
 
 }

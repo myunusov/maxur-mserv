@@ -8,13 +8,18 @@ import java.net.URI
 import kotlin.test.assertFailsWith
 
 
-class RawPropertiesSourceSpec : Spek({
+class PropertiesSourceNoneImplSpec : Spek({
 
     describe("a unknown Properties Source") {
 
-        context("create new properties source") {
-            val sut = PropertiesSource.make("Hocon")
+        fun none(uri: URI?= null, root: String? = null): PropertiesSource = object : PropertiesSource {
+            override val format: String? get() = "None"
+            override val uri: URI? get() = uri
+            override val rootKey: String? get() = root
+        }
 
+        context("create new properties source") {
+            val sut = PropertiesFactoryNullImpl().make(none())
             it("should throw exception when properties is read") {
                 assertFailsWith<IllegalStateException> {
                     sut.asString("name")

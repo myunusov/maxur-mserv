@@ -13,41 +13,41 @@ import java.time.temporal.ChronoUnit
 import kotlin.test.assertFailsWith
 
 
-class PropertiesSourceJacksonImplSpec : Spek({
+class PropertiesJacksonImplSpec : Spek({
 
     describe("a Properties Source as Yaml File") {
+
+        fun yaml(uri: URI?= null, root: String? = null): PropertiesSource = object : PropertiesSource {
+                override val format: String? get() = "Yaml"
+                override val uri: URI? get() = uri
+                override val rootKey: String? get() = root
+            }
 
         context("Load properties source by url") {
 
             it("should return opened source with url by default") {
-                val rawSource = PropertiesSource.make("Yaml")
-                val sut = PropertiesSourceJacksonImpl(YAMLFactory(), "yaml", rawSource)
+                val sut = PropertiesSourceJacksonImpl(YAMLFactory(), "yaml", yaml())
                 sut.should.be.not.`null`
                 sut.format.should.be.equal("Yaml")
-                sut.isOpened.should.be.`true`
                 sut.uri.should.be.satisfy { it.toString().endsWith("application.yaml") }
             }
             it("should return opened source with classpath url") {
-                val rawSource = PropertiesSource.make("Yaml", URI("classpath://application.yaml"))
-                val sut = PropertiesSourceJacksonImpl(YAMLFactory(), "yaml", rawSource)
+                val sut = PropertiesSourceJacksonImpl(YAMLFactory(), "yaml",
+                        yaml(URI("classpath://application.yaml")))
                 sut.should.be.not.`null`
                 sut.format.should.be.equal("Yaml")
-                sut.isOpened.should.be.`true`
                 sut.uri.should.be.satisfy { it.toString().endsWith("application.yaml") }
             }
             it("should return opened source with url by default") {
-                val path = PropertiesSourceHoconImplSpec::class.java.getResource("/application.yaml").path
-                val rawSource = PropertiesSource.make("Yaml", URL(path).toURI())
-                val sut = PropertiesSourceJacksonImpl(YAMLFactory(), "yaml", rawSource)
+                val uri = URL(PropertiesHoconImplSpec::class.java.getResource("/application.yaml").path).toURI()
+                val sut = PropertiesSourceJacksonImpl(YAMLFactory(), "yaml", yaml(uri))
                 sut.should.be.not.`null`
                 sut.format.should.be.equal("Yaml")
-                sut.isOpened.should.be.`true`
                 sut.uri.should.be.satisfy { it.toString().endsWith("application.yaml") }
             }
         }
         context("Load properties source from file") {
-            val rawSource = PropertiesSource.make("Yaml")
-            val sut = PropertiesSourceJacksonImpl(YAMLFactory(), "yaml", rawSource)
+            val sut = PropertiesSourceJacksonImpl(YAMLFactory(), "yaml", yaml())
 
             it("should return value of properties by it's key") {
                 sut.asString("name").should.be.equal("μService")
