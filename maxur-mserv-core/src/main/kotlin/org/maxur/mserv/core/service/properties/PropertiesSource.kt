@@ -51,14 +51,6 @@ abstract class PropertiesSource(
         }
         fun nothing(): Properties = NullProperties
     }
-
-
-
-    /**
-     * It returns true when properties is configured
-     */
-    fun isConfigured() = !rootKey.isNullOrEmpty() || uri != null
-
 }
 
 
