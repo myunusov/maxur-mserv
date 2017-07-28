@@ -56,13 +56,16 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
         return this
     }
 
-    fun bind(func: (Locator) -> Any, clazz: KClass<out Any>) {
-        binders.add(ServiceBinder(func, clazz.java))
+    fun bind(func: (Locator) -> Any, vararg classes: KClass<out Any>) {
+        binders.add(ServiceBinder(func, *classes))
     }
 
-    private class ServiceBinder(val func: (Locator) -> Any, val clazz: Class<*>) : AbstractBinder() {
+    private class ServiceBinder(val func: (Locator) -> Any, vararg val classes: KClass<out Any>) : AbstractBinder() {
         override fun configure() {
-            bindFactory(ServiceProvider(func)).to(clazz)
+            val provider = ServiceProvider(func)
+            classes.forEach {
+                bindFactory(provider).to(it.java)
+            }
         }
     }
 

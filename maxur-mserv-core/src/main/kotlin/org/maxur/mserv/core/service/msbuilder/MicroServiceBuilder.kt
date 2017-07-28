@@ -57,7 +57,7 @@ abstract class MicroServiceBuilder {
             return LocatorFactoryHK2Impl {
                 this.packages = packagesHolder
                 bind(*bindersHolder.toTypedArray())
-                bind(propertiesHolder::build, Properties::class)
+                bind(propertiesHolder::build, Properties::class, PropertiesSource::class)
                 bind({ locator -> BaseMicroService(services.build(locator), locator) }, MicroService::class)
             }.make()
         } catch(e: Exception) {

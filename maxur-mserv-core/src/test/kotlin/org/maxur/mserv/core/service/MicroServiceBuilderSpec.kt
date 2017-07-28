@@ -48,9 +48,9 @@ class MicroServiceBuilderSpec : Spek({
                     }
                 }
                 service.should.be.not.`null`
-                val source = Locator.service(Properties::class) as PropertiesSource
+                val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
-                source.apply {
+                source!!.apply {
                     format.should.be.equal("Hocon")
                     rootKey.should.be.equal("DEFAULTS")
                     uri.should.be.satisfy { it.toString().endsWith("application.conf") }
@@ -61,9 +61,9 @@ class MicroServiceBuilderSpec : Spek({
                         .properties("Hocon")
                         .build()
                 service.should.be.not.`null`
-                val source = Locator.service(Properties::class) as PropertiesSource
+                val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
-                source.apply {
+                source!!.apply {
                     format.should.be.equal("Hocon")
                     rootKey.should.be.equal("DEFAULTS")
                     uri.should.be.satisfy { it.toString().endsWith("application.conf") }
@@ -79,9 +79,9 @@ class MicroServiceBuilderSpec : Spek({
                     }
                 }
                 service.should.be.not.`null`
-                val source = Locator.service(Properties::class) as PropertiesSource
+                val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
-                source.apply {
+                source!!.apply {
                     format.should.be.equal("Yaml")
                     rootKey.should.be.`null`
                     uri.should.be.equal(URI("classpath:///application.yaml"))
@@ -92,9 +92,9 @@ class MicroServiceBuilderSpec : Spek({
                         .properties("Yaml")
                         .build()
                 service.should.be.not.`null`
-                val source = Locator.service(Properties::class) as PropertiesSource
+                val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
-                source.apply {
+                source!!.apply {
                     format.should.be.equal("Yaml")
                     rootKey.should.be.`null`
                     uri.should.be.equal(URI("classpath:///application.yaml"))
@@ -110,9 +110,9 @@ class MicroServiceBuilderSpec : Spek({
                     }
                 }
                 service.should.be.not.`null`
-                val source = Locator.service(Properties::class) as PropertiesSource
+                val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
-                source.apply {
+                source!!.apply {
                     format.should.be.equal("Json")
                     rootKey.should.be.`null`
                     uri.should.be.equal(URI("classpath:///application.json"))
@@ -123,9 +123,9 @@ class MicroServiceBuilderSpec : Spek({
                         .properties("Json")
                         .build()
                 service.should.be.not.`null`
-                val source = Locator.service(Properties::class) as PropertiesSource
+                val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
-                source.apply {
+                source!!.apply {
                     format.should.be.equal("Json")
                     rootKey.should.be.`null`
                     uri.should.be.equal(URI("classpath:///application.json"))
@@ -142,9 +142,9 @@ class MicroServiceBuilderSpec : Spek({
                     }
                 }
                 service.should.be.not.`null`
-                val source = Locator.service(Properties::class) as PropertiesSource
+                val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
-                source.apply {
+                source!!.apply {
                     format.should.be.equal("Hocon")
                     rootKey.should.be.equal("DEFAULTS")
                     uri.should.be.satisfy { it.toString().endsWith("src/test/resources/application.conf") }
@@ -156,9 +156,9 @@ class MicroServiceBuilderSpec : Spek({
                         .url("src/test/resources/application.conf")
                         .build()
                 service.should.be.not.`null`
-                val source = Locator.service(Properties::class) as PropertiesSource
+                val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
-                source.apply {
+                source!!.apply {
                     format.should.be.equal("Hocon")
                     rootKey.should.be.equal("DEFAULTS")
                     uri.should.be.satisfy { it.toString().endsWith("src/test/resources/application.conf") }
@@ -175,9 +175,9 @@ class MicroServiceBuilderSpec : Spek({
                     }
                 }
                 service.should.be.not.`null`
-                val source = Locator.service(Properties::class) as PropertiesSource
+                val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
-                source.apply {
+                source!!.apply {
                     format.should.be.equal("Hocon")
                     rootKey.should.be.equal("USER")
                     uri.should.be.satisfy { it.toString().endsWith("application.conf") }
@@ -189,9 +189,9 @@ class MicroServiceBuilderSpec : Spek({
                         .rootKey("USER")
                         .build()
                 service.should.be.not.`null`
-                val source = Locator.service(Properties::class) as PropertiesSource
+                val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
-                source.apply {
+                source!!.apply {
                     format.should.be.equal("Hocon")
                     rootKey.should.be.equal("USER")
                     uri.should.be.satisfy { it.toString().endsWith("application.conf") }
@@ -272,9 +272,9 @@ class MicroServiceBuilderSpec : Spek({
                 val service = Kotlin.service {
                 }
                 service.should.be.not.`null`
-                val source = Locator.service(Properties::class) as PropertiesSource
+                val source = Locator.service(PropertiesSource::class)
                 source.should.be.not.`null`
-                source.format.should.be.not.`null`
+                source!!.format.should.be.not.`null`
                 source.apply {
                     format.should.be.satisfy { arrayOf("Hocon", "Yaml", "Json").contains(it) }
                 }
