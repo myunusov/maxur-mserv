@@ -30,25 +30,17 @@ abstract class PropertiesSource(
         fun open(format: String, uri: URI? = null, rootKey: String? = null): Properties =
                 Locator
                         .service(PropertiesFactory::class, format)!!
-                        .make(object: PropertiesSource(format, uri, rootKey) {} )
-                        .fold(
-                                { e -> throw IllegalArgumentException(
-                                        "The '$uri' file not found. Add it with '$rootKey' section", e
-                                )},
-                                { it }
-                        )
+                        .make(object : PropertiesSource(format, uri, rootKey) {})
+                        .fold({ throw it }, { it })
 
         fun default(): Properties {
-                Locator.services(PropertiesFactory::class).map {
-                    it.make(object: PropertiesSource() {})
-                            .fold(
-                                    { },
-                                    { return it }
-                            )
-                }
-                return NullProperties
-
+            Locator.services(PropertiesFactory::class).map {
+                it.make(object : PropertiesSource() {})
+                        .fold({ }, { return it })
+            }
+            return NullProperties
         }
+
         fun nothing(): Properties = NullProperties
     }
 }

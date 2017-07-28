@@ -18,7 +18,8 @@ internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource
     private var root: Config = try {
         rootNode().getConfig(rootKey)
     } catch(e: ConfigException.Missing) {
-        throw IllegalStateException("The properties source is not found")
+        throw IllegalStateException("The properties source '$uri' not found. " +
+                "You need create one with '${rootKey ?: "/"}' section")
     }
 
     override val uri: URI? get() = root.origin()?.url()?.toURI() ?: rawSource.uri

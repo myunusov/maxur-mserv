@@ -26,7 +26,8 @@ internal class PropertiesSourceJacksonImpl(
                 rootNode(uri!!)?.get(rawSource.rootKey)
             else
                 rootNode(uri!!)
-            ) ?: throw IllegalStateException("The properties source is not found")
+            ) ?: throw IllegalStateException("The properties source '$uri' not found. " +
+                    "You need create one with '${rootKey ?: "/"}' section")
 
     private fun rootNode(uri: URI): JsonNode? = when(uri.scheme) {
          null -> mapper.readTree(File(uri.toString()))
