@@ -157,7 +157,7 @@ class ServiceHolder {
             value.substringAfter(":")
         else
             throw IllegalArgumentException("A Key Name must be started with ':'")
-        return Holder.get<Any> { locator, clazz -> locator.properties(key, clazz)!! }
+        return Holder.get<Any> { locator, clazz -> locator.property(key, clazz)!! }
     }
 
     fun build(locator: Locator): EmbeddedService? {
