@@ -7,7 +7,7 @@ object Kotlin {
     fun service(init: KBuilder.() -> Unit): MicroService = KBuilder(init).build()
 }
 
-class KBuilder(): MSBuilder() {
+class KBuilder(): MicroServiceBuilder() {
 
     var title: String = "Anonymous"
         set(value) {
@@ -25,15 +25,13 @@ class KBuilder(): MSBuilder() {
     }
 
     fun withoutProperties() {
-        propertiesHolder.apply {
-            format = "None"
-            rootKey = null
-            uri = null
-        }
+        propertiesHolder = PropertiesHolder.NullPropertiesHolder
     }
 
-    fun properties(init: PropertiesHolder.() -> Unit) {
-        propertiesHolder.apply { init() }
+    fun properties(init: PropertiesHolder.BasePropertiesHolder.() -> Unit) {
+        val holder = PropertiesHolder.BasePropertiesHolder()
+        propertiesHolder = holder
+        holder.apply { init() }
     }
 
     fun service(init: ServiceHolder.() -> Unit) = ServiceHolder().apply { init() }

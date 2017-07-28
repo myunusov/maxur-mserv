@@ -17,11 +17,8 @@ class PropertiesJacksonImplSpec : Spek({
 
     describe("a Properties Source as Yaml File") {
 
-        fun yaml(uri: URI?= null, root: String? = null): PropertiesSource = object : PropertiesSource {
-                override val format: String? get() = "Yaml"
-                override val uri: URI? get() = uri
-                override val rootKey: String? get() = root
-            }
+        fun yaml(uri: URI? = null, root: String? = null): PropertiesSource
+                = object : PropertiesSource("Yaml", uri, root) {}
 
         context("Load properties source by url") {
 

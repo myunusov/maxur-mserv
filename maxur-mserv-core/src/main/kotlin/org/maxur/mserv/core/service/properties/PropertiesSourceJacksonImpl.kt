@@ -12,20 +12,20 @@ import java.nio.file.Paths
 
 internal class PropertiesSourceJacksonImpl(
         factory: JsonFactory,
-        private val defaultFormat: String,
-        private val rawSource: PropertiesSource
-) : Properties, PropertiesSource {
-
-    override val format get() = defaultFormat.capitalize()
-    override val uri: URI get() = rawSource.uri ?: URI.create("classpath:///application.$defaultFormat")
-    override val rootKey get() = rawSource.rootKey
-
+        defaultFormat: String,
+        rawSource: PropertiesSource
+) : Properties, PropertiesSource(
+        defaultFormat.capitalize(),
+        rawSource.uri ?: URI.create("classpath:///application.$defaultFormat"),
+        rawSource.rootKey
+) {
     private val mapper = ObjectMapperProvider.config(ObjectMapper(factory))
+
     private var root: JsonNode = (
             if (rawSource.rootKey != null)
-                rootNode(uri)?.get(rawSource.rootKey)
+                rootNode(uri!!)?.get(rawSource.rootKey)
             else
-                rootNode(uri)
+                rootNode(uri!!)
             ) ?: throw IllegalStateException("The properties source is not found")
 
     private fun rootNode(uri: URI): JsonNode? = when(uri.scheme) {
@@ -54,9 +54,7 @@ internal class PropertiesSourceJacksonImpl(
         }
     }
 
-    private fun node(key: String) = root().get(key) ?:
+    private fun node(key: String) = root.get(key) ?:
             throw IllegalStateException("Configuration parameter '$key' is not found.")
-
-    fun root(): JsonNode = root ?: throw IllegalStateException("Resource '$uri' is closed")
 
 }

@@ -38,26 +38,6 @@ class MicroServiceBuilderSpec : Spek({
                 val source = Locator.service(Properties::class)
                 source.should.be.not.`null`
             }
-            it("should throw exception on configure none properties source") {
-                assertFailsWith<IllegalStateException> {
-                    Kotlin.service {
-                        properties {
-                            format = "None"
-                            url = "file:///file.cfg"
-                        }
-                    }
-                }
-            }
-            it("should throw exception on configure none properties source") {
-                assertFailsWith<IllegalStateException> {
-                    Kotlin.service {
-                        properties {
-                            format = "None"
-                            rootKey = "defaults"
-                        }
-                    }
-                }
-            }
         }
 
         context("Build micro-service with Hocon properties without configuration") {
@@ -294,6 +274,7 @@ class MicroServiceBuilderSpec : Spek({
                 service.should.be.not.`null`
                 val source = Locator.service(Properties::class) as PropertiesSource
                 source.should.be.not.`null`
+                source.format.should.be.not.`null`
                 source.apply {
                     format.should.be.satisfy { arrayOf("Hocon", "Yaml", "Json").contains(it) }
                 }

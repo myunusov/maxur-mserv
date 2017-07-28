@@ -12,11 +12,8 @@ import java.net.URI
 import java.nio.file.Paths
 import java.time.Duration
 
-internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource) : Properties, PropertiesSource {
-
-    override val format: String get() = "Hocon"
-
-    override val rootKey: String get() = rawSource.rootKey ?: "DEFAULTS"
+internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource)
+    : Properties, PropertiesSource("Hocon", rootKey = rawSource.rootKey ?: "DEFAULTS") {
 
     private var root: Config = try {
         rootNode().getConfig(rootKey)
