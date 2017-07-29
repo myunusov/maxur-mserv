@@ -7,6 +7,8 @@ jobs:
 
     working_directory: ~/repo
 
+    parallelism: 4
+
     environment:
       MAVEN_OPTS: -Xmx3200m
 
@@ -16,7 +18,7 @@ jobs:
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "pom.xml" }}
-          - v1-dependencies
+          - v1-dependencies-
 
       - run: mvn -pl maxur-mserv-core dependency:go-offline
 
