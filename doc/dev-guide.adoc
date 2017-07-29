@@ -1,0 +1,15 @@
+== Dev Guide
+
+1. To add or update all the necessary **Maven Wrapper** files to your project execute the following command
+https://github.com/takari/maven-wrapper[(link)]
+
+[source, cmd]
+----
+mvn -N io.takari:maven:wrapper
+----
+
+2. Steps for Integrating **Jacoco** in **IntelliJ IDEA**
+- Integrate the dependency and plugin sections to relevant parts in your pom.xml from the pom.xml_fragment file below.
+- Run **"mvn clean package"** to generate the results
+- In IntelliJ, Select **"Analyse -> Show Coverage Data..."** and pick your Jacoco output file. This should be the path specified in the plug-in config i.e: _${basedir}/target/coverage-reports/jacoco-it.exec_ and _${basedir}/target/coverage-reports/jacoco-ut.exec_
+- Output should be displayed in the IDE and you should also have the classes overlayed with test coverage.
