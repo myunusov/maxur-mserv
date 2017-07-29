@@ -39,7 +39,7 @@ public final class Launcher {
     
     private static void beforeStart(final BaseService service) {
         final Locator locator = service.getLocator();
-        final PropertiesSource config  = locator.service(PropertiesSource.class);
+        final PropertiesSource config = locator.service(PropertiesSource.class);
         if (config != null) {
             log.info("Properties Source is '{}'", config.getFormat());
             final ConfigParams configParams = locator.service(ConfigParams.class);

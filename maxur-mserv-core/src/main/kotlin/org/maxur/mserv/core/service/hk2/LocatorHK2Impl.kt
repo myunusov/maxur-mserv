@@ -8,27 +8,14 @@ import javax.inject.Inject
 
 class LocatorHK2Impl @Inject constructor(val locator: ServiceLocator) : Locator {
 
-    init {
-        Locator.current = this
-    }
-
     @Suppress("UNCHECKED_CAST")
     override fun <T> implementation(): T = locator as T
-
-    @Suppress("UNCHECKED_CAST")
-    override fun <T> services(clazz: Class<*>): List<T> =
-        locator.getAllServices(clazz).map { it as T}
 
     override fun names(clazz: Class<*>): List<String> =
         locator.getAllServiceHandles(clazz).map { it.activeDescriptor.name }
 
-    override fun property(key: String): String = locator.getService(Properties::class.java).asString(key)!!
-
-    override fun <R> properties(key: String, clazz: Class<R>): R? {
-        return locator.getService(Properties::class.java).read(key, clazz)
-    }
-
-    override fun <T> service(clazz: Class<T>): T? = locator.getService<T>(clazz)
+    override fun <T> property(key: String, clazz: Class<T>): T? =
+            locator.getService(Properties::class.java).read(key, clazz)
 
     override fun <T> service(clazz: Class<T>, name: String?): T? =
             when (name) {
@@ -38,6 +25,8 @@ class LocatorHK2Impl @Inject constructor(val locator: ServiceLocator) : Locator 
                         .map { it.service }
                         .firstOrNull()
             }
+
+    override fun <T> services(clazz: Class<T>): List<T> = locator.getAllServices(clazz).map { it as T}
 
     override fun shutdown() = locator.shutdown()
 

@@ -21,7 +21,7 @@ import kotlin.reflect.KFunction
 /**
  * @todo Implement support of default options for best service choice
  */
-abstract class MSBuilder {
+abstract class MicroServiceBuilder {
 
     protected var titleHolder: Holder<String> = Holder.string("Anonymous")
 
@@ -38,7 +38,7 @@ abstract class MSBuilder {
             value?.let { bindersHolder.add(value) }
         }
 
-    var propertiesHolder: PropertiesHolder = PropertiesHolder()
+    var propertiesHolder: PropertiesHolder = PropertiesHolder.DefaultPropertiesHolder
 
     val services: ServicesHolder = ServicesHolder()
     val beforeStart = HookHolder()
@@ -57,7 +57,7 @@ abstract class MSBuilder {
             return LocatorFactoryHK2Impl {
                 this.packages = packagesHolder
                 bind(*bindersHolder.toTypedArray())
-                bind(propertiesHolder::build, Properties::class)
+                bind(propertiesHolder::build, Properties::class, PropertiesSource::class)
                 bind({ locator -> BaseMicroService(services.build(locator), locator) }, MicroService::class)
             }.make()
         } catch(e: Exception) {
@@ -157,7 +157,7 @@ class ServiceHolder {
             value.substringAfter(":")
         else
             throw IllegalArgumentException("A Key Name must be started with ':'")
-        return Holder.get<Any> { locator, clazz -> locator.properties(key, clazz)!! }
+        return Holder.get<Any> { locator, clazz -> locator.property(key, clazz)!! }
     }
 
     fun build(locator: Locator): EmbeddedService? {
@@ -173,16 +173,31 @@ class ServiceHolder {
 
 }
 
-class PropertiesHolder {
-    var format: String? = null
-    var uri: URI? = null
-    var rootKey: String? = null
-    var url: String = ""
-        set(value) {
-            uri = URI.create(value)
-        }
-    fun build(locator: Locator): Properties =  PropertiesSource.open(format, uri, rootKey)
+sealed class PropertiesHolder {
+
+    abstract fun build(locator: Locator): Properties
+
+    class BasePropertiesHolder : PropertiesHolder() {
+        lateinit var format: String
+        var uri: URI? = null
+        var rootKey: String? = null
+        var url: String = ""
+            set(value) {
+                uri = URI.create(value)
+            }
+        override fun build(locator: Locator): Properties =  PropertiesSource.open(format, uri, rootKey)
+    }
+
+    object NullPropertiesHolder : PropertiesHolder() {
+        override fun build(locator: Locator): Properties =  PropertiesSource.nothing()
+    }
+
+    object DefaultPropertiesHolder : PropertiesHolder()  {
+        override fun build(locator: Locator): Properties =  PropertiesSource.default()
+    }
 }
+
+
 
 class HookHolder {
 

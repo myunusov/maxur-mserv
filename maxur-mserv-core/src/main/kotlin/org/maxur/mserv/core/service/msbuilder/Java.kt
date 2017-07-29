@@ -30,7 +30,7 @@ interface IJBuilder {
     fun start()
 }
 
-class JBuilder : MSBuilder(), IJBuilder {
+class JBuilder : MicroServiceBuilder(), IJBuilder {
 
     override fun title(value: String): JBuilder {
         titleHolder = Holder.string(value)
@@ -43,21 +43,19 @@ class JBuilder : MSBuilder(), IJBuilder {
     }
 
     override fun properties(format: String): JPropertiesBuilder {
-        propertiesHolder = PropertiesHolder()
-        propertiesHolder.format = format
-        return JPropertiesBuilder(this)
+        val holder = PropertiesHolder.BasePropertiesHolder()
+        propertiesHolder = holder
+        holder.format = format
+        return JPropertiesBuilder(this, holder)
     }
 
     override fun properties(): JBuilder {
-        propertiesHolder = PropertiesHolder()
+        propertiesHolder = PropertiesHolder.BasePropertiesHolder()
         return this
     }
 
     override fun withoutProperties(): JBuilder {
-        propertiesHolder = PropertiesHolder()
-        propertiesHolder.format = "None"
-        propertiesHolder.rootKey = null
-        propertiesHolder.uri = null
+        propertiesHolder = PropertiesHolder.NullPropertiesHolder
         return this
     }
 
@@ -117,15 +115,18 @@ class JBuilder : MSBuilder(), IJBuilder {
 
 }
 
-class JPropertiesBuilder(val parent: JBuilder) : IJBuilder by parent {
+class JPropertiesBuilder(
+        val parent: JBuilder,
+        val holder: PropertiesHolder.BasePropertiesHolder
+) : IJBuilder by parent {
 
     fun url(value: String): JPropertiesBuilder {
-        parent.propertiesHolder.url = value
+        holder.url = value
         return this
     }
 
     fun rootKey(value: String): JPropertiesBuilder {
-        parent.propertiesHolder.rootKey = value
+        holder.rootKey = value
         return this
     }
 

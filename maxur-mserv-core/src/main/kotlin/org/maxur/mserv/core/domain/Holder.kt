@@ -7,7 +7,7 @@ abstract class Holder<Type: Any> {
 
     companion object {
         fun string(value: String) : Holder<String> = when {
-            value.startsWith(":") -> Holder.get { locator -> locator.property(value.substringAfter(":")) }
+            value.startsWith(":") -> Holder.get { locator -> locator.property(value.substringAfter(":"))!! }
             else -> Holder.wrap(value)
         }
         fun <Type: Any> none() : Holder<Type> = Wrapper(null)

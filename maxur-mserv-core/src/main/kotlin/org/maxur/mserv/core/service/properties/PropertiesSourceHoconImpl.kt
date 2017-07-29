@@ -12,16 +12,14 @@ import java.net.URI
 import java.nio.file.Paths
 import java.time.Duration
 
-internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource) : Properties, PropertiesSource {
-
-    override val format: String get() = "Hocon"
-
-    override val rootKey: String get() = rawSource.rootKey ?: "DEFAULTS"
+internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource)
+    : Properties, PropertiesSource("Hocon", rootKey = rawSource.rootKey ?: "DEFAULTS") {
 
     private var root: Config = try {
         rootNode().getConfig(rootKey)
     } catch(e: ConfigException.Missing) {
-        throw IllegalStateException("The properties source is not found")
+        throw IllegalStateException("The properties source '$uri' not found. " +
+                "You need create one with '${rootKey ?: "/"}' section")
     }
 
     override val uri: URI? get() = root.origin()?.url()?.toURI() ?: rawSource.uri
@@ -44,11 +42,6 @@ internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource
                 }
             }
 
-    private fun URI.withoutScheme() =
-            if (scheme.isNullOrEmpty())
-                toString()
-            else
-                toString().substring(scheme.length + 1).trimStart('/')
 
     @Suppress("UNCHECKED_CAST")
     override fun <P> read(key: String, clazz: Class<P>): P? =

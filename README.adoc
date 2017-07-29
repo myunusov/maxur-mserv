@@ -12,6 +12,7 @@ https://github.com/myunusov/maxur-mserv/blob/master/LICENSE[image:https://img.sh
 http://www.rultor.com/p/myunusov/maxur-mserv[image:http://www.rultor.com/b/myunusov/maxur-mserv[DevOps
 By Rultor.com]]
 
+image:https://circleci.com/gh/myunusov/maxur-mserv.svg?style=svg["CircleCI", link="https://circleci.com/gh/myunusov/maxur-mserv"]
 https://travis-ci.org/myunusov/maxur-mserv[image:https://travis-ci.org/myunusov/maxur-mserv.svg?branch=master[Build
 Status]]
 https://codecov.io/gh/myunusov/maxur-mserv[image:https://codecov.io/gh/myunusov/maxur-mserv/branch/master/graph/badge.svg[codecov]]

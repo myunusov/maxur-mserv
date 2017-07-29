@@ -16,11 +16,8 @@ class PropertiesHoconImplSpec : Spek({
 
     describe("a Properties Source as Hocon File") {
 
-        fun hocon(uri: URI?= null, root: String? = null): PropertiesSource = object : PropertiesSource {
-            override val format: String? get() = "Hocon"
-            override val uri: URI? get() = uri
-            override val rootKey: String? get() = root
-        }
+        fun hocon(uri: URI?= null, root: String? = null): PropertiesSource
+                = object : PropertiesSource ("Hocon", uri, root) {}
 
         context("Load properties source by url") {
             it("should return opened source with url by default") {

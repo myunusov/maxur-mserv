@@ -64,4 +64,10 @@ interface Properties {
      */
     fun <P> read(key: String, clazz: Class<P>): P?
 
+    fun URI.withoutScheme() =
+            if (scheme.isNullOrEmpty())
+                toString()
+            else
+                toString().substring(scheme.length + 1).trimStart('/')
+
 }
