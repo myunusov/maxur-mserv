@@ -42,11 +42,6 @@ internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource
                 }
             }
 
-    private fun URI.withoutScheme() =
-            if (scheme.isNullOrEmpty())
-                toString()
-            else
-                toString().substring(scheme.length + 1).trimStart('/')
 
     @Suppress("UNCHECKED_CAST")
     override fun <P> read(key: String, clazz: Class<P>): P? =

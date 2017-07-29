@@ -39,9 +39,7 @@ internal class PropertiesSourceJacksonImpl(
     }
 
     private fun inputStreamByResource(uri: URI): InputStream? =
-            this::class.java.getResourceAsStream(
-                    "/" + uri.toString().substring("classpath".length + 1).trimStart('/')
-            )
+            this::class.java.getResourceAsStream("/" + uri.withoutScheme())
 
     override fun asString(key: String): String? = node(key).asText()
     override fun asLong(key: String): Long? = node(key).asLong()
