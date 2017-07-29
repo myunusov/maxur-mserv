@@ -25,5 +25,4 @@ jobs:
             - ~/.m2
           key: v1-dependencies-{{ checksum "pom.xml" }}
 
-      # run tests!
       - run: - mvn verify -Denv=dev -Pdebug,dep-jacoco,enforcer,kotlin
