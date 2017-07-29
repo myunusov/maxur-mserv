@@ -16,7 +16,7 @@ jobs:
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "pom.xml" }}
-          - v1-dependencies-
+          - v1-dependencies
 
       - run: mvn -pl maxur-mserv-core dependency:go-offline
 
@@ -26,3 +26,9 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
 
       - run: mvn verify -Denv=dev -Pdebug,dep-jacoco,enforcer,kotlin
+
+      - store_test_results:
+          path: target/surefire-reports
+
+      - run: bash <(curl -s https://codecov.io/bash)
+
