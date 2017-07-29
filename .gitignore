@@ -1,4 +1,5 @@
 /.*
+!/.circleci/
 !.gitignore
 !.tgitconfig
 !.travis.yml
@@ -17,3 +18,4 @@ target
 /secring.gpg
 /settings.xml
 /work/
+

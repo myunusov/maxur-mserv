@@ -25,7 +25,7 @@ before_install:
 install: true # skipping the installation step
 
 script:
-  - mvn clean verify -Denv=dev -Pdebug,dep-jacoco,enforcer,kotlin
+  - mvn verify -Denv=dev -Pdebug,dep-jacoco,enforcer,kotlin
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
