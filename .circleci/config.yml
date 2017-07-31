@@ -1,5 +1,24 @@
 version: 2
 jobs:
+  check:
+    steps:
+
+      - checkout
+
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "pom.xml" }}
+          - v1-dependencies-
+
+      - run: mvn -pl maxur-mserv-core dependency:go-offline
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum "pom.xml" }}
+
+    - run: mvn enforcer:enforce -P check-dep -pl maxur-mserv-core
+
   build:
 
     docker:
@@ -7,7 +26,7 @@ jobs:
 
     working_directory: ~/repo
 
-#    parallelism: 4
+    parallelism: 2
 
     environment:
       MAVEN_OPTS: -Xmx3200m
@@ -27,10 +46,16 @@ jobs:
             - ~/.m2
           key: v1-dependencies-{{ checksum "pom.xml" }}
 
-      - run: mvn verify -Denv=dev -Pdebug,dep-jacoco,enforcer,kotlin
+      - run: mvn verify -Denv=dev -Pdebug,dep-jacoco,kotlin
 
       - store_test_results:
-          path: target/surefire-reports
+          path: maxur-mserv-core/target/surefire-reports
 
       - run: bash <(curl -s https://codecov.io/bash)
 
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - check
+      - build

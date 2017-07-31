@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package org.maxur.mserv.core.service.properties
 
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -5,12 +7,21 @@ import com.jasonclawson.jackson.dataformat.hocon.HoconFactory
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigException
 import com.typesafe.config.ConfigFactory
+import org.jvnet.hk2.annotations.Service
 import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
+import org.maxur.mserv.core.utils.Either
+import org.maxur.mserv.core.utils.either
 import java.io.File
 import java.io.IOException
 import java.net.URI
 import java.nio.file.Paths
 import java.time.Duration
+
+@Service(name = "Hocon")
+class PropertiesFactoryHoconImpl : PropertiesFactory() {
+    override fun make(source: PropertiesSource): Either<Exception, Properties> =
+            either { PropertiesSourceHoconImpl(source) }
+}
 
 internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource)
     : Properties, PropertiesSource("Hocon", rootKey = rawSource.rootKey ?: "DEFAULTS") {
