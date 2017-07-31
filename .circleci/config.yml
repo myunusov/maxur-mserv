@@ -3,14 +3,9 @@ jobs:
   build:
     docker:
       - image: circleci/openjdk:8-jdk
-
     working_directory: ~/repo
-
-    parallelism: 2
-
     environment:
       MAVEN_OPTS: -Xmx3200m
-
     steps:
       - checkout
 
@@ -34,6 +29,9 @@ jobs:
       - run: bash <(curl -s https://codecov.io/bash)
 
   test1:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    working_directory: ~/repo
     steps:
 
       - checkout
@@ -50,7 +48,7 @@ jobs:
             - ~/.m2
           key: v1-dependencies-{{ checksum "pom.xml" }}
 
-    - run: mvn enforcer:enforce -P check-dep -pl maxur-mserv-core
+      - run: mvn enforcer:enforce -P check-dep -pl maxur-mserv-core
 
 workflows:
   version: 2
