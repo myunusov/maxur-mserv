@@ -1,26 +1,6 @@
 version: 2
 jobs:
-  check:
-    steps:
-
-      - checkout
-
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "pom.xml" }}
-          - v1-dependencies-
-
-      - run: mvn -pl maxur-mserv-core dependency:go-offline
-
-      - save_cache:
-          paths:
-            - ~/.m2
-          key: v1-dependencies-{{ checksum "pom.xml" }}
-
-    - run: mvn enforcer:enforce -P check-dep -pl maxur-mserv-core
-
   build:
-
     docker:
       - image: circleci/openjdk:8-jdk
 
@@ -52,6 +32,25 @@ jobs:
           path: maxur-mserv-core/target/surefire-reports
 
       - run: bash <(curl -s https://codecov.io/bash)
+
+  check:
+    steps:
+
+      - checkout
+
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "pom.xml" }}
+          - v1-dependencies-
+
+      - run: mvn -pl maxur-mserv-core dependency:go-offline
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum "pom.xml" }}
+
+    - run: mvn enforcer:enforce -P check-dep -pl maxur-mserv-core
 
 workflows:
   version: 2
