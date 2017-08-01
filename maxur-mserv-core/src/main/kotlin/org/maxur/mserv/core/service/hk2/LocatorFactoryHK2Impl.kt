@@ -35,11 +35,11 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
         if (packages.isNotEmpty()) {
             HK2RuntimeInitializer.init(
                 "mserv-locator",
-                false,
+                true,
                 *packages.toTypedArray(), "org.maxur.mserv.core"
             )
         } else {
-            HK2RuntimeInitializer.init("mserv-locator", false)
+            ServiceLocatorUtilities.createAndPopulateServiceLocator()
         }
     }
 
