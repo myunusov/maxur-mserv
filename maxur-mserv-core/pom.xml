@@ -22,8 +22,8 @@
     </issueManagement>
 
     <ciManagement>
-        <system>Travis</system>
-        <url>https://travis-ci.org/myunusov/maxur-mserv.git/</url>
+        <system>CircleCI</system>
+        <url>https://circleci.com/gh/myunusov/maxur-mserv/</url>
         <notifiers/>
     </ciManagement>
 
@@ -229,48 +229,6 @@
                     </plugin>
 
                     <plugin>
-                        <groupId>org.jetbrains.dokka</groupId>
-                        <artifactId>dokka-maven-plugin</artifactId>
-                        <version>${dokka.version}</version>
-                        <executions>
-                            <execution>
-                                <phase>pre-site</phase>
-                                <goals>
-                                    <goal>dokka</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>maxur-javadoc</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>javadocJar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <skip>false</skip>
-                            <outputFormat>jekyll</outputFormat>
-                            <outputDir>${maxur-mserv.root.path}/target/doc/</outputDir>
-                            <!-- http://kotlinlang.org/docs/reference/kotlin-doc.html#module-and-package-documentation -->
-                            <includes>
-                                <include>${basedir}/packages.md</include>
-                                <include>${basedir}/module.md</include>
-                            </includes>
-                            <sourceLinks>
-                                <link>
-                                    <dir>${project.basedir}</dir>
-                                    <url>https://github.com/myunusov/maxur-mserv/tree/master/${project.artifactId}</url>
-                                    <urlSuffix>#L</urlSuffix>
-                                </link>
-                            </sourceLinks>
-                            <jdkVersion>8</jdkVersion>
-                            <sourceDirectories>
-                                <dir>${basedir}/src/main/kotlin</dir>
-                            </sourceDirectories>
-                        </configuration>
-                    </plugin>
-
-                    <plugin>
                         <!-- @see http://www.sonatype.com/books/nexus-book/reference/staging-sect-deployment.html -->
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
@@ -292,6 +250,111 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <profile>
+            <id>site</id>
+            <distributionManagement>
+                <site>
+                    <id>${github.global.server}</id>
+                    <name>Deployment through GitHub's site deployment plugin</name>
+                    <url>git:ssh://git@github.com/myunusov/maxur-mserv.git?gh-pages#</url>
+                </site>
+            </distributionManagement>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jetbrains.dokka</groupId>
+                        <artifactId>dokka-maven-plugin</artifactId>
+                        <version>${dokka.version}</version>
+                        <executions>
+                            <execution>
+                                <phase>pre-site</phase>
+                                <goals>
+                                    <goal>dokka</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>kdoc</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>javadocJar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <skip>false</skip>
+                            <outputFormat>jekyll</outputFormat>
+                            <outputDir>${basedir}/target/site/kdoc/</outputDir>
+                            <!-- http://kotlinlang.org/docs/reference/kotlin-doc.html#module-and-package-documentation -->
+                            <includes>
+                                <include>${basedir}/packages.md</include>
+                                <include>${basedir}/module.md</include>
+                            </includes>
+                            <sourceLinks>
+                                <link>
+                                    <dir>${project.basedir}</dir>
+                                    <url>https://github.com/myunusov/maxur-mserv/tree/master/${project.artifactId}</url>
+                                    <urlSuffix>#L</urlSuffix>
+                                </link>
+                            </sourceLinks>
+                            <jdkVersion>8</jdkVersion>
+                            <sourceDirectories>
+                                <dir>${basedir}/src/main/kotlin</dir>
+                            </sourceDirectories>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>jdoc</id>
+                                <phase>pre-site</phase>
+                                <goals>
+                                    <goal>javadoc</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+            <reporting>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <useStandardDocletOptions>true</useStandardDocletOptions>
+                            <source>${project.source.compile}</source>
+                            <encoding>${project.source.encoding}</encoding>
+                            <charset>${project.source.encoding}</charset>
+                            <docencoding>${project.source.encoding}</docencoding>
+                            <breakiterator>true</breakiterator>
+                            <version>true</version>
+                            <author>true</author>
+                            <keywords>true</keywords>
+                            <linksource>true</linksource>
+                            <excludePackageNames>*.it,*.test</excludePackageNames>
+                            <additionalparam>
+                                -inferrel -inferdep -quiet -hide java.*
+                                -collpackages java.util.* -qualify
+                                -postfixpackage -nodefontsize 9
+                                -nodefontpackagesize 7
+                                -edgefontname "Trebuchet MS"
+                                -nodefontabstractname "Trebuchet MS"
+                                -nodefontclassabstractname "Trebuchet MS"
+                                -nodefontclassname "Trebuchet MS"
+                                -nodefontname "Trebuchet MS"
+                                -nodefontpackagename "Trebuchet MS"
+                                -nodefonttagname "Trebuchet MS"
+                                -view
+                            </additionalparam>
+                            <detectLinks>true</detectLinks>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </reporting>
         </profile>
     </profiles>
 
@@ -896,6 +959,22 @@
             </plugin>
 
             <plugin>
+                <groupId>org.glassfish.hk2</groupId>
+                <artifactId>hk2-inhabitant-generator</artifactId>
+                <version>${hk2.version}</version>
+                <configuration>
+                    <verbose>true</verbose>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate-inhabitants</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <executions>
@@ -939,11 +1018,7 @@
                 </executions>
                 <configuration>
                     <revisionOnScmFailure>true</revisionOnScmFailure>
-                    <format>#{0} ({1,date})</format>
-                    <items>
-                        <item>buildNumber\d*</item>
-                        <item>timestamp</item>
-                    </items>
+                    <shortRevisionLength>5</shortRevisionLength>
                 </configuration>
             </plugin>
 
@@ -955,7 +1030,7 @@
                         <manifestEntries>
                             <implementation-version>${project.version}</implementation-version>
                             <!--suppress MavenModelInspection -->
-                            <implementation-build>${scmBranch} - ${buildNumber}</implementation-build>
+                            <implementation-build>${scmBranch}-${buildNumber}-${timestamp}</implementation-build>
                         </manifestEntries>
                     </archive>
                 </configuration>

@@ -3,22 +3,11 @@ package org.maxur.mserv.core.rest
 import dk.nykredit.jackson.dataformat.hal.HALLink
 import dk.nykredit.jackson.dataformat.hal.annotation.Link
 import dk.nykredit.jackson.dataformat.hal.annotation.Resource
-import io.swagger.annotations.Api
-import io.swagger.annotations.ApiModel
-import io.swagger.annotations.ApiModelProperty
-import io.swagger.annotations.ApiOperation
-import io.swagger.annotations.ApiParam
-import io.swagger.annotations.ApiResponse
-import io.swagger.annotations.ApiResponses
+import io.swagger.annotations.*
 import org.maxur.mserv.core.MicroService
 import java.net.URI
 import javax.inject.Inject
-import javax.ws.rs.Consumes
-import javax.ws.rs.GET
-import javax.ws.rs.PUT
-import javax.ws.rs.Path
-import javax.ws.rs.PathParam
-import javax.ws.rs.Produces
+import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
 
 
