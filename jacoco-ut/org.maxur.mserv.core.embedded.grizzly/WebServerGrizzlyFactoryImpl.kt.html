@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WebServerGrizzlyFactoryImpl.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">maxur-mserv-core</a> &gt; <a href="index.source.html" class="el_package">org.maxur.mserv.core.embedded.grizzly</a> &gt; <span class="el_source">WebServerGrizzlyFactoryImpl.kt</span></div><h1>WebServerGrizzlyFactoryImpl.kt</h1><pre class="source lang-java linenums">@file:Suppress(&quot;unused&quot;)
+
+package org.maxur.mserv.core.embedded.grizzly
+
+import io.swagger.jaxrs.config.BeanConfig
+import io.swagger.jaxrs.listing.ApiListingResource
+import jersey.repackaged.com.google.common.util.concurrent.ThreadFactoryBuilder
+import org.glassfish.grizzly.http.server.HttpServer
+import org.glassfish.grizzly.http.server.NetworkListener
+import org.glassfish.grizzly.http.server.ServerConfiguration
+import org.glassfish.grizzly.ssl.SSLEngineConfigurator
+import org.glassfish.hk2.api.ServiceLocator
+import org.glassfish.jersey.process.JerseyProcessingUncaughtExceptionHandler
+import org.glassfish.jersey.server.ResourceConfig
+import org.glassfish.jersey.server.spi.Container
+import org.jvnet.hk2.annotations.Service
+import org.maxur.mserv.core.Locator
+import org.maxur.mserv.core.domain.BaseService
+import org.maxur.mserv.core.domain.Holder
+import org.maxur.mserv.core.embedded.*
+import org.maxur.mserv.core.embedded.properties.Path
+import org.maxur.mserv.core.embedded.properties.StaticContent
+import org.maxur.mserv.core.embedded.properties.WebAppProperties
+import org.maxur.mserv.core.rest.RestResourceConfig
+import org.slf4j.bridge.SLF4JBridgeHandler
+import java.net.URI
+import javax.inject.Inject
+
+/**
+ * @author myunusov
+ * @version 1.0
+ * @since &lt;pre&gt;24.06.2017&lt;/pre&gt;
+ */
+@Service(name = &quot;Grizzly&quot;)
+<span class="nc" id="L35">class WebServerGrizzlyFactoryImpl @Inject constructor(val locator: Locator) : EmbeddedServiceFactory() {</span>
+
+<span class="fc" id="L37">    companion object {</span>
+<span class="fc" id="L38">        val SWAGGER_URL = &quot;classpath:/META-INF/resources/webjars/swagger-ui/3.0.20/&quot;</span>
+<span class="pc" id="L39">        val HAL_URL = &quot;classpath:/META-INF/resources/webjars/hal-browser/3325375/&quot;</span>
+        init {
+<span class="fc" id="L41">            SLF4JBridgeHandler.removeHandlersForRootLogger()</span>
+<span class="fc" id="L42">            SLF4JBridgeHandler.install()</span>
+        }
+    }
+
+    override fun make(properties: Holder&lt;Any&gt;): EmbeddedService? {
+        // TODO mov this logic to domain
+<span class="nc" id="L48">        val webAppProperties: WebAppProperties = properties.get(locator)!!</span>
+<span class="nc bnc" id="L49" title="All 2 branches missed.">        val restServiceName = webAppProperties.rest!!.name</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">        val restConfig: RestResourceConfig = locator.service(RestResourceConfig::class, restServiceName) ?:</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">                return resourceConfigNotFoundError(locator, restServiceName ?: &quot;undefined&quot;)</span>
+
+<span class="nc" id="L53">        val staticContent = ArrayList&lt;StaticContent&gt;()</span>
+
+<span class="nc" id="L55">        val config = RestAppConfig(</span>
+<span class="nc" id="L56">                webAppProperties.url,</span>
+<span class="nc" id="L57">                webAppProperties.rest,</span>
+<span class="nc" id="L58">                staticContent,</span>
+<span class="nc" id="L59">                restConfig</span>
+        )
+<span class="nc" id="L61">        staticContent.addAll(webAppProperties.staticContent)</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        if (webAppProperties.withHalBrowser) {</span>
+<span class="nc" id="L63">            staticContent.add(halContent())</span>
+        }
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        if (webAppProperties.withSwaggerUi) {</span>
+<span class="nc" id="L66">            val doc = swaggerContent()</span>
+<span class="nc" id="L67">            staticContent.add(doc)</span>
+<span class="nc" id="L68">            initSwagger(restConfig.packages, config)</span>
+<span class="nc" id="L69">            restConfig.resources(ApiListingResource::class.java.`package`.name)</span>
+        }
+
+<span class="nc" id="L72">        return WebServerGrizzlyImpl(config, locator)</span>
+    }
+
+    private fun swaggerContent(): StaticContent {
+<span class="nc" id="L76">        return StaticContent(</span>
+<span class="nc" id="L77">                Path(&quot;docs&quot;),</span>
+<span class="nc" id="L78">                arrayOf(URI(SWAGGER_URL)),</span>
+<span class="nc" id="L79">                &quot;index.html&quot;,</span>
+<span class="nc" id="L80">                &quot;index.html?url=/api/swagger.json&quot;</span>
+        )
+    }
+
+    private fun halContent(): StaticContent {
+<span class="nc" id="L85">        return StaticContent(</span>
+<span class="nc" id="L86">                Path(&quot;hal&quot;),</span>
+<span class="nc" id="L87">                arrayOf(URI(HAL_URL)),</span>
+<span class="nc" id="L88">                &quot;browser.html&quot;,</span>
+<span class="nc" id="L89">                &quot;#/api/service&quot;</span>
+        )
+    }
+
+    private fun initSwagger(packages: MutableList&lt;String&gt;, restConfig: RestAppConfig) {
+<span class="nc" id="L94">        val config = BeanConfig()</span>
+<span class="nc" id="L95">        config.basePath = &quot;/&quot; + restConfig.rest.path.path</span>
+<span class="nc" id="L96">        config.host = &quot;${restConfig.url.host}:${restConfig.url.port}&quot;</span>
+<span class="nc" id="L97">        config.resourcePackage = packages.joinToString(&quot;,&quot;)</span>
+<span class="nc" id="L98">        config.scan = true</span>
+<span class="nc" id="L99">    }</span>
+
+    private fun resourceConfigNotFoundError(locator: Locator, name: String): EmbeddedService? {
+<span class="nc" id="L102">        val list = locator.names(ResourceConfig::class)</span>
+<span class="nc" id="L103">        throw IllegalStateException(</span>
+<span class="nc" id="L104">                &quot;Resource Config '$name' is not supported. Try one from this list: $list or create one&quot;</span>
+        )
+    }
+
+}
+
+<span class="nc" id="L110">open class WebServerGrizzlyImpl(</span>
+        private val config: RestAppConfig,
+        locator: Locator
+<span class="nc" id="L113">) : BaseService(locator), WebServer {</span>
+
+<span class="nc" id="L115">    fun ServerConfiguration.title(): String = &quot;$name '$httpServerName-$httpServerVersion'&quot;</span>
+
+<span class="nc" id="L117">    private val httpServer: HttpServer = httpServer()</span>
+
+<span class="nc" id="L119">    override val baseUri: URI get() = config.url</span>
+
+<span class="nc" id="L121">    override var name: String = &quot;Unknown web service&quot;</span>
+<span class="nc" id="L122">        get() = httpServer.serverConfiguration.title()</span>
+
+    override fun launch() {
+<span class="nc" id="L125">        httpServer.start()</span>
+<span class="nc" id="L126">    }</span>
+
+    override fun shutdown() {
+<span class="nc" id="L129">        httpServer.shutdownNow()</span>
+<span class="nc" id="L130">    }</span>
+
+    override fun relaunch() {
+<span class="nc" id="L133">        httpServer.shutdownNow()</span>
+<span class="nc" id="L134">        httpServer.start()</span>
+<span class="nc" id="L135">    }</span>
+    
+    private fun httpServer(): HttpServer {
+<span class="nc" id="L138">        val listener = networkListener(config.url, false, null)</span>
+<span class="nc" id="L139">        val server = createHttpServer(listener)</span>
+<span class="nc" id="L140">        makeDynamicHandler(server.serverConfiguration, config.rest.path)</span>
+<span class="nc" id="L141">        makeStaticHandlers(server.serverConfiguration)</span>
+<span class="nc" id="L142">        return server</span>
+    }
+
+    private fun makeDynamicHandler(serverConfiguration: ServerConfiguration, path: Path) {
+<span class="nc" id="L146">        serverConfiguration.addHttpHandler(</span>
+<span class="nc" id="L147">                GrizzlyHttpContainer(config.resourceConfig, locator.implementation&lt;ServiceLocator&gt;()),</span>
+<span class="nc" id="L148">                &quot;/${path.contextPath}&quot;</span>
+        )
+<span class="nc" id="L150">    }</span>
+
+    private fun makeStaticHandlers(serverConfiguration: ServerConfiguration) {
+<span class="nc" id="L153">        config.staticContent.forEach {</span>
+<span class="nc" id="L154">            serverConfiguration.addHttpHandler(</span>
+<span class="nc" id="L155">                    StaticHttpHandler(it),</span>
+<span class="nc" id="L156">                    &quot;/${it.path.contextPath}&quot;</span>
+            )
+<span class="nc" id="L158">        }</span>
+<span class="nc" id="L159">    }</span>
+
+    override fun entries(): WebEntries {
+<span class="nc" id="L162">        val cfg = httpServer.serverConfiguration</span>
+<span class="nc" id="L163">        val entries = WebEntries(config.url)</span>
+<span class="nc" id="L164">        cfg.httpHandlersWithMapping.forEach {</span>
+            (_, regs) -&gt;
+<span class="nc" id="L166">            run {</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">                for (reg in regs) entries.add(</span>
+<span class="nc" id="L168">                        reg.contextPath,</span>
+<span class="nc" id="L169">                        reg.urlPattern,</span>
+<span class="nc bnc" id="L170" title="All 4 branches missed.">                        config.staticContentByPath(reg.contextPath)?.startUrl ?: &quot;&quot;</span>
+                )
+<span class="nc" id="L172">            }</span>
+<span class="nc" id="L173">        }</span>
+<span class="nc" id="L174">        return entries</span>
+    }
+
+    private fun createHttpServer(listener: NetworkListener): HttpServer {
+<span class="nc" id="L178">        val server = HttpServer()</span>
+<span class="nc" id="L179">        server.addListener(listener)</span>
+<span class="nc" id="L180">        server.serverConfiguration.isPassTraceRequest = true</span>
+<span class="nc" id="L181">        server.serverConfiguration.defaultQueryEncoding = org.glassfish.grizzly.utils.Charsets.UTF8_CHARSET</span>
+<span class="nc" id="L182">        return server</span>
+    }
+
+    private fun networkListener(
+            uri: URI,
+            secure: Boolean,
+            sslEngineConfigurator: SSLEngineConfigurator?
+    ): NetworkListener {
+<span class="nc bnc" id="L190" title="All 2 branches missed.">        val host = if (uri.host == null) NetworkListener.DEFAULT_NETWORK_HOST else uri.host</span>
+<span class="nc" id="L191">        val port = when {</span>
+<span class="nc bnc" id="L192" title="All 4 branches missed.">            uri.port == -1 -&gt; if (secure) Container.DEFAULT_HTTPS_PORT else Container.DEFAULT_HTTP_PORT</span>
+<span class="nc" id="L193">            else -&gt; uri.port</span>
+        }
+<span class="nc" id="L195">        val listener = NetworkListener(&quot;grizzly&quot;, host, port)</span>
+<span class="nc" id="L196">        listener.transport.workerThreadPoolConfig.threadFactory = ThreadFactoryBuilder()</span>
+<span class="nc" id="L197">                .setNameFormat(&quot;grizzly-http-server-%d&quot;)</span>
+<span class="nc" id="L198">                .setUncaughtExceptionHandler(JerseyProcessingUncaughtExceptionHandler())</span>
+<span class="nc" id="L199">                .build()</span>
+<span class="nc" id="L200">        listener.isSecure = secure</span>
+<span class="nc bnc" id="L201" title="All 2 branches missed.">        if (sslEngineConfigurator != null) {</span>
+<span class="nc" id="L202">            listener.setSSLEngineConfig(sslEngineConfigurator)</span>
+        }
+<span class="nc" id="L204">        return listener</span>
+    }
+
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

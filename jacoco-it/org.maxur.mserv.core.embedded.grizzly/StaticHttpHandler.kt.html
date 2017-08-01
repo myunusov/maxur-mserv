@@ -1,0 +1,566 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StaticHttpHandler.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">maxur-mserv-core</a> &gt; <a href="index.source.html" class="el_package">org.maxur.mserv.core.embedded.grizzly</a> &gt; <span class="el_source">StaticHttpHandler.kt</span></div><h1>StaticHttpHandler.kt</h1><pre class="source lang-java linenums">package org.maxur.mserv.core.embedded.grizzly
+
+/**
+ * @author myunusov
+ * @version 1.0
+ * @since &lt;pre&gt;20.06.2017&lt;/pre&gt;
+ */
+import org.glassfish.grizzly.Buffer
+import org.glassfish.grizzly.WriteHandler
+import org.glassfish.grizzly.http.Method
+import org.glassfish.grizzly.http.io.NIOOutputStream
+import org.glassfish.grizzly.http.server.HttpHandler
+import org.glassfish.grizzly.http.server.Request
+import org.glassfish.grizzly.http.server.Response
+import org.glassfish.grizzly.http.server.StaticHttpHandlerBase
+import org.glassfish.grizzly.http.util.Header
+import org.glassfish.grizzly.http.util.HttpStatus
+import org.glassfish.grizzly.http.util.MimeType
+import org.glassfish.grizzly.memory.MemoryManager
+import org.maxur.mserv.core.embedded.properties.Path
+import org.maxur.mserv.core.embedded.properties.StaticContent
+import org.slf4j.LoggerFactory
+import java.io.*
+import java.net.*
+import java.nio.file.Paths
+import java.util.jar.JarEntry
+
+/**
+ * [HttpHandler], which processes requests to a static resources resolved
+ * by a given [ClassLoader].
+ *
+ * Create &lt;tt&gt;HttpHandler&lt;/tt&gt;, which will handle requests
+ * to the static resources resolved by the given class loader.
+ *
+ * @param classLoader [ClassLoader] to be used to resolve the resources
+ * @param staticContent is the static content configuration
+ *
+ * @author Grizzly Team
+ * @author Maxim Yunusov
+ */
+<span class="nc" id="L41">class StaticHttpHandler(</span>
+        staticContent: StaticContent,
+<span class="nc" id="L43">        val classLoader: ClassLoader = StaticHttpHandler::class.java.classLoader</span>
+<span class="nc" id="L44">) : StaticHttpHandlerBase() {</span>
+
+<span class="nc" id="L46">    companion object {</span>
+<span class="nc" id="L47">        val log: org.slf4j.Logger = LoggerFactory.getLogger(StaticHttpHandler::class.java)</span>
+    }
+
+<span class="nc" id="L50">    private val resourceLocator: ResourceLocator = ResourceLocator(classLoader, staticContent)</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">    private val defaultPage: String = staticContent.page ?: &quot;index.html&quot;</span>
+
+<span class="nc" id="L53">    constructor(path: String, vararg roots: String) : this(</span>
+<span class="nc" id="L54">            StaticContent(Path(path), roots.map { URI.create(it) }.toTypedArray())</span>
+    )
+
+    /**
+     * {@inheritDoc}
+     */
+    @Throws(Exception::class)
+    public override fun handle(resourcePath: String, request: Request, response: Response): Boolean {
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        resourceLocator.find(resourcePath)?.let {</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">            if (it.isExist()) return it.handle(request, response)</span>
+<span class="nc" id="L64">        }</span>
+<span class="nc" id="L65">        log.trace(&quot;Resource not found $resourcePath&quot;)</span>
+<span class="nc" id="L66">        return false</span>
+    }
+
+    fun respondedFile(url: URL): File {
+<span class="nc" id="L70">        val file = File(url.toURI())</span>
+<span class="nc bnc" id="L71" title="All 4 branches missed.">        if (!file.exists() || !file.isDirectory) return file</span>
+<span class="nc" id="L72">        val welcomeFile = File(file, &quot;/$defaultPage&quot;)</span>
+<span class="nc bnc" id="L73" title="All 4 branches missed.">        if (welcomeFile.exists() &amp;&amp; welcomeFile.isFile) {</span>
+<span class="nc" id="L74">            return welcomeFile</span>
+        }
+<span class="nc" id="L76">        return file</span>
+    }
+
+<span class="nc" id="L79">    inner class CLFileResource(</span>
+<span class="nc" id="L80">            val url: URL,</span>
+            resourcePath: String,
+            private val file: File = respondedFile(url),
+<span class="nc" id="L83">            override val path: String = resourcePath</span>
+<span class="nc" id="L84">    ) : Resource() {</span>
+
+        override fun mustBeRedirected(resourcePath: String): Boolean =
+                // TODO !this@StaticHttpHandler.isDirectorySlashOff &amp;&amp;
+                file.isDirectory &amp;&amp;
+<span class="nc bnc" id="L89" title="All 4 branches missed.">                        !resourcePath.endsWith(&quot;/&quot;)</span>
+
+<span class="nc" id="L91">        override fun isExist(): Boolean = file.exists()</span>
+        override fun process(request: Request, response: Response) {
+<span class="nc" id="L93">            addToFileCache(request, response, file)</span>
+<span class="nc" id="L94">            StaticHttpHandlerBase.sendFile(response, file)</span>
+<span class="nc" id="L95">        }</span>
+    }
+
+    fun JarURLConnection.close() {
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        if (!useCaches) {</span>
+<span class="nc" id="L100">            jarFile.close()</span>
+        }
+<span class="nc" id="L102">    }</span>
+
+<span class="nc" id="L104">    inner class JarURLInputStream(private val jarConnection: JarURLConnection, src: InputStream)</span>
+<span class="nc" id="L105">        : java.io.FilterInputStream(src) {</span>
+        override fun close() {
+<span class="nc" id="L107">            try {</span>
+<span class="nc" id="L108">                super.close()</span>
+            } finally {
+<span class="nc" id="L110">                jarConnection.close()</span>
+            }
+<span class="nc" id="L112">        }</span>
+    }
+
+<span class="nc" id="L115">    inner class JarResource(val url: URL) : Resource() {</span>
+<span class="nc" id="L116">        val urlConnection: URLConnection = url.openConnection()</span>
+<span class="nc" id="L117">        var filePath: String? = null</span>
+<span class="nc" id="L118">        override val path: String = url.path</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">            get() = filePath ?: field</span>
+        private var urlInputStream: JarURLInputStream? = null
+
+<span class="nc" id="L122">        override fun mustBeRedirected(resourcePath: String): Boolean = false</span>
+
+        override fun isExist(): Boolean {
+<span class="nc bnc" id="L125" title="All 2 branches missed.">            val jarUrlConnection = urlConnection as JarURLConnection</span>
+<span class="nc" id="L126">            val (iinputStream, jarEntry) = makeInputStream(jarUrlConnection)</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">            if (iinputStream != null) {</span>
+<span class="nc" id="L128">                urlInputStream = JarURLInputStream(jarUrlConnection, iinputStream)</span>
+<span class="nc" id="L129">                filePath = jarEntry.name</span>
+<span class="nc" id="L130">                return true</span>
+            } else {
+<span class="nc" id="L132">                jarUrlConnection.close()</span>
+<span class="nc" id="L133">                return false</span>
+            }
+        }
+
+        private fun makeInputStream(jarUrlConnection: JarURLConnection): Pair&lt;InputStream?, JarEntry&gt; {
+<span class="nc" id="L138">            val jarFile = jarUrlConnection.jarFile</span>
+<span class="nc" id="L139">            var jarEntry: JarEntry = jarUrlConnection.jarEntry</span>
+<span class="nc" id="L140">            var iinputStream: InputStream? = jarFile.getInputStream(jarEntry)</span>
+<span class="nc bnc" id="L141" title="All 4 branches missed.">            if (jarEntry.isDirectory || iinputStream == null) { // it's probably a folder</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">                val welcomeResource = if (jarEntry.name.endsWith(&quot;/&quot;))</span>
+<span class="nc" id="L143">                    &quot;${jarEntry.name}$defaultPage&quot;</span>
+                else
+<span class="nc" id="L145">                    &quot;${jarEntry.name}/$defaultPage&quot;</span>
+<span class="nc" id="L146">                jarEntry = jarFile.getJarEntry(welcomeResource)</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">                if (jarEntry != null) {</span>
+<span class="nc" id="L148">                    iinputStream = jarFile.getInputStream(jarEntry)</span>
+                }
+            }
+<span class="nc" id="L151">            return Pair(iinputStream, jarEntry)</span>
+        }
+
+        override fun process(request: Request, response: Response) {
+<span class="nc" id="L155">            val jarFile = getJarFile(</span>
+                    // we need that because url.getPath() may have url encoded symbols,
+                    // which are getting decoded when calling uri.getPath()
+<span class="nc" id="L158">                    URI(url.path).path</span>
+            )
+            // if it's not a jar file - we don't know what to do with that
+            // so not adding it to the file cache
+<span class="nc" id="L162">            addTimeStampEntryToFileCache(request, response, jarFile)</span>
+<span class="nc bnc" id="L163" title="All 4 branches missed.">            val stream = urlInputStream ?: urlConnection.getInputStream()!!</span>
+<span class="nc" id="L164">            sendResource(response, stream)</span>
+<span class="nc" id="L165">        }</span>
+
+        private fun addTimeStampEntryToFileCache(request: Request, response: Response, archive: File): Boolean {
+<span class="nc bnc" id="L168" title="All 2 branches missed.">            if (!isFileCacheEnabled) return false</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">            val fileCacheFilter = lookupFileCache(request.context) ?: return false</span>
+<span class="nc" id="L170">            val fileCache = fileCacheFilter.fileCache</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">            if (!fileCache.isEnabled) return false</span>
+<span class="nc" id="L172">            StaticHttpHandlerBase.addCachingHeaders(response, archive)</span>
+<span class="nc" id="L173">            fileCache.add(request.request, archive.lastModified())</span>
+<span class="nc" id="L174">            return true</span>
+        }
+
+        @Throws(MalformedURLException::class, FileNotFoundException::class)
+        private fun getJarFile(path: String): File {
+<span class="nc" id="L179">            val jarDelimIdx = path.indexOf(&quot;!/&quot;)</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">            if (jarDelimIdx == -1) throw MalformedURLException(&quot;The jar file delimiter were not found&quot;)</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">            val file = File(path.substring(0, jarDelimIdx))</span>
+<span class="nc bnc" id="L182" title="All 4 branches missed.">            if (file.exists() &amp;&amp; file.isFile) return file</span>
+<span class="nc" id="L183">            throw FileNotFoundException(&quot;The jar file was not found&quot;)</span>
+        }
+    }
+
+    // OSGi resource
+<span class="nc" id="L188">    inner class BundleResource(var url: URL, val mayBeFolder: Boolean) : Resource() {</span>
+
+<span class="nc" id="L190">        override fun mustBeRedirected(resourcePath: String): Boolean = false</span>
+
+<span class="nc" id="L192">        var urlConnection: URLConnection = url.openConnection()</span>
+
+<span class="nc" id="L194">        override val path: String = url.path</span>
+
+        override fun isExist(): Boolean {
+<span class="nc bnc" id="L197" title="All 4 branches missed.">            if (mayBeFolder &amp;&amp; urlConnection.contentLength &lt;= 0) { // looks like a folder?</span>
+                // check if there's a welcome resource
+<span class="nc" id="L199">                val welcomeUrl = classLoader.getResource(&quot;${url.path}/$defaultPage&quot;)</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">                if (welcomeUrl != null) {</span>
+<span class="nc" id="L201">                    url = welcomeUrl</span>
+<span class="nc" id="L202">                    urlConnection = welcomeUrl.openConnection()</span>
+                }
+            }
+<span class="nc" id="L205">            return true</span>
+        }
+
+        override fun process(request: Request, response: Response) {
+<span class="nc" id="L209">            sendResource(response, urlConnection.getInputStream())</span>
+<span class="nc" id="L210">        }</span>
+    }
+
+<span class="nc" id="L213">    inner class UnknownResource(val url: URL) : Resource() {</span>
+
+<span class="nc" id="L215">        override fun mustBeRedirected(resourcePath: String): Boolean = false</span>
+
+<span class="nc" id="L217">        override val path: String = url.path</span>
+
+<span class="nc" id="L219">        var urlConnection: URLConnection = url.openConnection()</span>
+
+<span class="nc" id="L221">        override fun isExist(): Boolean = true</span>
+
+        override fun process(request: Request, response: Response) {
+<span class="nc" id="L224">            sendResource(response, urlConnection.getInputStream())</span>
+<span class="nc" id="L225">        }</span>
+    }
+
+
+<span class="nc" id="L229">    inner class RedirectedResource(url: String) : Resource() {</span>
+
+<span class="nc" id="L231">        override fun mustBeRedirected(resourcePath: String): Boolean = false</span>
+
+<span class="nc" id="L233">        override val path: String = url</span>
+
+<span class="nc" id="L235">        override fun isExist(): Boolean = true</span>
+
+        // Redirect to the same url, but with trailing slash
+        override fun process(request: Request, response: Response) {
+<span class="nc" id="L239">            response.setStatus(HttpStatus.MOVED_PERMANENTLY_301)</span>
+<span class="nc" id="L240">            response.setHeader(Header.Location, response.encodeRedirectURL(&quot;$path/&quot;))</span>
+<span class="nc" id="L241">        }</span>
+
+    }
+
+<span class="nc" id="L245">    inner abstract class Resource {</span>
+
+        abstract val path: String
+
+        // url may point to a folder or a file
+        fun handle(request: Request, response: Response): Boolean =
+                // If it's not HTTP GET - return method is not supported status
+<span class="nc bnc" id="L252" title="All 2 branches missed.">                if (isGet(request))</span>
+<span class="nc" id="L253">                    success(response, request)</span>
+                else
+<span class="nc" id="L255">                    methodIsNotAllowed(path, request, response)</span>
+
+<span class="nc" id="L257">        private fun isGet(request: Request) = Method.GET == request.method</span>
+
+        private fun success(response: Response, request: Request): Boolean {
+<span class="nc" id="L260">            pickupContentType(response, path)</span>
+<span class="nc" id="L261">            process(request, response)</span>
+<span class="nc" id="L262">            return true</span>
+        }
+
+        private fun methodIsNotAllowed(resource: String, request: Request, response: Response): Boolean {
+<span class="nc" id="L266">            log.trace(&quot;File found $resource, but HTTP method ${request.method} is not allowed&quot;)</span>
+<span class="nc" id="L267">            response.setStatus(HttpStatus.METHOD_NOT_ALLOWED_405)</span>
+<span class="nc" id="L268">            response.setHeader(Header.Allow, &quot;GET&quot;)</span>
+<span class="nc" id="L269">            return true</span>
+        }
+
+        abstract fun isExist(): Boolean
+
+        abstract fun process(request: Request, response: Response)
+
+        protected fun pickupContentType(response: Response, path: String) {
+<span class="nc bnc" id="L277" title="All 2 branches missed.">            if (response.response.isContentTypeSet) return</span>
+<span class="nc" id="L278">            val dot = path.lastIndexOf('.')</span>
+<span class="nc bnc" id="L279" title="All 2 branches missed.">            if (dot &gt; 0) {</span>
+<span class="nc" id="L280">                val ext = path.substring(dot + 1)</span>
+<span class="nc" id="L281">                val ct = MimeType.get(ext)</span>
+<span class="nc bnc" id="L282" title="All 2 branches missed.">                if (ct != null) {</span>
+<span class="nc" id="L283">                    response.contentType = ct</span>
+                }
+            } else {
+<span class="nc" id="L286">                response.contentType = MimeType.get(&quot;html&quot;)</span>
+            }
+<span class="nc" id="L288">        }</span>
+
+        @Throws(IOException::class)
+        protected fun sendResource(response: Response, input: InputStream) {
+<span class="nc" id="L292">            response.setStatus(HttpStatus.OK_200)</span>
+<span class="nc" id="L293">            response.addDateHeader(Header.Date, System.currentTimeMillis())</span>
+<span class="nc" id="L294">            val chunkSize = 8192</span>
+<span class="nc" id="L295">            response.suspend()</span>
+<span class="nc" id="L296">            val outputStream = response.nioOutputStream</span>
+<span class="nc" id="L297">            outputStream.notifyCanWrite(NonBlockingDownloadHandler(response, outputStream, input, chunkSize))</span>
+<span class="nc" id="L298">        }</span>
+
+        inner private class NonBlockingDownloadHandler
+<span class="nc" id="L301">        internal constructor(private val response: Response,</span>
+                             private val outputStream: NIOOutputStream,
+                             private val inputStream: InputStream,
+                             private val chunkSize: Int
+        ) : WriteHandler {
+<span class="nc" id="L306">            private val mm: MemoryManager&lt;*&gt; = response.getRequest().context.memoryManager</span>
+            @Throws(Exception::class)
+            override fun onWritePossible() {
+<span class="nc" id="L309">                log.trace(&quot;[onWritePossible]&quot;)</span>
+                // send CHUNK of data
+<span class="nc" id="L311">                val isWriteMore = sendChunk()</span>
+<span class="nc bnc" id="L312" title="All 2 branches missed.">                if (isWriteMore) {</span>
+                    // if there are more bytes to be sent - reregister this WriteHandler
+<span class="nc" id="L314">                    outputStream.notifyCanWrite(this)</span>
+                }
+<span class="nc" id="L316">            }</span>
+
+            override fun onError(t: Throwable) {
+<span class="nc" id="L319">                log.trace(&quot;[onError] &quot;, t)</span>
+<span class="nc" id="L320">                response.setStatus(500, t.message)</span>
+<span class="nc" id="L321">                complete(true)</span>
+<span class="nc" id="L322">            }</span>
+
+            /**
+             * Send next CHUNK_SIZE of file
+             */
+            @Throws(IOException::class)
+            private fun sendChunk(): Boolean {
+<span class="nc bnc" id="L329" title="All 2 branches missed.">                val buffer: Buffer? = if (!mm.willAllocateDirect(chunkSize)) {</span>
+<span class="nc" id="L330">                    indirectAllocateBuffer()</span>
+                } else {
+<span class="nc" id="L332">                    directAllocateBuffer()</span>
+                }
+<span class="nc bnc" id="L334" title="All 2 branches missed.">                if (buffer == null) {</span>
+<span class="nc" id="L335">                    complete(false)</span>
+<span class="nc" id="L336">                    return false</span>
+                }
+                // mark it available for disposal after content is written
+<span class="nc" id="L339">                buffer.allowBufferDispose(true)</span>
+<span class="nc" id="L340">                buffer.trim()</span>
+                // write the Buffer
+<span class="nc" id="L342">                outputStream.write(buffer)</span>
+<span class="nc" id="L343">                return true</span>
+            }
+
+            private fun directAllocateBuffer(): Buffer? {
+<span class="nc" id="L347">                val buf = ByteArray(chunkSize)</span>
+<span class="nc" id="L348">                val len = inputStream.read(buf)</span>
+<span class="nc bnc" id="L349" title="All 2 branches missed.">                if (len &lt;= 0) {</span>
+<span class="nc" id="L350">                    return null</span>
+                }
+<span class="nc" id="L352">                val buffer: Buffer = mm.allocate(len)</span>
+<span class="nc" id="L353">                buffer.put(buf)</span>
+<span class="nc" id="L354">                return buffer</span>
+            }
+
+            private fun indirectAllocateBuffer(): Buffer? {
+<span class="nc" id="L358">                val buffer: Buffer = mm.allocate(chunkSize)</span>
+<span class="nc" id="L359">                val len: Int =</span>
+<span class="nc bnc" id="L360" title="All 2 branches missed.">                        if (buffer.isComposite) readCompositeBuffer(buffer)</span>
+<span class="nc" id="L361">                        else inputStream.read(buffer.array(),</span>
+<span class="nc" id="L362">                                buffer.position() + buffer.arrayOffset(),</span>
+<span class="nc" id="L363">                                chunkSize)</span>
+<span class="nc bnc" id="L364" title="All 2 branches missed.">                if (len &gt; 0) {</span>
+<span class="nc" id="L365">                    buffer.position(buffer.position() + len)</span>
+                } else {
+<span class="nc" id="L367">                    buffer.dispose()</span>
+                }
+<span class="nc bnc" id="L369" title="All 2 branches missed.">                if (len &gt; 0) return buffer else return null</span>
+            }
+
+            private fun readCompositeBuffer(buffer: Buffer): Int {
+<span class="nc" id="L373">                val bufferArray = buffer.toBufferArray()</span>
+<span class="nc" id="L374">                val size = bufferArray.size()</span>
+<span class="nc" id="L375">                val buffers = bufferArray.array</span>
+<span class="nc" id="L376">                var lenCounter = 0</span>
+<span class="nc bnc" id="L377" title="All 4 branches missed.">                for (i in 0..size - 1) {</span>
+<span class="nc" id="L378">                    val subBuffer = buffers[i]</span>
+<span class="nc" id="L379">                    val subBufferLen = subBuffer.remaining()</span>
+<span class="nc" id="L380">                    val justReadLen = inputStream.read(subBuffer.array(),</span>
+<span class="nc" id="L381">                            subBuffer.position() + subBuffer.arrayOffset(),</span>
+<span class="nc" id="L382">                            subBufferLen)</span>
+<span class="nc bnc" id="L383" title="All 2 branches missed.">                    if (justReadLen &gt; 0) lenCounter += justReadLen</span>
+<span class="nc bnc" id="L384" title="All 2 branches missed.">                    if (justReadLen &lt; subBufferLen) break</span>
+                }
+<span class="nc" id="L386">                bufferArray.restore()</span>
+<span class="nc" id="L387">                bufferArray.recycle()</span>
+<span class="nc bnc" id="L388" title="All 2 branches missed.">                return if (lenCounter &gt; 0) lenCounter else -1</span>
+            }
+
+            /**
+             * Complete the download
+             */
+            private fun complete(isError: Boolean) {
+<span class="nc" id="L395">                closeStream(inputStream, isError)</span>
+<span class="nc" id="L396">                closeStream(outputStream, isError)</span>
+<span class="nc bnc" id="L397" title="All 2 branches missed.">                if (response.isSuspended) {</span>
+<span class="nc" id="L398">                    response.resume()</span>
+                } else {
+<span class="nc" id="L400">                    response.finish()</span>
+                }
+<span class="nc" id="L402">            }</span>
+
+            private fun closeStream(stream: Closeable, isError: Boolean) {
+<span class="nc" id="L405">                try {</span>
+<span class="nc" id="L406">                    stream.close()</span>
+<span class="nc" id="L407">                } catch (e: IOException) {</span>
+<span class="nc bnc" id="L408" title="All 2 branches missed.">                    if (!isError) {</span>
+<span class="nc" id="L409">                        response.setStatus(500, e.message)</span>
+                    }
+                }
+<span class="nc" id="L412">            }</span>
+        }
+
+        abstract fun mustBeRedirected(resourcePath: String): Boolean
+    }
+
+<span class="nc" id="L418">    inner class ResourceLocator(val classLoader: ClassLoader, staticContent: StaticContent) {</span>
+
+<span class="nc" id="L420">        private val roots = makeRoots(staticContent)</span>
+
+        private fun makeRoots(staticContent: StaticContent): Set&lt;Root&gt; {
+<span class="nc" id="L423">            val set = staticContent.roots</span>
+<span class="nc" id="L424">                    .map { makeRoot(it) }</span>
+<span class="nc" id="L425">                    .filterNotNull()</span>
+<span class="nc" id="L426">                    .map { it.validate() }</span>
+<span class="nc" id="L427">                    .toHashSet()</span>
+
+<span class="nc bnc" id="L429" title="All 4 branches missed.">            if (set.isNotEmpty()) {</span>
+<span class="nc" id="L430">                return set</span>
+            } else {
+<span class="nc" id="L432">                return setOf(CLRoot(&quot;&quot;, classLoader))</span>
+            }
+        }
+
+        private fun makeRoot(uri: URI): Root? =
+<span class="nc bnc" id="L437" title="All 9 branches missed.">                when (uri.scheme) {</span>
+<span class="nc" id="L438">                    null -&gt; FileRoot(File(uri.toString()))</span>
+<span class="nc" id="L439">                    &quot;file&quot; -&gt; FileRoot(Paths.get(uri).toFile())</span>
+<span class="nc" id="L440">                    &quot;classpath&quot; -&gt; CLRoot(uri, classLoader)</span>
+<span class="nc" id="L441">                    else -&gt; null</span>
+<span class="nc" id="L442">                }</span>
+
+        //@todo #2 DEV move &quot;check-non-slash-terminated-folders&quot; to web-app properties
+        private val CHECK_NON_SLASH_TERMINATED_FOLDERS_PROP =
+<span class="nc" id="L446">                StaticHttpHandler::class.java.name + &quot;.check-non-slash-terminated-folders&quot;</span>
+
+        /**
+         * &lt;tt&gt;true&lt;/tt&gt; (default) if we want to double-check the resource requests,
+         * that don't have terminating slash if they represent a folder and try
+         * to retrieve a welcome resource from the folder.
+         */
+        private val CHECK_NON_SLASH_TERMINATED_FOLDERS =
+<span class="nc bnc" id="L454" title="All 2 branches missed.">                System.getProperty(CHECK_NON_SLASH_TERMINATED_FOLDERS_PROP) == null ||</span>
+<span class="nc bnc" id="L455" title="All 2 branches missed.">                        java.lang.Boolean.getBoolean(CHECK_NON_SLASH_TERMINATED_FOLDERS_PROP)</span>
+
+
+        fun find(resourcePath: String): Resource? {
+<span class="nc" id="L459">            val path = resourcePath.trimStart('/')</span>
+<span class="nc bnc" id="L460" title="All 6 branches missed.">            if (path.isEmpty() || path.endsWith(&quot;/&quot;)) {</span>
+<span class="nc" id="L461">                return findDefaultPage(path)</span>
+            }
+<span class="nc" id="L463">            return roots</span>
+<span class="nc" id="L464">                    .map { it.lookupResource(path, true) }</span>
+<span class="nc bnc" id="L465" title="All 2 branches missed.">                    .firstOrNull()?.let {</span>
+<span class="nc bnc" id="L466" title="All 2 branches missed.">                return if (it.mustBeRedirected(resourcePath)) RedirectedResource(resourcePath)</span>
+<span class="nc" id="L467">                else it</span>
+<span class="nc bnc" id="L468" title="All 2 branches missed.">            } ?: if (CHECK_NON_SLASH_TERMINATED_FOLDERS) {</span>
+                // So try to add index.html to double-check.
+                // For example null will be returned for a folder inside a jar file.
+                // some ClassLoaders return null if a URL points to a folder.
+<span class="nc" id="L472">                return findDefaultPage(path + &quot;/&quot;)</span>
+<span class="nc" id="L473">            } else null</span>
+        }
+
+<span class="nc" id="L476">        private fun findDefaultPage(folderPath: String): Resource? = roots</span>
+<span class="nc" id="L477">                .map { it.lookupResource(folderPath + defaultPage, false) }</span>
+<span class="nc bnc" id="L478" title="All 2 branches missed.">                .firstOrNull()?.let {</span>
+<span class="nc" id="L479">            return it</span>
+<span class="nc" id="L480">        }</span>
+
+    }
+
+
+<span class="nc" id="L485">    inner class FileResource(</span>
+            folder: File,
+            resourcePath: String,
+            private val file: File = File(folder, resourcePath)
+<span class="nc" id="L489">    ) : Resource() {</span>
+
+        override fun mustBeRedirected(resourcePath: String): Boolean =
+            // TODO !this@StaticHttpHandler.isDirectorySlashOff &amp;&amp;
+                 file.isDirectory &amp;&amp;
+<span class="nc bnc" id="L494" title="All 4 branches missed.">            !resourcePath.endsWith(&quot;/&quot;)</span>
+
+<span class="nc" id="L496">        override val path: String = file.path</span>
+
+<span class="nc" id="L498">        override fun isExist(): Boolean = this.file.exists()</span>
+
+        override fun process(request: Request, response: Response) {
+<span class="nc bnc" id="L501" title="All 2 branches missed.">            if (file.exists()) {</span>
+<span class="nc" id="L502">                addToFileCache(request, response, file)</span>
+<span class="nc" id="L503">                sendFile(response, file)</span>
+            }
+<span class="nc" id="L505">        }</span>
+    }
+
+<span class="nc" id="L508">    inner class FileRoot(val file: File) : Root {</span>
+
+<span class="nc" id="L510">        override fun validate(): Root = this</span>
+        override fun lookupResource(resourcePath: String, mayBeFolder: Boolean): Resource? {
+<span class="nc" id="L512">            return FileResource(file, resourcePath)</span>
+        }
+    }
+
+<span class="nc" id="L516">    inner class CLRoot(val path: String, val classLoader: ClassLoader) : Root {</span>
+
+<span class="nc" id="L518">        constructor(uri: URI, classLoader: ClassLoader) : this(</span>
+<span class="nc bnc" id="L519" title="All 2 branches missed.">                uri.toString().substring(&quot;classpath&quot;.length + 1).trimStart('/'),</span>
+<span class="nc" id="L520">                classLoader</span>
+        )
+
+        override fun validate(): Root {
+<span class="nc bnc" id="L524" title="All 2 branches missed.">            if (this.path.endsWith(&quot;/&quot;)) this.path</span>
+<span class="nc" id="L525">            else throw IllegalArgumentException(&quot;Doc root should end with slash ('/')&quot;)</span>
+<span class="nc" id="L526">            return this</span>
+        }
+
+        override fun lookupResource(resourcePath: String, mayBeFolder: Boolean): StaticHttpHandler.Resource? {
+<span class="nc bnc" id="L530" title="All 2 branches missed.">            classLoader.getResource(path + resourcePath)?.also {</span>
+<span class="nc" id="L531">                val resource = make(resourcePath, it, mayBeFolder)</span>
+<span class="nc bnc" id="L532" title="All 2 branches missed.">                if (resource.isExist()) return resource</span>
+<span class="nc" id="L533">            }</span>
+<span class="nc" id="L534">            return null</span>
+        }
+
+        private fun make(path: String, url: URL, mayBeFolder: Boolean): StaticHttpHandler.Resource =
+<span class="nc bnc" id="L538" title="All 12 branches missed.">                when (url.protocol) {</span>
+<span class="nc" id="L539">                    &quot;file&quot; -&gt; CLFileResource(url, path)</span>
+<span class="nc" id="L540">                    &quot;jar&quot; -&gt; JarResource(url)</span>
+<span class="nc" id="L541">                    &quot;bundle&quot; -&gt; BundleResource(url, mayBeFolder)</span>
+<span class="nc" id="L542">                    else -&gt; UnknownResource(url)</span>
+<span class="nc" id="L543">                }</span>
+    }
+
+
+}
+
+
+interface Root {
+    fun validate(): Root
+    fun lookupResource(resourcePath: String, mayBeFolder: Boolean): StaticHttpHandler.Resource?
+}
+
+
+
+
+
+
+
+
+
+
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HoconNodeCursor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">maxur-mserv-core</a> &gt; <a href="index.source.html" class="el_package">com.jasonclawson.jackson.dataformat.hocon</a> &gt; <span class="el_source">HoconNodeCursor.java</span></div><h1>HoconNodeCursor.java</h1><pre class="source lang-java linenums">package com.jasonclawson.jackson.dataformat.hocon;
+
+import com.fasterxml.jackson.core.JsonStreamContext;
+import com.fasterxml.jackson.core.JsonToken;
+import com.typesafe.config.ConfigList;
+import com.typesafe.config.ConfigObject;
+import com.typesafe.config.ConfigValue;
+import com.typesafe.config.ConfigValueType;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
+
+/**
+ * The type Hocon node cursor.
+ */
+public abstract class HoconNodeCursor extends JsonStreamContext {
+
+    /**
+     * The Parent.
+     */
+    protected final HoconNodeCursor _parent;
+    /**
+     * The Current name.
+     */
+    protected String _currentName;
+
+    /**
+     * Instantiates a new Hocon node cursor.
+     *
+     * @param contextType the context type
+     * @param p           the p
+     */
+<span class="nc" id="L34">    public HoconNodeCursor(int contextType, HoconNodeCursor p) {</span>
+<span class="nc" id="L35">		_type = contextType;</span>
+<span class="nc" id="L36">		_index = -1;</span>
+<span class="nc" id="L37">		_parent = p;</span>
+<span class="nc" id="L38">	}</span>
+
+	@Override
+	public HoconNodeCursor getParent() {
+<span class="nc" id="L42">		return _parent;</span>
+	}
+
+	@Override
+	public String getCurrentName() {
+<span class="nc" id="L47">		return _currentName;</span>
+	}
+
+    /**
+     * Override current name.
+     *
+     * @param name the name
+     */
+    public void overrideCurrentName(String name) {
+<span class="nc" id="L56">        _currentName = name;</span>
+<span class="nc" id="L57">    }</span>
+
+    /**
+     * HOCON specific method to construct the path for this node. Useful for
+     * interacting directly with the underlying Config instance in custom
+     * deserializers.
+     *
+     * @return The path of this node cursor.
+     */
+    public String constructPath() {
+<span class="nc" id="L67">        return constructPath(new StringBuilder()).toString();</span>
+    }
+	
+    private StringBuilder constructPath(StringBuilder initial) {
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (_parent != null) {</span>
+<span class="nc" id="L72">            return _parent.constructPath(initial).append('.').append(_currentName);</span>
+        } else {
+<span class="nc" id="L74">            return initial.append(_currentName);</span>
+        }
+    }
+
+    /**
+     * Next token json token.
+     *
+     * @return the json token
+     */
+    public abstract JsonToken nextToken();
+
+    /**
+     * End token json token.
+     *
+     * @return the json token
+     */
+    public abstract JsonToken endToken();
+
+    /**
+     * Current node config value.
+     *
+     * @return the config value
+     */
+    public abstract ConfigValue currentNode();
+
+    /**
+     * Current has children boolean.
+     *
+     * @return the boolean
+     */
+    public abstract boolean currentHasChildren();
+
+    /**
+     * Is array boolean.
+     *
+     * @param value the value
+     * @return the boolean
+     */
+    protected static boolean isArray(ConfigValue value) {
+<span class="nc bnc" id="L113" title="All 2 branches missed.">    	return value.valueType() == ConfigValueType.LIST;</span>
+    }
+
+    /**
+     * Is object boolean.
+     *
+     * @param value the value
+     * @return the boolean
+     */
+    protected static boolean isObject(ConfigValue value) {
+<span class="nc bnc" id="L123" title="All 2 branches missed.">    	return value.valueType() == ConfigValueType.OBJECT;</span>
+    }
+
+    /**
+     * As json token json token.
+     *
+     * @param value the value
+     * @return the json token
+     */
+    protected static JsonToken asJsonToken(ConfigValue value) {
+<span class="nc" id="L133">		return HoconTreeTraversingParser.asJsonToken(value);</span>
+	}
+
+    /**
+     * Method called to create a new context for iterating all
+     * contents of the current structured value (JSON array or object)
+     *
+     * @return the hocon node cursor
+     */
+    public final HoconNodeCursor iterateChildren() {
+<span class="nc" id="L143">    	ConfigValue n = currentNode();</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        if (n == null) throw new IllegalStateException(&quot;No current node&quot;);</span>
+<span class="nc" id="L145">        boolean numericallyIndexed = isNumericallyIndexed(n);</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        if (!numericallyIndexed) {</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">            if (isArray(n)) { // false since we have already returned START_ARRAY</span>
+<span class="nc" id="L148">                return new Array(n, this);</span>
+            }
+<span class="nc bnc" id="L150" title="All 2 branches missed.">            if (isObject(n)) {</span>
+<span class="nc" id="L151">                return new Object(n, this);</span>
+            }
+        } else {
+<span class="nc" id="L154">            return new NumericallyIndexedObjectBackedArray(n, this);</span>
+        }
+<span class="nc" id="L156">        throw new IllegalStateException(&quot;Current node of type &quot;+n.getClass().getName());</span>
+    }
+
+    /**
+     * Is numerically indexed boolean.
+     *
+     * @param n the n
+     * @return the boolean
+     */
+    public static boolean isNumericallyIndexed(ConfigValue n) {
+<span class="nc" id="L166">        java.lang.Object unwrapped = n.unwrapped();</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        if (unwrapped instanceof Map) {</span>
+            try {
+                @SuppressWarnings(value = &quot;unchecked&quot;)
+<span class="nc" id="L170">                Map&lt;String, java.lang.Object&gt; map = (Map&lt;String, java.lang.Object&gt;) unwrapped;</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">                if (map.isEmpty()) {</span>
+<span class="nc" id="L172">                    return false;</span>
+                }
+                // Because TypeSafe diagnostic does not preserve types of keys
+                // we have to revert to heuristics to detect if it was originally an array
+                // two conditions are verified:
+                // 1. all keys must be non-negative integers
+                // 2. all keys must form a consecutive set of integers 0..N-1 where N is size of map
+<span class="nc" id="L179">                int size = map.size();</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">                for (String key : map.keySet()) {</span>
+                    try {
+<span class="nc" id="L182">                        int idx = Integer.parseInt(key);</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">                        if (idx &lt; 0) {</span>
+<span class="nc" id="L184">                            return false;</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">                        } else if (idx &gt;= size) {</span>
+<span class="nc" id="L186">                            return false;</span>
+                        }
+<span class="nc" id="L188">                    } catch (NumberFormatException e) {</span>
+<span class="nc" id="L189">                        return false;</span>
+<span class="nc" id="L190">                    }</span>
+<span class="nc" id="L191">                }</span>
+<span class="nc" id="L192">                return true;</span>
+<span class="nc" id="L193">            } catch (ClassCastException e) {</span>
+<span class="nc" id="L194">                return false;</span>
+            }
+        }
+<span class="nc" id="L197">        return false;</span>
+    }
+
+    /**
+     * The type Root value.
+     */
+    protected final static class RootValue extends HoconNodeCursor {
+        /**
+         * The Node.
+         */
+        protected ConfigValue _node;
+
+        /**
+         * The Done.
+         */
+<span class="nc" id="L212">        protected boolean _done = false;</span>
+
+        /**
+         * Instantiates a new Root value.
+         *
+         * @param n the n
+         * @param p the p
+         */
+        public RootValue(ConfigValue n, HoconNodeCursor p) {
+<span class="nc" id="L221">             super(JsonStreamContext.TYPE_ROOT, p);</span>
+<span class="nc" id="L222">             _node = n;</span>
+<span class="nc" id="L223">         }</span>
+         
+         @Override
+         public JsonToken nextToken() {
+<span class="nc bnc" id="L227" title="All 2 branches missed.">             if (!_done) {</span>
+<span class="nc" id="L228">                 _done = true;</span>
+<span class="nc" id="L229">                 return asJsonToken(_node);</span>
+             }
+<span class="nc" id="L231">             _node = null;</span>
+<span class="nc" id="L232">             return null;</span>
+         }
+         
+         @Override
+<span class="nc" id="L236">         public JsonToken endToken() { return null; }</span>
+
+         @Override
+<span class="nc" id="L239">         public ConfigValue currentNode() { return _node; }</span>
+
+         @Override
+<span class="nc" id="L242">         public boolean currentHasChildren() { return false; }</span>
+    	
+    }
+
+    /**
+     * Cursor used for traversing non-empty JSON Array nodes
+     */
+    protected final static class Array extends HoconNodeCursor {
+        /**
+         * The Contents.
+         */
+        protected Iterator&lt;ConfigValue&gt; _contents;
+
+        /**
+         * The Current node.
+         */
+        protected ConfigValue _currentNode;
+
+        /**
+         * Instantiates a new Array.
+         *
+         * @param n the n
+         * @param p the p
+         */
+        public Array(ConfigValue n, HoconNodeCursor p) {
+<span class="nc" id="L267">            super(JsonStreamContext.TYPE_ARRAY, p);</span>
+<span class="nc" id="L268">            _contents = ((ConfigList)n).iterator();</span>
+<span class="nc" id="L269">        }</span>
+
+        @Override
+        public JsonToken nextToken() {
+<span class="nc bnc" id="L273" title="All 2 branches missed.">            if (!_contents.hasNext()) {</span>
+<span class="nc" id="L274">                _currentNode = null;</span>
+<span class="nc" id="L275">                return null;</span>
+            }
+<span class="nc" id="L277">            _currentNode = _contents.next();</span>
+<span class="nc" id="L278">            return asJsonToken(_currentNode);</span>
+        }
+
+        @Override
+<span class="nc" id="L282">        public JsonToken endToken() { return JsonToken.END_ARRAY; }</span>
+
+        @Override
+<span class="nc" id="L285">        public ConfigValue currentNode() { return _currentNode; }</span>
+
+        @Override
+        public boolean currentHasChildren() {
+<span class="nc bnc" id="L289" title="All 2 branches missed.">        	if(currentNode() instanceof ConfigList) {</span>
+<span class="nc bnc" id="L290" title="All 2 branches missed.">        		return !((ConfigList)currentNode()).isEmpty();</span>
+<span class="nc bnc" id="L291" title="All 2 branches missed.">        	} else if (currentNode() instanceof ConfigObject) {</span>
+<span class="nc bnc" id="L292" title="All 2 branches missed.">        		return !((ConfigObject)currentNode()).isEmpty();</span>
+        	} else {
+<span class="nc" id="L294">        		return false;</span>
+        	}
+        }
+    }
+
+    /**
+     * Cursor used for traversing non-empty JSON Object nodes and converting them to Arrays because they have numerically indexed keys
+     */
+    protected final static class NumericallyIndexedObjectBackedArray extends HoconNodeCursor {
+        /**
+         * The Contents.
+         */
+        protected Iterator&lt;ConfigValue&gt; _contents;
+
+        /**
+         * The Current node.
+         */
+        protected ConfigValue _currentNode;
+
+        /**
+         * Instantiates a new Numerically indexed object backed array.
+         *
+         * @param n the n
+         * @param p the p
+         */
+        public NumericallyIndexedObjectBackedArray(ConfigValue n, HoconNodeCursor p) {
+<span class="nc" id="L320">            super(JsonStreamContext.TYPE_ARRAY, p);</span>
+<span class="nc" id="L321">            TreeMap&lt;Integer, ConfigValue&gt; sortedContents = new TreeMap&lt;Integer, ConfigValue&gt;();</span>
+<span class="nc bnc" id="L322" title="All 2 branches missed.">            for (Map.Entry&lt;String, ConfigValue&gt; entry: ((ConfigObject) n).entrySet()) {</span>
+                try {
+<span class="nc" id="L324">                    Integer key = Integer.parseInt(entry.getKey());</span>
+<span class="nc" id="L325">                    sortedContents.put(key, entry.getValue());</span>
+<span class="nc" id="L326">                } catch (NumberFormatException e) {</span>
+<span class="nc" id="L327">                    throw new IllegalStateException(&quot;Key: '&quot; + entry.getKey() +</span>
+                            &quot;' in object could not be parsed to an Integer, therefor we cannot be using a &quot; +
+<span class="nc" id="L329">                            getClass().getSimpleName());</span>
+<span class="nc" id="L330">                }</span>
+<span class="nc" id="L331">            }</span>
+<span class="nc" id="L332">            _contents = sortedContents.values().iterator();</span>
+<span class="nc" id="L333">        }</span>
+
+        @Override
+        public JsonToken nextToken() {
+<span class="nc bnc" id="L337" title="All 2 branches missed.">            if (!_contents.hasNext()) {</span>
+<span class="nc" id="L338">                _currentNode = null;</span>
+<span class="nc" id="L339">                return null;</span>
+            }
+<span class="nc" id="L341">            _currentNode = _contents.next();</span>
+<span class="nc" id="L342">            return asJsonToken(_currentNode);</span>
+        }
+
+        @Override
+<span class="nc" id="L346">        public JsonToken endToken() { return JsonToken.END_ARRAY; }</span>
+
+        @Override
+<span class="nc" id="L349">        public ConfigValue currentNode() { return _currentNode; }</span>
+
+        @Override
+        public boolean currentHasChildren() {
+<span class="nc bnc" id="L353" title="All 2 branches missed.">            if(currentNode() instanceof ConfigList) {</span>
+<span class="nc bnc" id="L354" title="All 2 branches missed.">                return !((ConfigList)currentNode()).isEmpty();</span>
+<span class="nc bnc" id="L355" title="All 2 branches missed.">            } else if (currentNode() instanceof ConfigObject) {</span>
+<span class="nc bnc" id="L356" title="All 2 branches missed.">                return !((ConfigObject)currentNode()).isEmpty();</span>
+            } else {
+<span class="nc" id="L358">                return false;</span>
+            }
+        }
+    }
+
+    /**
+     * Cursor used for traversing non-empty JSON Object nodes
+     */
+    protected final static class Object extends HoconNodeCursor {
+        /**
+         * The Contents.
+         */
+        protected Iterator&lt;Map.Entry&lt;String, ConfigValue&gt;&gt; _contents;
+        /**
+         * The Current.
+         */
+        protected Map.Entry&lt;String, ConfigValue&gt; _current;
+
+        /**
+         * The Need entry.
+         */
+        protected boolean _needEntry;
+
+        /**
+         * Instantiates a new Object.
+         *
+         * @param n the n
+         * @param p the p
+         */
+        public Object(ConfigValue n, HoconNodeCursor p) {
+<span class="nc" id="L388">            super(JsonStreamContext.TYPE_OBJECT, p);</span>
+<span class="nc" id="L389">            _contents = ((ConfigObject) n).entrySet().iterator();</span>
+<span class="nc" id="L390">            _needEntry = true;</span>
+<span class="nc" id="L391">        }</span>
+
+        @Override
+        public JsonToken nextToken() {
+            // Need a new entry?
+<span class="nc bnc" id="L396" title="All 2 branches missed.">            if (_needEntry) {</span>
+<span class="nc bnc" id="L397" title="All 2 branches missed.">                if (!_contents.hasNext()) {</span>
+<span class="nc" id="L398">                    _currentName = null;</span>
+<span class="nc" id="L399">                    _current = null;</span>
+<span class="nc" id="L400">                    return null;</span>
+                }
+<span class="nc" id="L402">                _needEntry = false;</span>
+<span class="nc" id="L403">                _current = _contents.next();</span>
+<span class="nc bnc" id="L404" title="All 2 branches missed.">                _currentName = (_current == null) ? null : _current.getKey();</span>
+<span class="nc" id="L405">                return JsonToken.FIELD_NAME;</span>
+            }
+<span class="nc" id="L407">            _needEntry = true;</span>
+<span class="nc" id="L408">            return asJsonToken(_current.getValue());</span>
+        }
+
+        @Override
+<span class="nc" id="L412">        public JsonToken endToken() { return JsonToken.END_OBJECT; }</span>
+
+        @Override
+        public ConfigValue currentNode() {
+<span class="nc bnc" id="L416" title="All 2 branches missed.">            return (_current == null) ? null : _current.getValue();</span>
+        }
+
+        @Override
+        public boolean currentHasChildren() {
+<span class="nc bnc" id="L421" title="All 2 branches missed.">        	if(currentNode() instanceof ConfigList) {</span>
+<span class="nc bnc" id="L422" title="All 2 branches missed.">        		return !((ConfigList)currentNode()).isEmpty();</span>
+<span class="nc bnc" id="L423" title="All 2 branches missed.">        	} else if (currentNode() instanceof ConfigObject) {</span>
+<span class="nc bnc" id="L424" title="All 2 branches missed.">        		return !((ConfigObject)currentNode()).isEmpty();</span>
+        	} else {
+<span class="nc" id="L426">        		return false;</span>
+        	}
+        }
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

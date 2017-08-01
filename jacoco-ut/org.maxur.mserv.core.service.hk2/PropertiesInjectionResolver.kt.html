@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PropertiesInjectionResolver.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">maxur-mserv-core</a> &gt; <a href="index.source.html" class="el_package">org.maxur.mserv.core.service.hk2</a> &gt; <span class="el_source">PropertiesInjectionResolver.kt</span></div><h1>PropertiesInjectionResolver.kt</h1><pre class="source lang-java linenums">package org.maxur.mserv.core.service.hk2
+
+import org.glassfish.hk2.api.Injectee
+import org.glassfish.hk2.api.InjectionResolver
+import org.glassfish.hk2.api.ServiceHandle
+import org.maxur.mserv.core.annotation.Value
+import org.maxur.mserv.core.service.properties.Properties
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.lang.reflect.Constructor
+import java.lang.reflect.Method
+import java.lang.reflect.Type
+import javax.inject.Inject
+
+
+/**
+ * Resolve configuration by ConfigParameter annotations.
+ *
+ * @author myunusov
+ * @version 1.0
+ * @since &lt;pre&gt;12.06.2017&lt;/pre&gt;
+ */
+<span class="pc" id="L23">class PropertiesInjectionResolver @Inject constructor(val service: Properties) : InjectionResolver&lt;Value&gt; {</span>
+
+<span class="fc" id="L25">    companion object {</span>
+<span class="pc" id="L26">        val log: Logger = LoggerFactory.getLogger(PropertiesInjectionResolver::class.java)</span>
+    }
+
+    override fun resolve(injectee: Injectee, root: ServiceHandle&lt;*&gt;?): Any {
+<span class="nc" id="L30">        val annotation = annotation(injectee)</span>
+<span class="nc" id="L31">        val name = annotation.key</span>
+<span class="nc" id="L32">        val result = resolveByKey(name, injectee.requiredType)</span>
+<span class="nc" id="L33">        when (result) {</span>
+<span class="nc bnc" id="L34" title="All 2 branches missed.">            null -&gt; throw IllegalStateException(&quot;Property '$name' is not found&quot;)</span>
+<span class="nc" id="L35">            else -&gt; return result</span>
+        }
+    }
+
+    private fun annotation(injectee: Injectee): Value {
+<span class="nc" id="L40">        val element = injectee.parent</span>
+
+<span class="nc" id="L42">        val isConstructor = element is Constructor&lt;*&gt;</span>
+<span class="nc" id="L43">        val isMethod = element is Method</span>
+
+        // if injectee is method or constructor, check its parameters
+<span class="nc bnc" id="L46" title="All 4 branches missed.">        if (isConstructor || isMethod) {</span>
+            val annotations: Array&lt;Annotation&gt;
+<span class="nc bnc" id="L48" title="All 2 branches missed.">            if (isMethod) {</span>
+<span class="nc bnc" id="L49" title="All 2 branches missed.">                annotations = (element as Method).parameterAnnotations[injectee.position]</span>
+            } else {
+<span class="nc bnc" id="L51" title="All 2 branches missed.">                annotations = (element as Constructor&lt;*&gt;).parameterAnnotations[injectee.position]</span>
+            }
+<span class="nc" id="L53">            annotations.filterIsInstance&lt;Value&gt;().forEach { return it }</span>
+        }
+
+        // check injectee itself (method, constructor or field)
+<span class="nc bnc" id="L57" title="All 2 branches missed.">        if (element.isAnnotationPresent(Value::class.java)) {</span>
+<span class="nc" id="L58">            return element.getAnnotation(Value::class.java)</span>
+        }
+
+        // check class which contains injectee
+<span class="nc" id="L62">        val clazz = injectee.injecteeClass</span>
+<span class="nc" id="L63">        return clazz.getAnnotation(Value::class.java)</span>
+    }
+
+
+    private fun resolveByKey(name: String, type: Type): Any? {
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        if (type !is Class&lt;*&gt;) {</span>
+<span class="nc" id="L69">            val msg = &quot;Unsupported property type '${type.typeName}'&quot;</span>
+<span class="nc" id="L70">            log.error(msg)</span>
+<span class="nc" id="L71">            throw IllegalStateException(msg)</span>
+        }
+<span class="nc" id="L73">        return service.read(name, type)</span>
+    }
+
+    override fun isConstructorParameterIndicator(): Boolean {
+<span class="nc" id="L77">        return true</span>
+    }
+
+    override fun isMethodParameterIndicator(): Boolean {
+<span class="nc" id="L81">        return false</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

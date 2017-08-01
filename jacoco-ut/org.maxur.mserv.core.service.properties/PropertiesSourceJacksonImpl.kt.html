@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PropertiesSourceJacksonImpl.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">maxur-mserv-core</a> &gt; <a href="index.source.html" class="el_package">org.maxur.mserv.core.service.properties</a> &gt; <span class="el_source">PropertiesSourceJacksonImpl.kt</span></div><h1>PropertiesSourceJacksonImpl.kt</h1><pre class="source lang-java linenums">@file:Suppress(&quot;unused&quot;)
+
+package org.maxur.mserv.core.service.properties
+
+import com.fasterxml.jackson.core.JsonFactory
+import com.fasterxml.jackson.databind.JsonMappingException
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import org.jvnet.hk2.annotations.Service
+import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
+import org.maxur.mserv.core.utils.Either
+import org.maxur.mserv.core.utils.either
+import java.io.File
+import java.io.InputStream
+import java.net.URI
+import java.nio.file.Paths
+
+
+@Service(name = &quot;Json&quot;)
+<span class="fc" id="L21">class PropertiesFactoryJsonImpl : PropertiesFactory() {</span>
+    override fun make(source: PropertiesSource): Either&lt;Exception, Properties&gt; =
+<span class="fc" id="L23">            either { PropertiesSourceJacksonImpl(JsonFactory(), &quot;json&quot;, source) }</span>
+}
+
+@Service(name = &quot;Yaml&quot;)
+<span class="fc" id="L27">class PropertiesFactoryYamlImpl : PropertiesFactory() {</span>
+    override fun make(source: PropertiesSource): Either&lt;Exception, Properties&gt; =
+<span class="fc" id="L29">            either { PropertiesSourceJacksonImpl(YAMLFactory(), &quot;yaml&quot;, source) }</span>
+}
+
+<span class="fc" id="L32">internal class PropertiesSourceJacksonImpl(</span>
+        factory: JsonFactory,
+        defaultFormat: String,
+        rawSource: PropertiesSource
+<span class="fc" id="L36">) : Properties, PropertiesSource(</span>
+<span class="fc" id="L37">        defaultFormat.capitalize(),</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        rawSource.uri ?: URI.create(&quot;classpath:///application.$defaultFormat&quot;),</span>
+<span class="fc" id="L39">        rawSource.rootKey</span>
+) {
+<span class="fc" id="L41">    private val mapper = ObjectMapperProvider.config(ObjectMapper(factory))</span>
+
+    private var root: JsonNode = (
+<span class="fc bfc" id="L44" title="All 4 branches covered.">            if (rawSource.rootKey != null)</span>
+<span class="pc bpc" id="L45" title="2 of 4 branches missed.">                rootNode(uri!!)?.get(rawSource.rootKey)</span>
+            else
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">                rootNode(uri!!)</span>
+<span class="fc" id="L48">            ) ?: throw IllegalStateException(&quot;The properties source '$uri' not found. &quot; +</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">                    &quot;You need create one with '${rootKey ?: &quot;/&quot;}' section&quot;)</span>
+
+<span class="pc bpc" id="L51" title="4 of 9 branches missed.">    private fun rootNode(uri: URI): JsonNode? = when(uri.scheme) {</span>
+<span class="fc" id="L52">         null -&gt; mapper.readTree(File(uri.toString()))</span>
+<span class="nc" id="L53">        &quot;file&quot; -&gt; mapper.readTree(Paths.get(uri).toFile())</span>
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">        &quot;classpath&quot; -&gt; inputStreamByResource(uri)?.let { mapper.readTree(it) }</span>
+<span class="fc" id="L55">        else -&gt; throw IllegalArgumentException(</span>
+<span class="fc" id="L56">                &quot;&quot;&quot;Unsupported schema '${uri.scheme}' to properties source. Must be one of [file, classpath]&quot;&quot;&quot;</span>
+        )
+<span class="fc" id="L58">    }</span>
+
+    private fun inputStreamByResource(uri: URI): InputStream? =
+<span class="fc" id="L61">            this::class.java.getResourceAsStream(&quot;/&quot; + uri.withoutScheme())</span>
+
+<span class="fc" id="L63">    override fun asString(key: String): String? = node(key).asText()</span>
+<span class="fc" id="L64">    override fun asLong(key: String): Long? = node(key).asLong()</span>
+<span class="fc" id="L65">    override fun asInteger(key: String): Int? = node(key).asInt()</span>
+<span class="fc" id="L66">    override fun asURI(key: String): URI? = mapper.treeToValue(node(key), URI::class.java)</span>
+    override fun &lt;P&gt; read(key: String, clazz: Class&lt;P&gt;): P? {
+<span class="fc" id="L68">        try {</span>
+<span class="fc" id="L69">            return mapper.treeToValue(node(key), clazz)</span>
+<span class="fc" id="L70">        } catch(e: JsonMappingException) {</span>
+<span class="fc" id="L71">            throw IllegalStateException(&quot;Configuration parameter '$key' is not parsed.&quot;, e)</span>
+        }
+    }
+
+<span class="fc bfc" id="L75" title="All 2 branches covered.">    private fun node(key: String) = root.get(key) ?:</span>
+<span class="fc" id="L76">            throw IllegalStateException(&quot;Configuration parameter '$key' is not found.&quot;)</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

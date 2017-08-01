@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LocatorHK2Impl.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">maxur-mserv-core</a> &gt; <a href="index.source.html" class="el_package">org.maxur.mserv.core.service.hk2</a> &gt; <span class="el_source">LocatorHK2Impl.kt</span></div><h1>LocatorHK2Impl.kt</h1><pre class="source lang-java linenums">package org.maxur.mserv.core.service.hk2
+
+import org.glassfish.hk2.api.ServiceLocator
+import org.maxur.mserv.core.Locator
+import org.maxur.mserv.core.service.properties.Properties
+import javax.inject.Inject
+
+
+<span class="pc" id="L9">class LocatorHK2Impl @Inject constructor(val locator: ServiceLocator) : Locator {</span>
+
+    @Suppress(&quot;UNCHECKED_CAST&quot;)
+<span class="nc" id="L12">    override fun &lt;T&gt; implementation(): T = locator as T</span>
+
+    override fun names(clazz: Class&lt;*&gt;): List&lt;String&gt; =
+<span class="nc" id="L15">        locator.getAllServiceHandles(clazz).map { it.activeDescriptor.name }</span>
+
+    override fun &lt;T&gt; property(key: String, clazz: Class&lt;T&gt;): T? =
+<span class="nc" id="L18">            locator.getService(Properties::class.java).read(key, clazz)</span>
+
+    override fun &lt;T&gt; service(clazz: Class&lt;T&gt;, name: String?): T? =
+<span class="fc" id="L21">            when (name) {</span>
+<span class="fc bfc" id="L22" title="All 2 branches covered.">                null -&gt; locator.getService&lt;T&gt;(clazz)</span>
+<span class="fc" id="L23">                else -&gt; locator.getAllServiceHandles(clazz)</span>
+<span class="fc bfc" id="L24" title="All 2 branches covered.">                        .filter { it.activeDescriptor.name.equals(name, true) }</span>
+<span class="fc" id="L25">                        .map { it.service }</span>
+<span class="fc" id="L26">                        .firstOrNull()</span>
+<span class="fc" id="L27">            }</span>
+
+<span class="fc" id="L29">    override fun &lt;T&gt; services(clazz: Class&lt;T&gt;): List&lt;T&gt; = locator.getAllServices(clazz).map { it as T}</span>
+
+<span class="fc" id="L31">    override fun shutdown() = locator.shutdown()</span>
+
+}
+
+
+
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

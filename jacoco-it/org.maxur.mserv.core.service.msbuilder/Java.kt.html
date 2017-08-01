@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Java.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">maxur-mserv-core</a> &gt; <a href="index.source.html" class="el_package">org.maxur.mserv.core.service.msbuilder</a> &gt; <span class="el_source">Java.kt</span></div><h1>Java.kt</h1><pre class="source lang-java linenums">package org.maxur.mserv.core.service.msbuilder
+
+import org.maxur.mserv.core.MicroService
+import org.maxur.mserv.core.domain.BaseService
+import org.maxur.mserv.core.domain.Holder
+import java.util.function.Consumer
+
+
+<span class="nc" id="L9">class Java {</span>
+<span class="nc" id="L10">    companion object dsl {</span>
+        @JvmStatic
+<span class="nc" id="L12">        fun service(): JBuilder = JBuilder()</span>
+    }
+}
+
+interface IJBuilder {
+    fun title(value: String): JBuilder
+    fun packages(value: String): JBuilder
+    fun properties(format: String): JPropertiesBuilder
+    fun properties(): JBuilder
+    fun withoutProperties(): JBuilder
+    fun service(type: String, properties: String): JBuilder
+    fun rest(): JBuilder
+    fun beforeStart(func: Consumer&lt;in BaseService&gt;): JBuilder
+    fun afterStop(func: Consumer&lt;in BaseService&gt;): JBuilder
+    fun beforeStop(func: Consumer&lt;in BaseService&gt;): JBuilder
+    fun afterStart(func: Consumer&lt;in BaseService&gt;): JBuilder
+    fun onError(func: Consumer&lt;Exception&gt;): JBuilder
+    fun build(): MicroService
+    fun start()
+}
+
+<span class="nc" id="L33">class JBuilder : MicroServiceBuilder(), IJBuilder {</span>
+
+    override fun title(value: String): JBuilder {
+<span class="nc" id="L36">        titleHolder = Holder.string(value)</span>
+<span class="nc" id="L37">        return this</span>
+    }
+
+    override fun packages(value: String): JBuilder {
+<span class="nc" id="L41">        packagesHolder.addAll(value.split(&quot;\\s*,\\s*&quot;))</span>
+<span class="nc" id="L42">        return this</span>
+    }
+
+    override fun properties(format: String): JPropertiesBuilder {
+<span class="nc" id="L46">        val holder = PropertiesHolder.BasePropertiesHolder()</span>
+<span class="nc" id="L47">        propertiesHolder = holder</span>
+<span class="nc" id="L48">        holder.format = format</span>
+<span class="nc" id="L49">        return JPropertiesBuilder(this, holder)</span>
+    }
+
+    override fun properties(): JBuilder {
+<span class="nc" id="L53">        propertiesHolder = PropertiesHolder.BasePropertiesHolder()</span>
+<span class="nc" id="L54">        return this</span>
+    }
+
+    override fun withoutProperties(): JBuilder {
+<span class="nc" id="L58">        propertiesHolder = PropertiesHolder.NullPropertiesHolder</span>
+<span class="nc" id="L59">        return this</span>
+    }
+
+
+    override fun service(type: String, properties: String): JBuilder {
+<span class="nc" id="L64">        val holder = ServiceHolder()</span>
+<span class="nc" id="L65">        holder.type = type</span>
+<span class="nc" id="L66">        holder.properties = properties</span>
+<span class="nc" id="L67">        services.add(holder)</span>
+<span class="nc" id="L68">        return this</span>
+    }
+
+    override fun rest(): JBuilder {
+<span class="nc" id="L72">        service(&quot;grizzly&quot;, &quot;:webapp&quot;)</span>
+<span class="nc" id="L73">        return this</span>
+    }
+
+    override fun beforeStart(func: Consumer&lt;in BaseService&gt;): JBuilder {
+<span class="nc" id="L77">        beforeStart.plusAssign(unitFunc(func))</span>
+<span class="nc" id="L78">        return this</span>
+    }
+
+    override fun afterStop(func: Consumer&lt;in BaseService&gt;): JBuilder {
+<span class="nc" id="L82">        afterStop.plusAssign(unitFunc(func))</span>
+<span class="nc" id="L83">        return this</span>
+    }
+
+    override fun beforeStop(func: Consumer&lt;in BaseService&gt;): JBuilder {
+<span class="nc" id="L87">        beforeStop.plusAssign(unitFunc(func))</span>
+<span class="nc" id="L88">        return this</span>
+    }
+
+    override fun afterStart(func: Consumer&lt;in BaseService&gt;): JBuilder {
+<span class="nc" id="L92">        afterStart.plusAssign(unitFunc(func))</span>
+<span class="nc" id="L93">        return this</span>
+    }
+
+    override fun onError(func: Consumer&lt;Exception&gt;): JBuilder {
+<span class="nc" id="L97">        onError.plusAssign(errorFunc(func))</span>
+<span class="nc" id="L98">        return this</span>
+    }
+
+    private fun unitFunc(func: Consumer&lt;in BaseService&gt;): Function1&lt;BaseService, Unit&gt; =
+<span class="nc" id="L102">            object : Function1&lt;BaseService, Unit&gt; {</span>
+<span class="nc" id="L103">                override fun invoke(service: BaseService) = func.accept(service)</span>
+<span class="nc" id="L104">            }</span>
+
+    private fun errorFunc(func: Consumer&lt;Exception&gt;): Function1&lt;Exception, Unit&gt; =
+<span class="nc" id="L107">            object : Function1&lt;Exception, Unit&gt; {</span>
+<span class="nc" id="L108">                override fun invoke(e: Exception) = func.accept(e)</span>
+<span class="nc" id="L109">            }</span>
+
+    override fun start() {
+<span class="nc" id="L112">        build().start()</span>
+<span class="nc" id="L113">    }</span>
+
+
+}
+
+<span class="nc" id="L118">class JPropertiesBuilder(</span>
+<span class="nc" id="L119">        val parent: JBuilder,</span>
+<span class="nc" id="L120">        val holder: PropertiesHolder.BasePropertiesHolder</span>
+) : IJBuilder by parent {
+
+    fun url(value: String): JPropertiesBuilder {
+<span class="nc" id="L124">        holder.url = value</span>
+<span class="nc" id="L125">        return this</span>
+    }
+
+    fun rootKey(value: String): JPropertiesBuilder {
+<span class="nc" id="L129">        holder.rootKey = value</span>
+<span class="nc" id="L130">        return this</span>
+    }
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Either.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">maxur-mserv-core</a> &gt; <a href="index.source.html" class="el_package">org.maxur.mserv.core.utils</a> &gt; <span class="el_source">Either.kt</span></div><h1>Either.kt</h1><pre class="source lang-java linenums">@file:Suppress(&quot;unused&quot;)
+
+package org.maxur.mserv.core.utils
+
+@Suppress(&quot;unused&quot;)
+<span class="nc" id="L6">sealed class Either&lt;out L, out R&gt;</span>
+
+<span class="nc" id="L8">fun &lt;V&gt; value(value: V): Either&lt;Nothing, V&gt; = Value(value)</span>
+<span class="nc" id="L9">fun &lt;E&gt; error(value: E): Either&lt;E, Nothing&gt; = Error(value)</span>
+
+fun &lt;V&gt; either(action: () -&gt; V): Either&lt;Exception, V&gt; =
+<span class="nc" id="L12">        try { value(action()) } catch (e: Exception) { error(e) }</span>
+
+inline infix fun &lt;E, V, V2&gt; Either&lt;E, V&gt;
+<span class="nc" id="L15">        .map(f: (V) -&gt; V2): Either&lt;E, V2&gt; = when(this) {</span>
+<span class="nc bnc" id="L16" title="All 2 branches missed.">    is Error -&gt; this</span>
+<span class="nc bnc" id="L17" title="All 2 branches missed.">    is Value -&gt; Value(f(this.value))</span>
+<span class="nc" id="L18">}</span>
+
+<span class="nc" id="L20">infix fun &lt;E, V, V2&gt; Either&lt;E, (V) -&gt; V2&gt;.apply(f: Either&lt;E, V&gt;): Either&lt;E, V2&gt; = when(this) {</span>
+<span class="nc bnc" id="L21" title="All 2 branches missed.">    is Error -&gt; this</span>
+<span class="nc bnc" id="L22" title="All 2 branches missed.">    is Value -&gt; f.map(this.value)</span>
+<span class="nc" id="L23">}</span>
+
+<span class="nc" id="L25">inline infix fun &lt;E, V, V2&gt; Either&lt;E, V&gt;.flatMap(f: (V) -&gt; Either&lt;E, V2&gt;): Either&lt;E, V2&gt; = when(this) {</span>
+<span class="nc bnc" id="L26" title="All 2 branches missed.">    is Error -&gt; this</span>
+<span class="nc bnc" id="L27" title="All 2 branches missed.">    is Value -&gt; f(value)</span>
+<span class="nc" id="L28">}</span>
+
+<span class="nc" id="L30">inline infix fun &lt;E, E2, V&gt; Either&lt;E, V&gt;.mapError(f: (E) -&gt; E2): Either&lt;E2, V&gt; = when(this) {</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">    is Error -&gt; Error(f(error))</span>
+<span class="nc bnc" id="L32" title="All 2 branches missed.">    is Value -&gt; this</span>
+<span class="nc" id="L33">}</span>
+
+<span class="nc" id="L35">inline fun &lt;E, V, A&gt; Either&lt;E, V&gt;.fold(e: (E) -&gt; A, v: (V) -&gt; A): A = when(this) {</span>
+<span class="nc bnc" id="L36" title="All 2 branches missed.">    is Error -&gt; e(this.error)</span>
+<span class="nc bnc" id="L37" title="All 2 branches missed.">    is Value -&gt; v(this.value)</span>
+<span class="nc" id="L38">}</span>
+
+<span class="nc" id="L40">data class Error&lt;out T&gt;(val error: T) : Either&lt;T, Nothing&gt;()</span>
+
+<span class="nc" id="L42">data class Value&lt;out T&gt;(val value: T) : Either&lt;Nothing, T&gt;()</span>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

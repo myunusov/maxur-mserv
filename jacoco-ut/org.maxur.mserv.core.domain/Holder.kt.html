@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Holder.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">maxur-mserv-core</a> &gt; <a href="index.source.html" class="el_package">org.maxur.mserv.core.domain</a> &gt; <span class="el_source">Holder.kt</span></div><h1>Holder.kt</h1><pre class="source lang-java linenums">package org.maxur.mserv.core.domain
+
+import org.maxur.mserv.core.Locator
+import kotlin.reflect.KClass
+
+<span class="fc" id="L6">abstract class Holder&lt;Type: Any&gt; {</span>
+
+<span class="fc" id="L8">    companion object {</span>
+        fun string(value: String) : Holder&lt;String&gt; = when {
+<span class="pc bpc" id="L10" title="3 of 4 branches missed.">            value.startsWith(&quot;:&quot;) -&gt; Holder.get { locator -&gt; locator.property(value.substringAfter(&quot;:&quot;))!! }</span>
+<span class="fc" id="L11">            else -&gt; Holder.wrap(value)</span>
+<span class="fc" id="L12">        }</span>
+<span class="fc" id="L13">        fun &lt;Type: Any&gt; none() : Holder&lt;Type&gt; = Wrapper(null)</span>
+<span class="fc" id="L14">        fun &lt;Type: Any&gt; wrap(value: Type?) : Holder&lt;Type&gt; = Wrapper(value)</span>
+<span class="fc" id="L15">        fun &lt;Type: Any&gt; get(func: (Locator) -&gt; Type) : Holder&lt;Type&gt; = Descriptor1(func)</span>
+<span class="fc" id="L16">        fun &lt;Type: Any&gt; get(func: (Locator, clazz: KClass&lt;out Type&gt;) -&gt; Type) : Holder&lt;Type&gt; = Descriptor2(func)</span>
+    }
+
+    inline fun &lt;reified R : Type&gt;  get(locator: Locator): R? {
+<span class="nc" id="L20">        return get(locator, R::class) as R</span>
+    }
+
+<span class="nc" id="L23">    open fun get(): Type? = throw UnsupportedOperationException(&quot;This holder don't support get() without parameters&quot;)</span>
+
+    abstract fun get(locator: Locator, clazz: KClass&lt;out Type&gt;): Type?
+}
+
+<span class="pc" id="L28">private class Descriptor1&lt;Type: Any&gt;(val func: (Locator) -&gt; Type) : Holder&lt;Type&gt;() {</span>
+<span class="nc" id="L29">   override fun get(locator: Locator, clazz: KClass&lt;out Type&gt;): Type? = func(locator)</span>
+}
+
+<span class="pc" id="L32">private class Descriptor2&lt;Type: Any&gt;(val func: (Locator, KClass&lt;out Type&gt;) -&gt; Type) : Holder&lt;Type&gt;() {</span>
+<span class="nc" id="L33">    override fun get(locator: Locator, clazz: KClass&lt;out Type&gt;): Type? = func(locator, clazz)</span>
+}
+
+<span class="pc" id="L36">private class Wrapper&lt;Type: Any&gt;(val value: Type?) : Holder&lt;Type&gt;() {</span>
+<span class="nc" id="L37">    override fun get(): Type? = value</span>
+<span class="fc" id="L38">    override fun get(locator: Locator, clazz: KClass&lt;out Type&gt;): Type?  = value</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

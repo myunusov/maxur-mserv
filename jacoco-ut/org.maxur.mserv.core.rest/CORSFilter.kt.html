@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CORSFilter.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">maxur-mserv-core</a> &gt; <a href="index.source.html" class="el_package">org.maxur.mserv.core.rest</a> &gt; <span class="el_source">CORSFilter.kt</span></div><h1>CORSFilter.kt</h1><pre class="source lang-java linenums">package org.maxur.mserv.core.rest
+
+import java.io.IOException
+import javax.ws.rs.container.ContainerRequestContext
+import javax.ws.rs.container.ContainerResponseContext
+import javax.ws.rs.container.ContainerResponseFilter
+import javax.ws.rs.ext.Provider
+
+@Provider
+<span class="nc" id="L10">class CORSFilter : ContainerResponseFilter {</span>
+
+    @Throws(IOException::class)
+    override fun filter(requestContext: ContainerRequestContext, responseContext: ContainerResponseContext) {
+<span class="nc" id="L14">        responseContext.headers.add(&quot;Access-Control-Allow-Origin&quot;, &quot;*&quot;)</span>
+<span class="nc" id="L15">        responseContext.headers.add(&quot;Access-Control-Allow-Headers&quot;, &quot;origin, content-type, accept, authorization&quot;)</span>
+<span class="nc" id="L16">        responseContext.headers.add(&quot;Access-Control-Allow-Credentials&quot;, &quot;true&quot;)</span>
+<span class="nc" id="L17">        responseContext.headers.add(&quot;Access-Control-Allow-Methods&quot;, &quot;GET, POST, PUT, DELETE, OPTIONS, HEAD&quot;)</span>
+<span class="nc" id="L18">        responseContext.headers.add(&quot;Access-Control-Max-Age&quot;, &quot;1209600&quot;)</span>
+<span class="nc" id="L19">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

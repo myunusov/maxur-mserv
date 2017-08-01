@@ -1,0 +1,159 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+maxur-mserv-core,org.maxur.mserv.core.service.hk2,PropertiesInjectionResolver,223,0,22,0,31,0,19,0,8,0
+maxur-mserv-core,org.maxur.mserv.core.service.hk2,LocatorFactoryHK2Impl.PropertiesInjectionResolverBinder,15,0,0,0,5,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.hk2,LocatorFactoryHK2Impl.ServiceProvider.locator.new Function0() {...},12,0,0,0,1,0,3,0,3,0
+maxur-mserv-core,org.maxur.mserv.core.service.hk2,LocatorFactoryHK2Impl.ServiceProvider,82,0,0,0,5,0,7,0,7,0
+maxur-mserv-core,org.maxur.mserv.core.service.hk2,ErrorHandler,42,0,2,0,7,0,6,0,5,0
+maxur-mserv-core,org.maxur.mserv.core.service.hk2,LocatorFactoryHK2Impl.ServiceProvider.result.new Function0() {...},15,0,0,0,1,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.hk2,LocatorFactoryHK2Impl,179,0,4,0,18,0,11,0,9,0
+maxur-mserv-core,org.maxur.mserv.core.service.hk2,LocatorFactoryHK2Impl.PropertiesInjectionResolverBinder.configure.new TypeLiteral() {...},3,0,0,0,1,0,1,0,1,0
+maxur-mserv-core,org.maxur.mserv.core.service.hk2,LocatorHK2Impl,304,0,12,0,28,0,24,0,18,0
+maxur-mserv-core,org.maxur.mserv.core.service.hk2,LocatorFactoryHK2Impl.ServiceBinder,56,0,2,0,7,0,5,0,4,0
+maxur-mserv-core,org.maxur.mserv.core.service.hk2,LocatorFactoryHK2Impl.ObjectMapperBinder,12,0,0,0,5,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.hk2,PropertiesInjectionResolver.Companion,5,0,0,0,2,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.hk2,ErrorHandler.Companion,5,0,0,0,2,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.hk2,LocatorFactoryHK2Impl.LocatorBinder,12,0,0,0,5,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.hk2,LocatorFactoryHK2Impl.locator.new Function0() {...},75,0,8,0,9,0,6,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,GrizzlyHttpContainer.ResponseWriter.suspend.new TimeoutHandler() {...},21,0,2,0,2,0,3,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,StaticHttpHandler,236,0,20,0,28,0,17,0,7,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,StaticHttpHandler.JarResource,319,0,32,0,43,0,28,0,12,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,GrizzlyHttpContainer.GrizzlyBinder,48,0,0,0,10,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,StaticHttpHandler.Resource.NonBlockingDownloadHandler,282,0,28,0,65,0,23,0,9,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,GrizzlyHttpContainer.ResponseTYPE.new TypeLiteral() {...},3,0,0,0,1,0,1,0,1,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,WebServerGrizzlyFactoryImpl.Companion,7,0,0,0,3,0,3,0,3,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,StaticHttpHandler.Companion,5,0,0,0,2,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,GrizzlyHttpContainer.Companion,5,0,0,0,2,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,GrizzlyHttpContainer.GrizzlyResponseReferencingFactory,7,0,0,0,1,0,1,0,1,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,StaticHttpHandler.ResourceLocator,386,0,39,0,51,0,26,0,6,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,StaticHttpHandler.RedirectedResource,47,0,0,0,7,0,5,0,5,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,StaticHttpHandler.JarURLInputStream,34,0,0,0,6,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,GrizzlyHttpContainer.ResponseWriter.EMPTY_COMPLETION_HANDLER.new CompletionHandler() {...},16,0,0,0,5,0,5,0,5,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,GrizzlyHttpContainer.ResponseWriter,330,0,16,0,56,0,17,0,9,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,StaticHttpHandler.FileResource,75,0,6,0,9,0,8,0,5,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,WebServerGrizzlyImpl,338,0,18,0,60,0,23,0,14,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,GrizzlyRequestPropertiesDelegate,42,0,0,0,5,0,5,0,5,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,StaticHttpHandler.Resource,156,0,8,0,28,0,11,0,7,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,GrizzlyHttpContainer.GrizzlyBinder.configure.new TypeLiteral() {...},3,0,0,0,1,0,1,0,1,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,GrizzlyHttpContainer.GrizzlyBinder.configure.new TypeLiteral() {...},3,0,0,0,1,0,1,0,1,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,GrizzlyHttpContainer.getSecurityContext.new SecurityContext() {...},29,0,0,0,5,0,5,0,5,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,StaticHttpHandler.BundleResource,120,0,6,0,12,0,13,0,10,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,StaticHttpHandler.FileRoot,34,0,0,0,3,0,4,0,4,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,GrizzlyHttpContainer,447,0,40,0,73,0,38,0,18,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,GrizzlyHttpContainer.service.new RequestScopedInitializer() {...},35,0,0,0,3,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,StaticHttpHandler.CLRoot,188,0,20,0,18,0,18,0,7,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,StaticHttpHandler.UnknownResource,68,0,0,0,7,0,8,0,8,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,GrizzlyHttpContainer.RequestTYPE.new TypeLiteral() {...},3,0,0,0,1,0,1,0,1,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,StaticHttpHandler.CLFileResource,75,0,4,0,9,0,8,0,6,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,WebServerGrizzlyFactoryImpl,285,0,14,0,46,0,15,0,8,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.grizzly,GrizzlyHttpContainer.GrizzlyRequestReferencingFactory,7,0,0,0,1,0,1,0,1,0
+maxur-mserv-core,org.maxur.mserv.core.service.properties,PropertiesFactoryHoconImpl.make.new Function0() {...},13,0,0,0,1,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.properties,PropertiesSource.Companion.default.1.new PropertiesSource() {...},8,0,0,0,1,0,1,0,1,0
+maxur-mserv-core,org.maxur.mserv.core.service.properties,PropertiesFactoryHoconImpl,13,0,0,0,2,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.properties,PropertiesSource.Companion.open.new PropertiesSource() {...},15,0,0,0,1,0,1,0,1,0
+maxur-mserv-core,org.maxur.mserv.core.service.properties,PropertiesFactory,3,0,0,0,1,0,1,0,1,0
+maxur-mserv-core,org.maxur.mserv.core.service.properties,PropertiesFactoryYamlImpl,13,0,0,0,2,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.properties,PropertiesFactoryJsonImpl.make.new Function0() {...},17,0,0,0,1,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.properties,PropertiesSourceHoconImpl.asLong.new Function1() {...},15,0,0,0,1,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.properties,NullProperties,89,0,0,0,7,0,10,0,10,0
+maxur-mserv-core,org.maxur.mserv.core.service.properties,PropertiesFactoryYamlImpl.make.new Function0() {...},18,0,0,0,1,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.properties,Properties.DefaultImpls,61,0,8,0,4,0,6,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.properties,PropertiesSourceHoconImpl,450,0,47,0,51,0,37,0,13,0
+maxur-mserv-core,org.maxur.mserv.core.service.properties,PropertiesSourceJacksonImpl,307,0,27,0,29,0,25,0,11,0
+maxur-mserv-core,org.maxur.mserv.core.service.properties,PropertiesSourceHoconImpl.asInteger.new Function1() {...},15,0,0,0,1,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.properties,PropertiesSourceHoconImpl.asString.new Function1() {...},15,0,0,0,1,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.properties,PropertiesSource.Companion,136,0,12,0,22,0,10,0,4,0
+maxur-mserv-core,org.maxur.mserv.core.service.properties,PropertiesSource,35,0,0,0,4,0,6,0,6,0
+maxur-mserv-core,org.maxur.mserv.core.service.properties,PropertiesSourceHoconImpl.asObject.new Function1() {...},15,0,0,0,1,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.properties,PropertiesFactoryJsonImpl,13,0,0,0,2,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core,BaseMicroService.postpone.pool.new ThreadFactory() {...},17,0,0,0,3,0,3,0,3,0
+maxur-mserv-core,org.maxur.mserv.core,Locator.DefaultImpls,125,0,4,0,14,0,12,0,10,0
+maxur-mserv-core,org.maxur.mserv.core,Locator.Companion,92,0,2,0,13,0,12,0,11,0
+maxur-mserv-core,org.maxur.mserv.core,BaseMicroService.postpone.new Runnable() {...},13,0,0,0,3,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core,BaseMicroService.deferredRestart.new Function0() {...},11,0,0,0,1,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core,BaseMicroService,95,0,2,0,19,0,12,0,11,0
+maxur-mserv-core,org.maxur.mserv.core,BaseMicroService.new Thread() {...},10,0,0,0,3,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core,Locator,6,0,0,0,0,0,1,0,1,0
+maxur-mserv-core,org.maxur.mserv.core,Locator.NullLocator,130,0,0,0,8,0,19,0,19,0
+maxur-mserv-core,org.maxur.mserv.core,BaseMicroService.deferredStop.new Function0() {...},11,0,0,0,1,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,JBuilder.errorFunc.new Function1() {...},14,0,0,0,2,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,MicroServiceBuilder.buildLocator.1.new Function1() {...},21,0,0,0,1,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,MicroServiceBuilder.buildLocator.1.new Function1() {...},21,0,0,0,1,0,5,0,5,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,Java.dsl,7,0,0,0,2,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,ErrorHookHolder.plusAssign.observer.new Object() {...},15,0,0,0,2,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,ErrorHookHolder,38,0,0,0,7,0,4,0,4,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,ServiceHolder,214,0,8,0,36,0,22,0,18,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,ServiceHolder.makeServiceHolder.new Function1() {...},52,0,4,0,4,0,4,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,Kotlin,18,0,0,0,2,0,3,0,3,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,KBuilder,120,0,0,0,21,0,10,0,10,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,ServiceHolder.propertiesKey.new Function2() {...},22,0,2,0,1,0,3,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,HookHolder.plusAssign.observer.new Object() {...},15,0,0,0,2,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,MicroServiceBuilder.buildLocator.new Function1() {...},89,0,4,0,7,0,4,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,PropertiesHolder.DefaultPropertiesHolder,16,0,0,0,2,0,3,0,3,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,PropertiesHolder.BasePropertiesHolder,62,0,4,0,8,0,12,0,10,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,HookHolder,38,0,0,0,7,0,4,0,4,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,PropertiesHolder.NullPropertiesHolder,16,0,0,0,2,0,3,0,3,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,Java,12,0,0,0,1,0,3,0,3,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,JBuilder.unitFunc.new Function1() {...},14,0,0,0,2,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,ErrorHookHolder.plusAssign.new Function1() {...},21,0,0,0,1,0,5,0,5,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,JPropertiesBuilder,135,0,0,0,7,0,19,0,19,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,MicroServiceBuilder,318,0,22,0,41,0,34,0,23,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,ServicesHolder,108,0,4,0,15,0,9,0,7,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,JBuilder,170,0,0,0,36,0,16,0,16,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,HookHolder.plusAssign.new Function1() {...},21,0,0,0,1,0,5,0,5,0
+maxur-mserv-core,org.maxur.mserv.core.service.msbuilder,PropertiesHolder,3,0,0,0,1,0,1,0,1,0
+maxur-mserv-core,org.maxur.mserv.core.domain,Holder.Companion,55,0,2,0,8,0,7,0,6,0
+maxur-mserv-core,org.maxur.mserv.core.domain,BaseService.State.launch.new Function1() {...},75,0,4,0,7,0,4,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.domain,Holder,28,0,0,0,3,0,4,0,4,0
+maxur-mserv-core,org.maxur.mserv.core.domain,Holder.Companion.string.new Function1() {...},23,0,2,0,1,0,3,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.domain,BaseService,117,0,0,0,10,0,17,0,17,0
+maxur-mserv-core,org.maxur.mserv.core.domain,BaseService.State.shutdown.new Function1() {...},75,0,4,0,7,0,4,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.domain,Wrapper,21,0,0,0,3,0,4,0,4,0
+maxur-mserv-core,org.maxur.mserv.core.domain,Descriptor2,24,0,0,0,2,0,3,0,3,0
+maxur-mserv-core,org.maxur.mserv.core.domain,Descriptor1,23,0,0,0,2,0,3,0,3,0
+maxur-mserv-core,org.maxur.mserv.core.domain,BaseService.State.relaunch.new Function1() {...},75,0,4,0,7,0,4,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.domain,BaseService.State,253,0,14,0,29,0,19,0,12,0
+maxur-mserv-core,org.maxur.mserv.core.domain,BaseService.State.STARTED,23,0,0,0,4,0,4,0,4,0
+maxur-mserv-core,org.maxur.mserv.core.domain,BaseService.State.STOPPED,23,0,0,0,4,0,4,0,4,0
+maxur-mserv-core,org.maxur.mserv.core.rest,RuntimeExceptionHandler.makeUserErrorEntity.new GenericEntity() {...},7,0,0,0,1,0,1,0,1,0
+maxur-mserv-core,org.maxur.mserv.core.rest,ServiceRequestEventListener.Companion,0,5,0,0,0,2,0,2,0,2
+maxur-mserv-core,org.maxur.mserv.core.rest,Incident.Companion.incidents.new Function() {...},16,0,0,0,1,0,3,0,3,0
+maxur-mserv-core,org.maxur.mserv.core.rest,CORSFilter,35,0,0,0,7,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.rest,ServiceRequestEventListener,2,75,1,4,0,10,1,5,0,3
+maxur-mserv-core,org.maxur.mserv.core.rest,RuntimeExceptionHandler,128,15,8,0,20,2,9,2,5,2
+maxur-mserv-core,org.maxur.mserv.core.rest,RestResourceConfig,135,0,0,0,19,0,7,0,7,0
+maxur-mserv-core,org.maxur.mserv.core.rest,ServiceResource,18,48,3,4,1,6,4,4,1,3
+maxur-mserv-core,org.maxur.mserv.core.rest,Incident,18,0,0,0,1,0,3,0,3,0
+maxur-mserv-core,org.maxur.mserv.core.rest,Incident.Companion,19,0,0,0,4,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.rest,ServiceEventListener,45,80,4,3,5,9,4,4,0,4
+maxur-mserv-core,org.maxur.mserv.core.rest,RestResourceConfig.ServiceLocatorFeature,11,0,0,0,3,0,2,0,2,0
+maxur-mserv-core,org.maxur.mserv.core.rest,ServiceEventListener.Companion,0,5,0,0,0,2,0,2,0,2
+maxur-mserv-core,org.maxur.mserv.core.rest,RuntimeExceptionHandler.Companion,2,3,0,0,1,1,1,1,1,1
+maxur-mserv-core,org.maxur.mserv.core.rest,FaviconResource,49,0,0,0,9,0,3,0,3,0
+maxur-mserv-core,org.maxur.mserv.core.rest,RuntimeExceptionHandler.makeSystemErrorEntity.new GenericEntity() {...},7,0,0,0,1,0,1,0,1,0
+maxur-mserv-core,org.maxur.mserv.core.rest,ServiceView,21,71,0,0,0,5,3,5,3,5
+maxur-mserv-core,org.maxur.mserv.core.embedded.properties,StaticContent,166,0,20,0,5,0,23,0,13,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.properties,RestService,95,0,12,0,3,0,15,0,9,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.properties,Path,127,0,12,0,4,0,14,0,8,0
+maxur-mserv-core,org.maxur.mserv.core.embedded.properties,WebAppProperties,48,0,2,0,9,0,7,0,6,0
+maxur-mserv-core,org.maxur.mserv.core.utils,Error,58,0,8,0,1,0,11,0,7,0
+maxur-mserv-core,org.maxur.mserv.core.utils,EitherKt,204,0,24,0,27,0,20,0,8,0
+maxur-mserv-core,org.maxur.mserv.core.utils,Value,58,0,8,0,1,0,11,0,7,0
+maxur-mserv-core,org.maxur.mserv.core.utils,Either,3,0,0,0,1,0,1,0,1,0
+maxur-mserv-core,org.maxur.mserv.core.service.jackson,ObjectMapperProvider,1,19,0,0,1,3,1,3,1,3
+maxur-mserv-core,org.maxur.mserv.core.service.jackson,ObjectMapperProvider.Companion,0,48,0,0,0,11,0,2,0,2
+maxur-mserv-core,com.jasonclawson.jackson.dataformat.hocon,HoconJsonLocation,40,0,0,0,11,0,9,0,9,0
+maxur-mserv-core,com.jasonclawson.jackson.dataformat.hocon,HoconFactory,440,0,54,0,100,0,62,0,35,0
+maxur-mserv-core,com.jasonclawson.jackson.dataformat.hocon,HoconNodeCursor.RootValue,33,0,2,0,12,0,6,0,5,0
+maxur-mserv-core,com.jasonclawson.jackson.dataformat.hocon,HoconTreeTraversingParser.new Object() {...},86,0,0,0,2,0,1,0,1,0
+maxur-mserv-core,com.jasonclawson.jackson.dataformat.hocon,HoconNodeCursor.NumericallyIndexedObjectBackedArray,113,0,12,0,24,0,11,0,5,0
+maxur-mserv-core,com.jasonclawson.jackson.dataformat.hocon,HoconTreeTraversingParser,511,0,80,0,128,0,79,0,35,0
+maxur-mserv-core,com.jasonclawson.jackson.dataformat.hocon,UTF8Reader.new InputStream() {...},5,0,0,0,2,0,2,0,2,0
+maxur-mserv-core,com.jasonclawson.jackson.dataformat.hocon,HoconNodeCursor.Array,62,0,10,0,15,0,10,0,5,0
+maxur-mserv-core,com.jasonclawson.jackson.dataformat.hocon,HoconNodeCursor,171,0,24,0,46,0,23,0,11,0
+maxur-mserv-core,com.jasonclawson.jackson.dataformat.hocon,UTF8Reader,809,0,96,0,183,0,67,0,19,0
+maxur-mserv-core,com.jasonclawson.jackson.dataformat.hocon,HoconNodeCursor.Object,100,0,16,0,22,0,13,0,5,0
+maxur-mserv-core,org.maxur.mserv.core.embedded,WebEntries.WebEntry,46,0,0,0,2,0,5,0,5,0
+maxur-mserv-core,org.maxur.mserv.core.embedded,WebEntries,106,0,2,0,9,0,5,0,4,0
+maxur-mserv-core,org.maxur.mserv.core.embedded,EmbeddedServiceFactory,30,0,6,0,4,0,7,0,4,0
+maxur-mserv-core,org.maxur.mserv.core.embedded,CompositeService,74,0,6,0,7,0,8,0,5,0
+maxur-mserv-core,org.maxur.mserv.core.embedded,RestAppConfig,236,0,28,0,9,0,28,0,14,0

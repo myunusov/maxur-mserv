@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BaseService.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">maxur-mserv-core</a> &gt; <a href="index.source.html" class="el_package">org.maxur.mserv.core.domain</a> &gt; <span class="el_source">BaseService.kt</span></div><h1>BaseService.kt</h1><pre class="source lang-java linenums">package org.maxur.mserv.core.domain
+
+import org.maxur.mserv.core.Locator
+import kotlin.reflect.KClass
+import kotlin.reflect.KFunction
+import kotlin.reflect.KParameter
+import kotlin.reflect.KType
+import kotlin.reflect.full.isSubclassOf
+
+
+<span class="pc" id="L11">abstract class BaseService(val locator: Locator) {</span>
+
+<span class="pc" id="L13">    var beforeStart: MutableList&lt;KFunction&lt;Any&gt;&gt; = ArrayList()</span>
+<span class="pc" id="L14">    var afterStart: MutableList&lt;KFunction&lt;Any&gt;&gt; = ArrayList()</span>
+<span class="pc" id="L15">    var afterStop: MutableList&lt;KFunction&lt;Any&gt;&gt; = ArrayList()</span>
+<span class="pc" id="L16">    var beforeStop: MutableList&lt;KFunction&lt;Any&gt;&gt; = ArrayList()</span>
+<span class="pc" id="L17">    var onError: MutableList&lt;KFunction&lt;Any&gt;&gt; = ArrayList()</span>
+
+<span class="pc" id="L19">    protected var state: BaseService.State = BaseService.State.STOPPED</span>
+        private set
+
+    /**
+     * The service name
+     */
+    abstract var name: String
+
+    /**
+     * Start this Service
+     */
+<span class="nc" id="L30">    fun start() = state.start(this)</span>
+
+    /**
+     * Immediately shuts down this Service.
+     */
+<span class="fc" id="L35">    fun stop() = state.stop(this)</span>
+
+    /**
+     * Immediately restart this Service.
+     */
+<span class="nc" id="L40">    fun restart() = state.restart(this)</span>
+
+    /**
+     * shutdown this service.
+     */
+    abstract protected fun shutdown()
+
+    /**
+     * launch this service.
+     */
+    abstract protected fun launch()
+
+    /**
+     * relaunch this service.
+     */
+    abstract protected fun relaunch()
+
+
+    /**
+     * Represent State of micro-service
+     */
+<span class="fc" id="L61">    enum class State {</span>
+        /**
+         *  Running application
+         */
+<span class="fc" id="L65">        STARTED {</span>
+<span class="nc" id="L66">            override fun start(service: BaseService) = Unit</span>
+<span class="nc" id="L67">            override fun stop(service: BaseService) = shutdown(service)</span>
+<span class="nc" id="L68">            override fun restart(service: BaseService) = relaunch(service)</span>
+        },
+        /**
+         * Stop application
+         */
+<span class="fc" id="L73">        STOPPED {</span>
+<span class="nc" id="L74">            override fun start(service: BaseService) = launch(service)</span>
+<span class="fc" id="L75">            override fun stop(service: BaseService) = Unit</span>
+<span class="nc" id="L76">            override fun restart(service: BaseService) = launch(service)</span>
+        };
+
+        abstract fun start(service: BaseService)
+        abstract fun stop(service: BaseService)
+        abstract fun restart(service: BaseService)
+
+<span class="nc" id="L83">        protected fun shutdown(service: BaseService) = check(service, {</span>
+<span class="nc" id="L84">            shutdown()</span>
+<span class="nc" id="L85">            beforeStop.forEach { call(it, service) }</span>
+<span class="nc" id="L86">            state = STOPPED</span>
+<span class="nc" id="L87">            afterStop.forEach { call(it, service) }</span>
+<span class="nc" id="L88">        })</span>
+
+
+<span class="nc" id="L91">        protected fun launch(service: BaseService) = check(service, {</span>
+<span class="nc" id="L92">            beforeStart.forEach { call(it, service) }</span>
+<span class="nc" id="L93">            launch()</span>
+<span class="nc" id="L94">            afterStart.forEach { call(it, service) }</span>
+<span class="nc" id="L95">            state = STARTED</span>
+<span class="nc" id="L96">        })</span>
+
+<span class="nc" id="L98">        protected fun relaunch(service: BaseService) = check(service, {</span>
+<span class="nc" id="L99">            beforeStop.forEach { call(it, service) }</span>
+<span class="nc" id="L100">            relaunch()</span>
+<span class="nc" id="L101">            afterStart.forEach { call(it, service) }</span>
+<span class="nc" id="L102">            state = STARTED</span>
+<span class="nc" id="L103">        })</span>
+
+        private fun check(service: BaseService, function: BaseService.() -&gt; Unit) {
+<span class="nc" id="L106">            try {</span>
+<span class="nc" id="L107">                service.apply(function)</span>
+<span class="nc" id="L108">            } catch(e: Exception) {</span>
+<span class="nc" id="L109">                service.onError.forEach { call(it, service, e) }</span>
+            }
+<span class="nc" id="L111">        }</span>
+
+        private fun call(func: KFunction&lt;Any&gt;, vararg values: Any) {
+<span class="nc" id="L114">            val args = func.parameters.map { match(it, *values) }.toTypedArray()</span>
+<span class="nc" id="L115">            func.call(*args)</span>
+<span class="nc" id="L116">        }</span>
+
+        private fun match(param: KParameter, vararg values: Any): Any? =
+<span class="nc bnc" id="L119" title="All 4 branches missed.">                values.filter { isApplicable(param, it) }.firstOrNull() ?:</span>
+<span class="nc" id="L120">                        Locator.service(param)</span>
+
+        @Suppress(&quot;UNCHECKED_CAST&quot;)
+        private fun isApplicable(type: KType, clazz: KClass&lt;out Any&gt;) =
+<span class="nc bnc" id="L124" title="All 2 branches missed.">                clazz.isSubclassOf(type.classifier as KClass&lt;Any&gt;)</span>
+
+<span class="nc" id="L126">        private fun isApplicable(param: KParameter, value: Any) = isApplicable(param.type, value::class)</span>
+
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

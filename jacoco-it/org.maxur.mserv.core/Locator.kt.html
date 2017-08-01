@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Locator.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">maxur-mserv-core</a> &gt; <a href="index.source.html" class="el_package">org.maxur.mserv.core</a> &gt; <span class="el_source">Locator.kt</span></div><h1>Locator.kt</h1><pre class="source lang-java linenums">package org.maxur.mserv.core
+
+import javax.annotation.PostConstruct
+import kotlin.reflect.KClass
+import kotlin.reflect.KParameter
+
+@Suppress(&quot;UNCHECKED_CAST&quot;)
+interface Locator {
+
+<span class="nc" id="L10">    private object NullLocator : Locator {</span>
+<span class="nc" id="L11">        override fun &lt;T&gt; service(clazz: Class&lt;T&gt;, name: String?): T? = error()</span>
+<span class="nc" id="L12">        override fun &lt;T&gt; services(clazz: Class&lt;T&gt;): List&lt;T&gt; = error()</span>
+<span class="nc" id="L13">        override fun names(clazz: Class&lt;*&gt;): List&lt;String&gt; = error()</span>
+<span class="nc" id="L14">        override fun &lt;R&gt; property(key: String, clazz: Class&lt;R&gt;): R? = error()</span>
+<span class="nc" id="L15">        override fun shutdown(): Unit = error()</span>
+<span class="nc" id="L16">        override fun &lt;T&gt; implementation(): T = error()</span>
+        private fun &lt;T&gt; error(): T =
+<span class="nc" id="L18">                throw IllegalStateException(&quot;Service Locator is not initialized.&quot;)</span>
+    }
+
+<span class="nc" id="L21">    companion object {</span>
+<span class="nc" id="L22">        private var localCurrent: ThreadLocal&lt;Locator&gt; = ThreadLocal()</span>
+
+<span class="nc" id="L24">        var current: Locator = NullLocator</span>
+<span class="nc bnc" id="L25" title="All 2 branches missed.">            get() = localCurrent.get() ?: field</span>
+            set(value) {
+<span class="nc" id="L27">                localCurrent.set(value)</span>
+<span class="nc" id="L28">                field = value</span>
+<span class="nc" id="L29">            }</span>
+
+<span class="nc" id="L31">        fun &lt;T&gt; service(clazz: Class&lt;T&gt;): T? = current.service(clazz)</span>
+<span class="nc" id="L32">        fun &lt;T : Any&gt; service(clazz: KClass&lt;T&gt;): T? = current.service(clazz)</span>
+<span class="nc" id="L33">        fun &lt;T : Any&gt; service(clazz: KClass&lt;T&gt;, name: String): T? = current.service(clazz, name)</span>
+<span class="nc" id="L34">        fun &lt;T : Any&gt; service(parameter: KParameter): T? = current.service(parameter)</span>
+<span class="nc" id="L35">        fun &lt;T : Any&gt; services(clazz: KClass&lt;T&gt;): List&lt;T&gt; = current.services(clazz)</span>
+<span class="nc" id="L36">        fun shutdown() = current.shutdown()</span>
+    }
+
+    @PostConstruct
+    fun init() {
+<span class="nc" id="L41">        Locator.current = this</span>
+<span class="nc" id="L42">    }</span>
+
+<span class="nc" id="L44">    fun &lt;T : Any&gt; locate(clazz: KClass&lt;T&gt;, name: String): T = locate(clazz.java, name)</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">    fun &lt;T&gt; locate(clazz: Class&lt;T&gt;, name: String): T = service(clazz, name) ?:</span>
+<span class="nc" id="L46">            throw IllegalStateException(</span>
+<span class="nc" id="L47">                    &quot;Service '$name' is not supported. Try one from this list: ${names(clazz)}&quot;</span>
+<span class="nc" id="L48">            )</span>
+
+<span class="nc bnc" id="L50" title="All 2 branches missed.">    fun &lt;T : Any&gt; service(parameter: KParameter): T? = service(parameter.type.classifier as KClass&lt;T&gt;)</span>
+<span class="nc" id="L51">    fun &lt;T : Any&gt; service(clazz: KClass&lt;T&gt;, name: String? = null): T? = service(clazz.java, name)</span>
+<span class="nc" id="L52">    fun &lt;T&gt; service(clazz: Class&lt;T&gt;): T? = service(clazz, null)</span>
+    fun &lt;T&gt; service(clazz: Class&lt;T&gt;, name: String?): T?
+
+<span class="nc" id="L55">    fun &lt;T : Any&gt; services(clazz: KClass&lt;T&gt;): List&lt;T&gt; = services(clazz.java)</span>
+    fun &lt;T&gt; services(clazz: Class&lt;T&gt;): List&lt;T&gt;
+
+
+<span class="nc" id="L59">    fun &lt;T : Any&gt; names(clazz: KClass&lt;T&gt;): List&lt;String&gt; = names(clazz.java)</span>
+    fun names(clazz: Class&lt;*&gt;): List&lt;String&gt;
+
+<span class="nc" id="L62">    fun property(key: String): String? = property(key, String::class)</span>
+<span class="nc" id="L63">    fun &lt;T : Any&gt; property(key: String, clazz: KClass&lt;T&gt;): T? = property(key, clazz.java)</span>
+    fun &lt;T&gt; property(key: String, clazz: Class&lt;T&gt;): T?
+    
+    fun shutdown()
+
+    fun &lt;T&gt; implementation(): T
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

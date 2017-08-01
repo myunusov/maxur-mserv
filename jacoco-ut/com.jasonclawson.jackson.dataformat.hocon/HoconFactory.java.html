@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HoconFactory.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">maxur-mserv-core</a> &gt; <a href="index.source.html" class="el_package">com.jasonclawson.jackson.dataformat.hocon</a> &gt; <span class="el_source">HoconFactory.java</span></div><h1>HoconFactory.java</h1><pre class="source lang-java linenums">package com.jasonclawson.jackson.dataformat.hocon;
+
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.core.format.InputAccessor;
+import com.fasterxml.jackson.core.format.MatchStrength;
+import com.fasterxml.jackson.core.io.IOContext;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigParseOptions;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.Writer;
+import java.net.URL;
+
+/**
+ * This code was pretty much copied from the jackson YAMLFactory
+ *
+ * @author jclawson
+ */
+public class HoconFactory extends JsonFactory {
+	private static final long serialVersionUID = 1L;
+
+    /**
+     * The constant FORMAT_NAME_HOCON.
+     */
+    public final static String FORMAT_NAME_HOCON = &quot;HOCON&quot;;
+	
+	private final static byte UTF8_BOM_1 = (byte) 0xEF;
+    private final static byte UTF8_BOM_2 = (byte) 0xBB;
+    private final static byte UTF8_BOM_3 = (byte) 0xBF;
+
+    /**
+     * Instantiates a new Hocon factory.
+     */
+<span class="fc" id="L47">    public HoconFactory() { this(null); }</span>
+
+    /**
+     * Instantiates a new Hocon factory.
+     *
+     * @param oc the oc
+     */
+    public HoconFactory(ObjectCodec oc) {
+<span class="fc" id="L55">        super(oc);</span>
+<span class="fc" id="L56">    }</span>
+
+    /**
+     * Instantiates a new Hocon factory.
+     *
+     * @param src the src
+     * @param oc  the oc
+     */
+    public HoconFactory(HoconFactory src, ObjectCodec oc) {
+<span class="nc" id="L65">        super(src, oc);</span>
+<span class="nc" id="L66">    }</span>
+
+    
+	@Override
+    public HoconFactory copy()
+    {
+<span class="nc" id="L72">        _checkInvalidCopy(HoconFactory.class);</span>
+<span class="nc" id="L73">        return new HoconFactory(this, null);</span>
+    }
+
+    /*
+    /**********************************************************
+    /* Serializable overrides
+    /**********************************************************
+     */
+
+    /**
+     * Method that we need to override to actually make restoration go
+     * through constructors etc.
+     * Also: must be overridden by sub-classes as well.
+     */
+    @Override
+    protected Object readResolve() {
+<span class="nc" id="L89">        return new HoconFactory(this, _objectCodec);</span>
+    }
+
+    /*                                                                                       
+    /**********************************************************                              
+    /* Versioned                                                                             
+    /**********************************************************                              
+     */
+
+//    @Override
+//    public Version version() {
+//        return PackageVersion.VERSION;
+//    }
+    
+    /*
+    /**********************************************************
+    /* Format detection functionality (since 1.8)
+    /**********************************************************
+     */
+    
+    @Override
+    public String getFormatName() {
+<span class="nc" id="L111">        return FORMAT_NAME_HOCON;</span>
+    }
+    
+    /**
+     * Sub-classes need to override this method (as of 1.8)
+     */
+    @Override
+    public MatchStrength hasFormat(InputAccessor acc) throws IOException
+    {
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        if (!acc.hasMoreBytes()) {</span>
+<span class="nc" id="L121">            return MatchStrength.INCONCLUSIVE;</span>
+        }
+<span class="nc" id="L123">        byte b = acc.nextByte();</span>
+        // Very first thing, a UTF-8 BOM?
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        if (b == UTF8_BOM_1) { // yes, looks like UTF-8 BOM</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">            if (!acc.hasMoreBytes()) {</span>
+<span class="nc" id="L127">                return MatchStrength.INCONCLUSIVE;</span>
+            }
+<span class="nc bnc" id="L129" title="All 2 branches missed.">            if (acc.nextByte() != UTF8_BOM_2) {</span>
+<span class="nc" id="L130">                return MatchStrength.NO_MATCH;</span>
+            }
+<span class="nc bnc" id="L132" title="All 2 branches missed.">            if (!acc.hasMoreBytes()) {</span>
+<span class="nc" id="L133">                return MatchStrength.INCONCLUSIVE;</span>
+            }
+<span class="nc bnc" id="L135" title="All 2 branches missed.">            if (acc.nextByte() != UTF8_BOM_3) {</span>
+<span class="nc" id="L136">                return MatchStrength.NO_MATCH;</span>
+            }
+<span class="nc bnc" id="L138" title="All 2 branches missed.">            if (!acc.hasMoreBytes()) {</span>
+<span class="nc" id="L139">                return MatchStrength.INCONCLUSIVE;</span>
+            }
+<span class="nc" id="L141">            b = acc.nextByte();</span>
+        }
+<span class="nc bnc" id="L143" title="All 6 branches missed.">        if (b == '{' || Character.isLetter((char) b) || Character.isDigit((char) b)) {</span>
+<span class="nc" id="L144">            return MatchStrength.WEAK_MATCH;</span>
+        }
+<span class="nc" id="L146">        return MatchStrength.INCONCLUSIVE;</span>
+    }
+    
+    /*
+    /**********************************************************
+    /* Configuration, parser settings
+    /**********************************************************
+     */
+
+
+
+    /*
+    /**********************************************************
+    /* Overridden parser factory methods (for 2.1)
+    /**********************************************************
+     */
+
+    @SuppressWarnings(&quot;resource&quot;)
+    @Override
+    public HoconTreeTraversingParser createParser(String content) throws IOException {
+<span class="nc bnc" id="L166" title="All 2 branches missed.">        if (content == null)</span>
+<span class="nc" id="L167">            return null;</span>
+<span class="nc" id="L168">        Reader r = new StringReader(content);</span>
+<span class="nc" id="L169">        IOContext ctxt = _createContext(r, true); // true-&gt;own, can close</span>
+        // [JACKSON-512]: allow wrapping with InputDecorator
+<span class="nc bnc" id="L171" title="All 2 branches missed.">        if (_inputDecorator != null) {</span>
+<span class="nc" id="L172">            r = _inputDecorator.decorate(ctxt, r);</span>
+        }
+<span class="nc" id="L174">        return _createParser(r, ctxt);</span>
+    }
+    
+    @SuppressWarnings(&quot;resource&quot;)
+    @Override
+    public HoconTreeTraversingParser createParser(File f) throws IOException {
+<span class="nc" id="L180">        IOContext ctxt = _createContext(f, true);</span>
+<span class="nc" id="L181">        InputStream in = new FileInputStream(f);</span>
+        // [JACKSON-512]: allow wrapping with InputDecorator
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        if (_inputDecorator != null) {</span>
+<span class="nc" id="L184">            in = _inputDecorator.decorate(ctxt, in);</span>
+        }
+<span class="nc" id="L186">        return _createParser(in, ctxt);</span>
+    }
+    
+    @SuppressWarnings(&quot;resource&quot;)
+    @Override
+    public HoconTreeTraversingParser createParser(URL url) throws IOException {
+<span class="nc" id="L192">        IOContext ctxt = _createContext(url, true);</span>
+<span class="nc" id="L193">        InputStream in = _optimizedStreamFromURL(url);</span>
+        // [JACKSON-512]: allow wrapping with InputDecorator
+<span class="nc bnc" id="L195" title="All 2 branches missed.">        if (_inputDecorator != null) {</span>
+<span class="nc" id="L196">            in = _inputDecorator.decorate(ctxt, in);</span>
+        }
+<span class="nc" id="L198">        return _createParser(in, ctxt);</span>
+    }
+
+    @SuppressWarnings(&quot;resource&quot;)
+    @Override
+    public HoconTreeTraversingParser createParser(InputStream in) throws IOException {
+<span class="nc" id="L204">        IOContext ctxt = _createContext(in, false);</span>
+        // [JACKSON-512]: allow wrapping with InputDecorator
+<span class="nc bnc" id="L206" title="All 2 branches missed.">        if (_inputDecorator != null) {</span>
+<span class="nc" id="L207">            in = _inputDecorator.decorate(ctxt, in);</span>
+        }
+<span class="nc" id="L209">        return _createParser(in, ctxt);</span>
+    }
+
+    @SuppressWarnings(&quot;resource&quot;)
+    @Override
+    public JsonParser createParser(Reader r) throws IOException {
+<span class="nc" id="L215">        IOContext ctxt = _createContext(r, false);</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">        if (_inputDecorator != null) {</span>
+<span class="nc" id="L217">            r = _inputDecorator.decorate(ctxt, r);</span>
+        }
+<span class="nc" id="L219">        return _createParser(r, ctxt);</span>
+    }
+
+    @SuppressWarnings(&quot;resource&quot;)
+    @Override
+    public HoconTreeTraversingParser createParser(byte[] data) throws IOException {
+<span class="nc" id="L225">        IOContext ctxt = _createContext(data, true);</span>
+        // [JACKSON-512]: allow wrapping with InputDecorator
+<span class="nc bnc" id="L227" title="All 2 branches missed.">        if (_inputDecorator != null) {</span>
+<span class="nc" id="L228">            InputStream in = _inputDecorator.decorate(ctxt, data, 0, data.length);</span>
+<span class="nc bnc" id="L229" title="All 2 branches missed.">            if (in != null) {</span>
+<span class="nc" id="L230">                return _createParser(in, ctxt);</span>
+            }
+        }
+<span class="nc" id="L233">        return _createParser(data, 0, data.length, ctxt);</span>
+    }
+
+    @SuppressWarnings(&quot;resource&quot;)
+    @Override
+    public HoconTreeTraversingParser createParser(byte[] data, int offset, int len) throws IOException {
+<span class="nc" id="L239">        IOContext ctxt = _createContext(data, true);</span>
+        // [JACKSON-512]: allow wrapping with InputDecorator
+<span class="nc bnc" id="L241" title="All 2 branches missed.">        if (_inputDecorator != null) {</span>
+<span class="nc" id="L242">            InputStream in = _inputDecorator.decorate(ctxt, data, offset, len);</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">            if (in != null) {</span>
+<span class="nc" id="L244">                return _createParser(in, ctxt);</span>
+            }
+        }
+<span class="nc" id="L247">        return _createParser(data, offset, len, ctxt);</span>
+    }
+    
+    /*
+    /**********************************************************
+    /* Overridden parser factory methods (2.0 and prior)
+    /**********************************************************
+     */
+
+    // remove in 2.4
+    @Deprecated
+    @Override
+    public HoconTreeTraversingParser createJsonParser(String content) throws IOException {
+<span class="nc" id="L260">        return createParser(content);</span>
+    }
+
+    // remove in 2.4
+    @Deprecated
+    @Override
+    public HoconTreeTraversingParser createJsonParser(File f) throws IOException {
+<span class="nc" id="L267">        return createParser(f);</span>
+    }
+    
+    // remove in 2.4
+    @Deprecated
+    @Override
+    public HoconTreeTraversingParser createJsonParser(URL url) throws IOException {
+<span class="nc" id="L274">        return createParser(url);</span>
+    }
+
+    // remove in 2.4
+    @Deprecated
+    @Override
+    public HoconTreeTraversingParser createJsonParser(InputStream in) throws IOException {
+<span class="nc" id="L281">        return createParser(in);</span>
+    }
+
+    // remove in 2.4
+    @Deprecated
+    @Override
+    public JsonParser createJsonParser(Reader r) throws IOException {
+<span class="nc" id="L288">        return createParser(r);</span>
+    }
+
+    // remove in 2.4
+    @Deprecated
+    @Override
+    public HoconTreeTraversingParser createJsonParser(byte[] data) throws IOException {
+<span class="nc" id="L295">        return createParser(data);</span>
+    }
+    
+    // remove in 2.4
+    @Deprecated
+    @Override
+    public HoconTreeTraversingParser createJsonParser(byte[] data, int offset, int len) throws IOException {
+<span class="nc" id="L302">        return createParser(data, offset, len);</span>
+    }
+
+    /*
+    /**********************************************************
+    /* Overridden generator factory methods (2.1)
+    /**********************************************************
+     */
+
+    @SuppressWarnings(&quot;resource&quot;)
+    @Override
+    public JsonGenerator createGenerator(OutputStream out, JsonEncoding enc) throws IOException
+    {
+<span class="nc" id="L315">    	throw new UnsupportedOperationException(&quot;Generating HOCON is not supported yet&quot;);</span>
+    }
+
+    @SuppressWarnings(&quot;resource&quot;)
+    @Override
+    public JsonGenerator createGenerator(OutputStream out) throws IOException
+    {
+<span class="nc" id="L322">    	throw new UnsupportedOperationException(&quot;Generating HOCON is not supported yet&quot;);</span>
+    }
+    
+    @SuppressWarnings(&quot;resource&quot;)
+    @Override
+    public JsonGenerator createGenerator(Writer out) throws IOException
+    {
+<span class="nc" id="L329">    	throw new UnsupportedOperationException(&quot;Generating HOCON is not supported yet&quot;);</span>
+    }
+    
+    /*
+    /**********************************************************
+    /* Overridden generator factory methods (2.0 and before)
+    /**********************************************************
+     */
+
+    // remove in 2.4
+    @Deprecated
+    @Override
+    public JsonGenerator createJsonGenerator(OutputStream out, JsonEncoding enc) throws IOException {
+<span class="nc" id="L342">        throw new UnsupportedOperationException(&quot;Generating HOCON is not supported yet&quot;);</span>
+    }
+
+    // remove in 2.4
+    @Deprecated
+    @Override
+    public JsonGenerator createJsonGenerator(OutputStream out) throws IOException {
+<span class="nc" id="L349">    	throw new UnsupportedOperationException(&quot;Generating HOCON is not supported yet&quot;);</span>
+    }
+
+    // remove in 2.4
+    @Deprecated
+    @Override
+    public JsonGenerator createJsonGenerator(Writer out) throws IOException {
+<span class="nc" id="L356">    	throw new UnsupportedOperationException(&quot;Generating HOCON is not supported yet&quot;);</span>
+    }
+    
+    /*
+    /******************************************************
+    /* Overridden internal factory methods
+    /******************************************************
+     */
+
+    //protected IOContext _createContext(Object srcRef, boolean resourceManaged)
+
+    @SuppressWarnings(&quot;resource&quot;)
+    @Override
+    protected HoconTreeTraversingParser _createParser(InputStream in, IOContext ctxt)
+        throws IOException {
+<span class="nc" id="L371">        Reader r = _createReader(in, null, ctxt);</span>
+<span class="nc" id="L372">        return _createParser(r, ctxt);</span>
+    }
+
+    @Override
+    protected HoconTreeTraversingParser _createParser(Reader r, IOContext ctxt)
+        throws IOException {
+<span class="nc" id="L378">    	ConfigParseOptions options = ConfigParseOptions.defaults();</span>
+<span class="nc" id="L379">        Config config = ConfigFactory.parseReader(r, options);</span>
+        
+<span class="nc" id="L381">    	Config resolvedConfig = config.resolve();</span>
+<span class="nc" id="L382">        return new HoconTreeTraversingParser(resolvedConfig.root(), _objectCodec);</span>
+    }
+
+    @SuppressWarnings(&quot;resource&quot;)
+    @Override
+    protected HoconTreeTraversingParser _createParser(byte[] data, int offset, int len, IOContext ctxt)
+        throws IOException {
+<span class="nc" id="L389">        Reader r = _createReader(data, offset, len, null, ctxt);</span>
+<span class="nc" id="L390">        return _createParser(r, ctxt);</span>
+    }
+
+    @Override
+    protected JsonGenerator _createGenerator(Writer out, IOContext ctxt)
+        throws IOException
+    {
+<span class="nc" id="L397">    	throw new UnsupportedOperationException(&quot;Generating HOCON is not supported yet&quot;);</span>
+    }
+
+    @SuppressWarnings(&quot;resource&quot;)
+    @Deprecated
+    @Override
+    protected JsonGenerator _createUTF8Generator(OutputStream out, IOContext ctxt) throws IOException {
+<span class="nc" id="L404">    	throw new UnsupportedOperationException(&quot;Generating HOCON is not supported yet&quot;);</span>
+    }
+
+    @Override
+    protected Writer _createWriter(OutputStream out, JsonEncoding enc, IOContext ctxt) throws IOException
+    {
+<span class="nc" id="L410">    	throw new UnsupportedOperationException(&quot;Generating HOCON is not supported yet&quot;);</span>
+    }
+    
+    /*
+    /**********************************************************
+    /* Internal methods
+    /**********************************************************
+     */
+
+    /**
+     * Create reader reader.
+     *
+     * @param in   the in
+     * @param enc  the enc
+     * @param ctxt the ctxt
+     * @return the reader
+     * @throws IOException the io exception
+     */
+    protected Reader _createReader(InputStream in, JsonEncoding enc, IOContext ctxt) throws IOException
+    {
+<span class="nc bnc" id="L430" title="All 2 branches missed.">        if (enc == null) {</span>
+<span class="nc" id="L431">            enc = JsonEncoding.UTF8;</span>
+        }
+        // default to UTF-8 if encoding missing
+<span class="nc bnc" id="L434" title="All 2 branches missed.">        if (enc == JsonEncoding.UTF8) {</span>
+<span class="nc bnc" id="L435" title="All 4 branches missed.">            boolean autoClose = ctxt.isResourceManaged() || isEnabled(JsonParser.Feature.AUTO_CLOSE_SOURCE);</span>
+<span class="nc" id="L436">            return new UTF8Reader(in, autoClose);</span>
+//          return new InputStreamReader(in, UTF8);
+        }
+<span class="nc" id="L439">        return new InputStreamReader(in, enc.getJavaName());</span>
+    }
+
+    /**
+     * Create reader reader.
+     *
+     * @param data   the data
+     * @param offset the offset
+     * @param len    the len
+     * @param enc    the enc
+     * @param ctxt   the ctxt
+     * @return the reader
+     * @throws IOException the io exception
+     */
+    protected Reader _createReader(byte[] data, int offset, int len,
+            JsonEncoding enc, IOContext ctxt) throws IOException
+    {
+<span class="nc bnc" id="L456" title="All 2 branches missed.">        if (enc == null) {</span>
+<span class="nc" id="L457">            enc = JsonEncoding.UTF8;</span>
+        }
+        // default to UTF-8 if encoding missing
+<span class="nc bnc" id="L460" title="All 4 branches missed.">        if (enc == null || enc == JsonEncoding.UTF8) {</span>
+<span class="nc" id="L461">            return new UTF8Reader(data, offset, len, true);</span>
+        }
+<span class="nc" id="L463">        ByteArrayInputStream in = new ByteArrayInputStream(data, offset, len);</span>
+<span class="nc" id="L464">        return new InputStreamReader(in, enc.getJavaName());</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

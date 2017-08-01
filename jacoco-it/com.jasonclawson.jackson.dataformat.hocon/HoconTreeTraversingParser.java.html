@@ -1,0 +1,488 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HoconTreeTraversingParser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">maxur-mserv-core</a> &gt; <a href="index.source.html" class="el_package">com.jasonclawson.jackson.dataformat.hocon</a> &gt; <span class="el_source">HoconTreeTraversingParser.java</span></div><h1>HoconTreeTraversingParser.java</h1><pre class="source lang-java linenums">package com.jasonclawson.jackson.dataformat.hocon;
+
+import com.fasterxml.jackson.core.Base64Variant;
+import com.fasterxml.jackson.core.JsonLocation;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonStreamContext;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.core.base.ParserMinimalBase;
+import com.typesafe.config.ConfigObject;
+import com.typesafe.config.ConfigValue;
+import com.typesafe.config.ConfigValueType;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
+/**
+ * The type Hocon tree traversing parser.
+ */
+public class HoconTreeTraversingParser extends ParserMinimalBase {
+
+	/*
+    /**********************************************************
+    /* Configuration
+    /**********************************************************
+     */
+
+    /**
+     * The Object codec.
+     */
+    protected ObjectCodec _objectCodec;
+
+    /**
+     * Traversal context within tree
+     */
+    protected HoconNodeCursor _nodeCursor;
+
+    /*
+    /**********************************************************
+    /* State
+    /**********************************************************
+     */
+
+    /**
+     * Sometimes parser needs to buffer a single look-ahead token; if so,
+     * it'll be stored here. This is currently used for handling
+     */
+    protected JsonToken _nextToken;
+
+    /**
+     * Flag needed to handle recursion into contents of child
+     * Array/Object nodes.
+     */
+    protected boolean _startContainer;
+
+    /**
+     * Flag that indicates whether parser is closed or not. Gets
+     * set when parser is either closed by explicit call
+     * ({@link #close}) or when end-of-input is reached.
+     */
+    protected boolean _closed;
+
+    private final ConfigObject _rootObject;
+
+    /**
+     * HOCON specific getter for the originating ConfigObject. Useful for
+     * accessing the underlying Config instance in custom deserializers.
+     *
+     * @return The ConfigObject with which this parser was instantiated.
+     */
+    public ConfigObject getConfigObject() {
+<span class="nc" id="L76">        return _rootObject;</span>
+    }
+    
+    /*
+    /**********************************************************
+    /* Life-cycle
+    /**********************************************************
+     */
+
+    /**
+     * Instantiates a new Hocon tree traversing parser.
+     *
+     * @param n the n
+     */
+<span class="nc" id="L90">    public HoconTreeTraversingParser(ConfigObject n) { this(n, null); }</span>
+
+    /**
+     * Instantiates a new Hocon tree traversing parser.
+     *
+     * @param n     the n
+     * @param codec the codec
+     */
+    public HoconTreeTraversingParser(ConfigObject n, ObjectCodec codec)
+    {
+<span class="nc" id="L100">        super(0);</span>
+<span class="nc" id="L101">        _rootObject = n;</span>
+<span class="nc" id="L102">        _objectCodec = codec;</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">        if (n.valueType() == ConfigValueType.LIST) {</span>
+<span class="nc" id="L104">            _nextToken = JsonToken.START_ARRAY;</span>
+<span class="nc" id="L105">            _nodeCursor = new HoconNodeCursor.Array(n, null);</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        } else if (n.valueType() == ConfigValueType.OBJECT) {</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">            if (HoconNodeCursor.isNumericallyIndexed(n)) {</span>
+<span class="nc" id="L108">                _nextToken = JsonToken.START_ARRAY;</span>
+<span class="nc" id="L109">                _nodeCursor = new HoconNodeCursor.NumericallyIndexedObjectBackedArray(n, null);</span>
+            } else {
+<span class="nc" id="L111">                _nextToken = JsonToken.START_OBJECT;</span>
+<span class="nc" id="L112">                _nodeCursor = new HoconNodeCursor.Object(n, null);</span>
+            }
+        } else { // value node
+<span class="nc" id="L115">            _nodeCursor = new HoconNodeCursor.RootValue(n, null);</span>
+        }
+<span class="nc" id="L117">    }</span>
+
+    /**
+     * As json token json token.
+     *
+     * @param value the value
+     * @return the json token
+     */
+    public static JsonToken asJsonToken(ConfigValue value) {
+<span class="nc bnc" id="L126" title="All 2 branches missed.">        if (HoconNodeCursor.isNumericallyIndexed(value)) {</span>
+<span class="nc" id="L127">            return JsonToken.START_ARRAY;</span>
+        }
+<span class="nc bnc" id="L129" title="All 7 branches missed.">        switch(value.valueType()) {</span>
+			case BOOLEAN:
+<span class="nc" id="L131">				boolean bool = (Boolean) value.unwrapped();</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">				return (bool) ? JsonToken.VALUE_TRUE </span>
+						      : JsonToken.VALUE_FALSE;
+			case NULL:
+<span class="nc" id="L135">				return JsonToken.VALUE_NULL;</span>
+			case NUMBER:
+<span class="nc" id="L137">				Number unwrapped = (Number) value.unwrapped();</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">				if(unwrapped instanceof Double) {</span>
+<span class="nc" id="L139">					return JsonToken.VALUE_NUMBER_FLOAT;</span>
+				} else {
+<span class="nc" id="L141">					return JsonToken.VALUE_NUMBER_INT;</span>
+				}
+			case STRING:
+<span class="nc" id="L144">				return JsonToken.VALUE_STRING;</span>
+			case LIST:
+<span class="nc" id="L146">				return JsonToken.START_ARRAY;</span>
+			case OBJECT:
+<span class="nc" id="L148">				return JsonToken.START_OBJECT;</span>
+			default:
+<span class="nc" id="L150">				throw new IllegalArgumentException(&quot;Unhandled type &quot;+value.valueType());</span>
+		
+		}
+	}
+
+    @Override
+    public void setCodec(ObjectCodec c) {
+<span class="nc" id="L157">        _objectCodec = c;</span>
+<span class="nc" id="L158">    }</span>
+
+    @Override
+    public ObjectCodec getCodec() {
+<span class="nc" id="L162">        return _objectCodec;</span>
+    }
+
+    @Override
+    public Version version() {
+<span class="nc" id="L167">        return com.fasterxml.jackson.databind.cfg.PackageVersion.VERSION;</span>
+    }
+    
+    /*
+    /**********************************************************
+    /* Closeable implementation
+    /**********************************************************
+     */
+
+    @Override
+    public void close() throws IOException
+    {
+<span class="nc bnc" id="L179" title="All 2 branches missed.">        if (!_closed) {</span>
+<span class="nc" id="L180">            _closed = true;</span>
+<span class="nc" id="L181">            _nodeCursor = null;</span>
+<span class="nc" id="L182">            _currToken = null;</span>
+        }
+<span class="nc" id="L184">    }</span>
+
+    /*
+    /**********************************************************
+    /* Public API, traversal
+    /**********************************************************
+     */
+
+    @Override
+    public JsonToken nextToken() throws IOException, JsonParseException
+    {
+<span class="nc bnc" id="L195" title="All 2 branches missed.">        if (_nextToken != null) {</span>
+<span class="nc" id="L196">            _currToken = _nextToken;</span>
+<span class="nc" id="L197">            _nextToken = null;</span>
+<span class="nc" id="L198">            return _currToken;</span>
+        }
+        // are we to descend to a container child?
+<span class="nc bnc" id="L201" title="All 2 branches missed.">        if (_startContainer) {</span>
+<span class="nc" id="L202">            _startContainer = false;</span>
+            // minor optimization: empty containers can be skipped
+<span class="nc bnc" id="L204" title="All 2 branches missed.">            if (!_nodeCursor.currentHasChildren()) {</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">                _currToken = (_currToken == JsonToken.START_OBJECT) ?</span>
+                    JsonToken.END_OBJECT : JsonToken.END_ARRAY;
+<span class="nc" id="L207">                return _currToken;</span>
+            }
+<span class="nc" id="L209">            _nodeCursor = _nodeCursor.iterateChildren();</span>
+<span class="nc" id="L210">            _currToken = _nodeCursor.nextToken();</span>
+<span class="nc bnc" id="L211" title="All 4 branches missed.">            if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {</span>
+<span class="nc" id="L212">                _startContainer = true;</span>
+            }
+<span class="nc" id="L214">            return _currToken;</span>
+        }
+        // No more content?
+<span class="nc bnc" id="L217" title="All 2 branches missed.">        if (_nodeCursor == null) {</span>
+<span class="nc" id="L218">            _closed = true; // if not already set</span>
+<span class="nc" id="L219">            return null;</span>
+        }
+        // Otherwise, next entry from current cursor
+<span class="nc" id="L222">        _currToken = _nodeCursor.nextToken();</span>
+<span class="nc bnc" id="L223" title="All 2 branches missed.">        if (_currToken != null) {</span>
+<span class="nc bnc" id="L224" title="All 4 branches missed.">            if (_currToken == JsonToken.START_OBJECT || _currToken == JsonToken.START_ARRAY) {</span>
+<span class="nc" id="L225">                _startContainer = true;</span>
+            }
+<span class="nc" id="L227">            return _currToken;</span>
+        }
+        // null means no more children; need to return end marker
+<span class="nc" id="L230">        _currToken = _nodeCursor.endToken();</span>
+<span class="nc" id="L231">        _nodeCursor = _nodeCursor.getParent();</span>
+<span class="nc" id="L232">        return _currToken;</span>
+    }
+    
+    // default works well here:
+    //public JsonToken nextValue() throws IOException, JsonParseException
+
+    @Override
+    public JsonParser skipChildren() throws IOException, JsonParseException
+    {
+<span class="nc bnc" id="L241" title="All 2 branches missed.">        if (_currToken == JsonToken.START_OBJECT) {</span>
+<span class="nc" id="L242">            _startContainer = false;</span>
+<span class="nc" id="L243">            _currToken = JsonToken.END_OBJECT;</span>
+<span class="nc bnc" id="L244" title="All 2 branches missed.">        } else if (_currToken == JsonToken.START_ARRAY) {</span>
+<span class="nc" id="L245">            _startContainer = false;</span>
+<span class="nc" id="L246">            _currToken = JsonToken.END_ARRAY;</span>
+        }
+<span class="nc" id="L248">        return this;</span>
+    }
+
+    @Override
+    public boolean isClosed() {
+<span class="nc" id="L253">        return _closed;</span>
+    }
+
+    /*
+    /**********************************************************
+    /* Public API, token accessors
+    /**********************************************************
+     */
+
+    @Override
+    public String getCurrentName() {
+<span class="nc bnc" id="L264" title="All 2 branches missed.">        return (_nodeCursor == null) ? null : _nodeCursor.getCurrentName();</span>
+    }
+
+    @Override
+    public void overrideCurrentName(String name)
+    {
+<span class="nc bnc" id="L270" title="All 2 branches missed.">        if (_nodeCursor != null) {</span>
+<span class="nc" id="L271">            _nodeCursor.overrideCurrentName(name);</span>
+        }
+<span class="nc" id="L273">    }</span>
+    
+    @Override
+    public JsonStreamContext getParsingContext() {
+<span class="nc" id="L277">        return _nodeCursor;</span>
+    }
+
+    @Override
+    public JsonLocation getTokenLocation() {
+<span class="nc" id="L282">        final ConfigValue node = currentNode();</span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">        return node == null ? JsonLocation.NA : new HoconJsonLocation(node.origin());</span>
+    }
+
+    @Override
+    public JsonLocation getCurrentLocation() {
+<span class="nc" id="L288">        final ConfigValue node = currentNode();</span>
+<span class="nc bnc" id="L289" title="All 2 branches missed.">        return node == null ? JsonLocation.NA : new HoconJsonLocation(node.origin());</span>
+    }
+
+    /*
+    /**********************************************************
+    /* Public API, access to textual content
+    /**********************************************************
+     */
+
+    @Override
+    public String getText()
+    {
+<span class="nc bnc" id="L301" title="All 2 branches missed.">        if (_closed) {</span>
+<span class="nc" id="L302">            return null;</span>
+        }
+        // need to separate handling a bit...
+<span class="nc bnc" id="L305" title="All 5 branches missed.">        switch (_currToken) {</span>
+        case FIELD_NAME:
+<span class="nc" id="L307">            return _nodeCursor.getCurrentName();</span>
+        case VALUE_STRING:
+<span class="nc" id="L309">            return (String) currentNode().unwrapped();</span>
+        case VALUE_NUMBER_INT:
+        case VALUE_NUMBER_FLOAT:
+<span class="nc" id="L312">            return String.valueOf(currentNode().unwrapped());</span>
+        case VALUE_EMBEDDED_OBJECT:
+<span class="nc" id="L314">        	throw new UnsupportedOperationException(&quot;VALUE_EMBEDDED_OBJECT is not supported by HOCON&quot;);</span>
+        default:
+<span class="nc bnc" id="L316" title="All 2 branches missed.">        	return (_currToken == null) ? null : _currToken.asString();</span>
+        }
+    }
+
+    @Override
+    public char[] getTextCharacters() throws IOException, JsonParseException {
+<span class="nc" id="L322">        return getText().toCharArray();</span>
+    }
+
+    @Override
+    public int getTextLength() throws IOException, JsonParseException {
+<span class="nc" id="L327">        return getText().length();</span>
+    }
+
+    @Override
+    public int getTextOffset() throws IOException, JsonParseException {
+<span class="nc" id="L332">        return 0;</span>
+    }
+
+    @Override
+    public boolean hasTextCharacters() {
+        // generally we do not have efficient access as char[], hence:
+<span class="nc" id="L338">        return false;</span>
+    }
+    
+    /*
+    /**********************************************************
+    /* Public API, typed non-text access
+    /**********************************************************
+     */
+
+    //public byte getByteValue() throws IOException, JsonParseException
+
+    @Override
+    public NumberType getNumberType() throws IOException, JsonParseException {
+<span class="nc" id="L351">    	ConfigValue n = currentNumericNode();</span>
+<span class="nc bnc" id="L352" title="All 2 branches missed.">    	if(n == null)</span>
+<span class="nc" id="L353">    		return null;</span>
+    	
+<span class="nc" id="L355">    	Number value = (Number) n.unwrapped();</span>
+<span class="nc bnc" id="L356" title="All 2 branches missed.">    	if(value instanceof Double) {</span>
+<span class="nc" id="L357">    		return NumberType.DOUBLE;</span>
+<span class="nc bnc" id="L358" title="All 2 branches missed.">    	} else if(value instanceof Long) {</span>
+<span class="nc" id="L359">    		return NumberType.LONG;</span>
+    	} else {
+<span class="nc" id="L361">    		return NumberType.INT;</span>
+    	}
+    }
+
+    @Override
+    public BigInteger getBigIntegerValue() throws IOException, JsonParseException {
+    	//I wish we could provide at the string representation instead
+<span class="nc" id="L368">    	Long value = ((Number)  currentNumericNode().unwrapped()).longValue();</span>
+<span class="nc" id="L369">    	return BigInteger.valueOf(value);</span>
+    }
+
+    @Override
+    public BigDecimal getDecimalValue() throws IOException, JsonParseException {
+<span class="nc" id="L374">        Double value = ((Number) currentNumericNode().unwrapped()).doubleValue();</span>
+<span class="nc" id="L375">    	return BigDecimal.valueOf(value);</span>
+    }
+
+    @Override
+    public double getDoubleValue() throws IOException, JsonParseException {
+<span class="nc" id="L380">        return ((Number) currentNumericNode().unwrapped()).doubleValue();</span>
+    }
+
+    @Override
+    public float getFloatValue() throws IOException, JsonParseException {
+<span class="nc" id="L385">        return ((Number) currentNumericNode().unwrapped()).floatValue();</span>
+    }
+
+    @Override
+    public long getLongValue() throws IOException, JsonParseException {
+<span class="nc" id="L390">        return ((Number) currentNumericNode().unwrapped()).longValue();</span>
+    }
+
+    @Override
+    public int getIntValue() throws IOException, JsonParseException {
+<span class="nc" id="L395">        return ((Number) currentNumericNode().unwrapped()).intValue();</span>
+    }
+
+    @Override
+    public Number getNumberValue() throws IOException, JsonParseException {
+<span class="nc" id="L400">        return (Number) currentNumericNode().unwrapped();</span>
+    }
+
+    @Override
+    public Object getEmbeddedObject()
+    {
+//        if (!_closed) {
+//            ConfigValue n = currentNode();
+//            if (n != null) {
+//                if (n.isPojo()) {
+//                    return ((POJONode) n).getPojo();
+//                }
+//                if (n.isBinary()) {
+//                    return ((BinaryNode) n).binaryValue();
+//                }
+//            }
+//        }
+<span class="nc" id="L417">        return null;</span>
+    }
+
+    /*
+    /**********************************************************
+    /* Public API, typed binary (base64) access
+    /**********************************************************
+     */
+
+    @Override
+    public byte[] getBinaryValue(Base64Variant b64variant)
+        throws IOException, JsonParseException
+    {
+        // otherwise return null to mark we have no binary content
+<span class="nc" id="L431">        return null;</span>
+    }
+
+
+    @Override
+    public int readBinaryValue(Base64Variant b64variant, OutputStream out)
+            throws IOException, JsonParseException
+    {
+<span class="nc" id="L439">        byte[] data = getBinaryValue(b64variant);</span>
+<span class="nc bnc" id="L440" title="All 2 branches missed.">        if (data != null) {</span>
+<span class="nc" id="L441">            out.write(data, 0, data.length);</span>
+<span class="nc" id="L442">            return data.length;</span>
+        }
+<span class="nc" id="L444">        return 0;</span>
+    }
+
+    /*
+    /**********************************************************
+    /* Internal methods
+    /**********************************************************
+     */
+
+    /**
+     * Current node config value.
+     *
+     * @return the config value
+     */
+    protected ConfigValue currentNode() {
+<span class="nc bnc" id="L459" title="All 4 branches missed.">        if (_closed || _nodeCursor == null) {</span>
+<span class="nc" id="L460">            return null;</span>
+        }
+<span class="nc" id="L462">        return _nodeCursor.currentNode();</span>
+    }
+
+    /**
+     * Current numeric node config value.
+     *
+     * @return the config value
+     * @throws JsonParseException the json parse exception
+     */
+    protected ConfigValue currentNumericNode()
+        throws JsonParseException
+    {
+<span class="nc" id="L474">    	ConfigValue n = currentNode();</span>
+<span class="nc bnc" id="L475" title="All 4 branches missed.">        if (n == null || n.valueType() != ConfigValueType.NUMBER) {</span>
+<span class="nc bnc" id="L476" title="All 2 branches missed.">            JsonToken t = (n == null) ? null : asJsonToken(n);</span>
+<span class="nc" id="L477">            throw _constructError(&quot;Current token (&quot;+t+&quot;) not numeric, can not use numeric value accessors&quot;);</span>
+        }
+<span class="nc" id="L479">        return n;</span>
+    }
+
+    @Override
+    protected void _handleEOF() throws JsonParseException {
+<span class="nc" id="L484">        _throwInternal(); // should never provide called</span>
+<span class="nc" id="L485">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

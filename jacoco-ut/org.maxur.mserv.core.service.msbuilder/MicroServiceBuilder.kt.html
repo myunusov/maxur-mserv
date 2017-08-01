@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MicroServiceBuilder.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">maxur-mserv-core</a> &gt; <a href="index.source.html" class="el_package">org.maxur.mserv.core.service.msbuilder</a> &gt; <span class="el_source">MicroServiceBuilder.kt</span></div><h1>MicroServiceBuilder.kt</h1><pre class="source lang-java linenums">@file:Suppress(&quot;unused&quot;)
+
+package org.maxur.mserv.core.service.msbuilder
+
+import org.glassfish.hk2.utilities.Binder
+import org.maxur.mserv.core.BaseMicroService
+import org.maxur.mserv.core.Locator
+import org.maxur.mserv.core.MicroService
+import org.maxur.mserv.core.domain.BaseService
+import org.maxur.mserv.core.domain.Holder
+import org.maxur.mserv.core.embedded.CompositeService
+import org.maxur.mserv.core.embedded.EmbeddedService
+import org.maxur.mserv.core.embedded.EmbeddedServiceFactory
+import org.maxur.mserv.core.service.hk2.ErrorHandler
+import org.maxur.mserv.core.service.hk2.LocatorFactoryHK2Impl
+import org.maxur.mserv.core.service.properties.Properties
+import org.maxur.mserv.core.service.properties.PropertiesSource
+import java.net.URI
+import kotlin.reflect.KFunction
+
+/**
+ * @todo Implement support of default options for best service choice
+ */
+<span class="fc" id="L24">abstract class MicroServiceBuilder {</span>
+
+<span class="pc" id="L26">    protected var titleHolder: Holder&lt;String&gt; = Holder.string(&quot;Anonymous&quot;)</span>
+
+<span class="pc" id="L28">    protected var packagesHolder: MutableList&lt;String&gt; = ArrayList()</span>
+
+<span class="pc" id="L30">    protected var bindersHolder: MutableList&lt;Binder&gt; = ArrayList()</span>
+
+<span class="pc" id="L32">    var binders: Array&lt;Binder&gt; = arrayOf()</span>
+        set(value) {
+<span class="nc" id="L34">            bindersHolder.addAll(value)</span>
+<span class="nc" id="L35">        }</span>
+<span class="nc" id="L36">    var binder: Binder? = null</span>
+        set(value) {
+<span class="nc bnc" id="L38" title="All 2 branches missed.">            value?.let { bindersHolder.add(value) }</span>
+<span class="nc" id="L39">        }</span>
+
+<span class="fc" id="L41">    var propertiesHolder: PropertiesHolder = PropertiesHolder.DefaultPropertiesHolder</span>
+
+<span class="fc" id="L43">    val services: ServicesHolder = ServicesHolder()</span>
+<span class="pc" id="L44">    val beforeStart = HookHolder()</span>
+<span class="pc" id="L45">    val afterStart = HookHolder()</span>
+<span class="pc" id="L46">    val afterStop = HookHolder()</span>
+<span class="pc" id="L47">    val beforeStop = HookHolder()</span>
+<span class="pc" id="L48">    val onError = ErrorHookHolder()</span>
+
+    open fun build(): MicroService {
+<span class="fc" id="L51">        val locator = buildLocator()</span>
+<span class="fc" id="L52">        return buildService(locator)</span>
+    }
+
+    private fun buildLocator(): Locator? {
+<span class="fc" id="L56">        try {</span>
+<span class="fc" id="L57">            return LocatorFactoryHK2Impl {</span>
+<span class="fc" id="L58">                this.packages = packagesHolder</span>
+<span class="fc" id="L59">                bind(*bindersHolder.toTypedArray())</span>
+<span class="fc" id="L60">                bind(propertiesHolder::build, Properties::class, PropertiesSource::class)</span>
+<span class="fc" id="L61">                bind({ locator -&gt; BaseMicroService(services.build(locator), locator) }, MicroService::class)</span>
+<span class="fc" id="L62">            }.make()</span>
+<span class="fc" id="L63">        } catch(e: Exception) {</span>
+<span class="nc" id="L64">            return onConfigurationError(Locator.current)</span>
+        }
+    }
+
+    private fun buildService(locator: Locator?): MicroService {
+<span class="pc bpc" id="L69" title="2 of 4 branches missed.">        val service = locator?.service(MicroService::class) ?: onConfigurationError(locator)</span>
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">        if (service is BaseMicroService) {</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">            service.name = titleHolder.get(locator!!)!!</span>
+<span class="fc" id="L72">            service.beforeStart.addAll(beforeStart.list)</span>
+<span class="fc" id="L73">            service.afterStart.addAll(afterStart.list)</span>
+<span class="fc" id="L74">            service.beforeStop.addAll(beforeStop.list)</span>
+<span class="fc" id="L75">            service.afterStop.addAll(afterStop.list)</span>
+<span class="fc" id="L76">            service.onError.addAll(onError.list)</span>
+        }
+<span class="fc" id="L78">        return service</span>
+    }
+
+    private fun &lt;T&gt; onConfigurationError(locator: Locator?) : T {
+<span class="fc" id="L82">        val errorMessage = locator</span>
+<span class="pc bpc" id="L83" title="3 of 6 branches missed.">                ?.service(ErrorHandler::class)</span>
+                ?.latestError
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">                ?.message</span>
+<span class="nc" id="L86">                ?: &quot;Unknown error&quot;</span>
+<span class="fc" id="L87">        Locator.current.shutdown()</span>
+<span class="fc" id="L88">        throw IllegalStateException(&quot;A MicroService is not created. $errorMessage&quot;)</span>
+    }
+}
+
+<span class="fc" id="L92">open class ServicesHolder {</span>
+<span class="pc" id="L93">    protected var list: ArrayList&lt;ServiceHolder&gt; = ArrayList()</span>
+
+    fun add(value: ServiceHolder) {
+<span class="nc" id="L96">        list.add(value)</span>
+<span class="nc" id="L97">    }</span>
+
+    operator fun plusAssign(value: ServiceHolder) {
+<span class="nc" id="L100">        list.add(value)</span>
+<span class="nc" id="L101">    }</span>
+
+    operator fun plusAssign(value: EmbeddedService) {
+<span class="nc" id="L104">        val holder = ServiceHolder()</span>
+<span class="nc" id="L105">        holder.ref = value</span>
+<span class="nc" id="L106">        list.add(holder)</span>
+<span class="nc" id="L107">    }</span>
+
+<span class="pc bnc" id="L109" title="All 2 branches missed.">    fun build(locator: Locator): EmbeddedService = CompositeService(list.map { it.build(locator)!! })</span>
+}
+
+<span class="fc" id="L112">class ServiceHolder {</span>
+<span class="fc" id="L113">    private val clazz = EmbeddedServiceFactory::class</span>
+<span class="fc" id="L114">    private var holder: Holder&lt;EmbeddedService&gt; = Holder.none()</span>
+<span class="fc" id="L115">    private var propertiesHolder: Holder&lt;Any&gt; = Holder.wrap(null)</span>
+<span class="pc" id="L116">    val beforeStart = HookHolder()</span>
+<span class="pc" id="L117">    val afterStart = HookHolder()</span>
+<span class="pc" id="L118">    var afterStop = HookHolder()</span>
+<span class="pc" id="L119">    var beforeStop = HookHolder()</span>
+
+<span class="nc" id="L121">    var ref: EmbeddedService? = null</span>
+        set(value) {
+<span class="nc" id="L123">            this.propertiesHolder = Holder.none()</span>
+<span class="nc" id="L124">            this.holder = Holder.wrap(value)</span>
+<span class="nc" id="L125">        }</span>
+
+<span class="nc" id="L127">    var typeHolder: String? = null</span>
+
+    var type: String?
+<span class="nc" id="L130">        get() = typeHolder</span>
+        set(value) {
+<span class="fc" id="L132">            this.typeHolder = value</span>
+<span class="fc" id="L133">            this.holder = makeServiceHolder()</span>
+<span class="fc" id="L134">        }</span>
+
+<span class="nc" id="L136">    var properties: Any? = null</span>
+        set(value) {
+<span class="fc" id="L138">            this.propertiesHolder = when (value) {</span>
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">                is String -&gt; propertiesKey(value)</span>
+<span class="nc" id="L140">                else -&gt; Holder.wrap(value)</span>
+            }
+<span class="fc" id="L142">            this.holder = makeServiceHolder()</span>
+<span class="fc" id="L143">        }</span>
+
+    private fun makeServiceHolder(): Holder&lt;EmbeddedService&gt; {
+<span class="fc" id="L146">        return Holder.get {</span>
+            locator -&gt;
+<span class="nc" id="L148">            locator</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">                    .locate(clazz, typeHolder ?: &quot;unknown&quot;)</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">                    .make(propertiesHolder) ?:</span>
+<span class="nc" id="L151">                    throw IllegalStateException(&quot;Service '$typeHolder' is not configured\n&quot;)</span>
+        }
+    }
+
+    private fun propertiesKey(value: String): Holder&lt;Any&gt; {
+<span class="pc bpc" id="L156" title="1 of 2 branches missed.">        val key: String = if (value.startsWith(&quot;:&quot;))</span>
+<span class="fc" id="L157">            value.substringAfter(&quot;:&quot;)</span>
+        else
+<span class="nc" id="L159">            throw IllegalArgumentException(&quot;A Key Name must be started with ':'&quot;)</span>
+<span class="pc bnc" id="L160" title="All 2 branches missed.">        return Holder.get&lt;Any&gt; { locator, clazz -&gt; locator.property(key, clazz)!! }</span>
+    }
+
+    fun build(locator: Locator): EmbeddedService? {
+<span class="nc" id="L164">        val service = holder.get&lt;EmbeddedService&gt;(locator)</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">        if (service is BaseService) {</span>
+<span class="nc" id="L166">            service.beforeStart.addAll(beforeStart.list)</span>
+<span class="nc" id="L167">            service.afterStart.addAll(afterStart.list)</span>
+<span class="nc" id="L168">            service.beforeStop.addAll(beforeStop.list)</span>
+<span class="nc" id="L169">            service.afterStop.addAll(afterStop.list)</span>
+        }
+<span class="nc" id="L171">        return service</span>
+    }
+
+}
+
+<span class="fc" id="L176">sealed class PropertiesHolder {</span>
+
+    abstract fun build(locator: Locator): Properties
+
+<span class="fc" id="L180">    class BasePropertiesHolder : PropertiesHolder() {</span>
+<span class="pc bnc" id="L181" title="All 2 branches missed.">        lateinit var format: String</span>
+<span class="nc" id="L182">        var uri: URI? = null</span>
+<span class="pc" id="L183">        var rootKey: String? = null</span>
+<span class="pc" id="L184">        var url: String = &quot;&quot;</span>
+            set(value) {
+<span class="fc" id="L186">                uri = URI.create(value)</span>
+<span class="fc" id="L187">            }</span>
+<span class="pc bpc" id="L188" title="1 of 2 branches missed.">        override fun build(locator: Locator): Properties =  PropertiesSource.open(format, uri, rootKey)</span>
+    }
+
+<span class="fc" id="L191">    object NullPropertiesHolder : PropertiesHolder() {</span>
+<span class="fc" id="L192">        override fun build(locator: Locator): Properties =  PropertiesSource.nothing()</span>
+    }
+
+<span class="fc" id="L195">    object DefaultPropertiesHolder : PropertiesHolder()  {</span>
+<span class="fc" id="L196">        override fun build(locator: Locator): Properties =  PropertiesSource.default()</span>
+    }
+}
+
+
+
+<span class="fc" id="L202">class HookHolder {</span>
+
+<span class="fc" id="L204">    val list: MutableList&lt;KFunction&lt;Any&gt;&gt; = ArrayList()</span>
+
+    operator fun plusAssign(value: KFunction&lt;Any&gt;) {
+<span class="nc" id="L207">        list.add(value)</span>
+<span class="nc" id="L208">    }</span>
+
+    operator fun plusAssign(value: (service: BaseService) -&gt; Unit) {
+<span class="nc" id="L211">        val observer = object {</span>
+<span class="nc" id="L212">            fun invoke(service: BaseService) = value.invoke(service)</span>
+        }
+<span class="nc" id="L214">        list.add(observer::invoke)</span>
+<span class="nc" id="L215">    }</span>
+}
+
+<span class="fc" id="L218">class ErrorHookHolder {</span>
+
+<span class="fc" id="L220">    val list: MutableList&lt;KFunction&lt;Any&gt;&gt; = ArrayList()</span>
+
+    operator fun plusAssign(value: KFunction&lt;Any&gt;) {
+<span class="nc" id="L223">        list.add(value)</span>
+<span class="nc" id="L224">    }</span>
+    operator fun plusAssign(value: (Exception) -&gt; Unit) {
+<span class="nc" id="L226">        val observer = object {</span>
+<span class="nc" id="L227">            fun invoke(e: Exception) = value.invoke(e)</span>
+        }
+<span class="nc" id="L229">        list.add(observer::invoke)</span>
+<span class="nc" id="L230">    }</span>
+}
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServiceEventListener.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">maxur-mserv-core</a> &gt; <a href="index.source.html" class="el_package">org.maxur.mserv.core.rest</a> &gt; <span class="el_source">ServiceEventListener.kt</span></div><h1>ServiceEventListener.kt</h1><pre class="source lang-java linenums">package org.maxur.mserv.core.rest
+
+import org.glassfish.jersey.server.monitoring.ApplicationEvent
+import org.glassfish.jersey.server.monitoring.ApplicationEventListener
+import org.glassfish.jersey.server.monitoring.RequestEvent
+import org.glassfish.jersey.server.monitoring.RequestEventListener
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
+
+/**
+ * The type Service event listener.
+
+ * @author Maxim Yunusov
+ * *
+ * @version 1.0
+ * *
+ * @since &lt;pre&gt;9/24/2015&lt;/pre&gt;
+ */
+<span class="nc" id="L20">class ServiceEventListener(private val prefix: String) : ApplicationEventListener {</span>
+
+<span class="nc" id="L22">    companion object {</span>
+<span class="nc" id="L23">        val log: Logger = LoggerFactory.getLogger(ServiceRequestEventListener::class.java)</span>
+    }
+    
+    @Volatile private var requestCnt = 0
+
+    override fun onEvent(event: ApplicationEvent) {
+<span class="nc bnc" id="L29" title="All 5 branches missed.">        when (event.type) {</span>
+<span class="nc" id="L30">            ApplicationEvent.Type.INITIALIZATION_FINISHED -&gt; log.debug(&quot;Application &quot;</span>
+<span class="nc" id="L31">                    + event.resourceConfig.applicationName</span>
+                    + &quot; was initialized.&quot;)
+<span class="nc" id="L33">            ApplicationEvent.Type.DESTROY_FINISHED -&gt; log.debug(&quot;Application &quot;</span>
+<span class="nc" id="L34">                    + event.resourceConfig.applicationName + &quot; destroyed.&quot;)</span>
+            else -&gt; {
+                //ignore
+            }
+        }
+<span class="nc" id="L39">    }</span>
+
+    override fun onRequest(requestEvent: RequestEvent): RequestEventListener {
+<span class="nc" id="L42">        requestCnt++</span>
+<span class="nc" id="L43">        log.debug(&quot;Request $requestCnt started.&quot;)</span>
+<span class="nc" id="L44">        val uriInfo = requestEvent.uriInfo</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">        if (uriInfo.path.startsWith(prefix)) {</span>
+<span class="nc" id="L46">            log.info(&quot;Request: &quot; + uriInfo.requestUri)</span>
+        }
+        // return the listener instance that will handle this request.
+<span class="nc" id="L49">        return ServiceRequestEventListener(requestCnt)</span>
+
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PropertiesSource.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">maxur-mserv-core</a> &gt; <a href="index.source.html" class="el_package">org.maxur.mserv.core.service.properties</a> &gt; <span class="el_source">PropertiesSource.kt</span></div><h1>PropertiesSource.kt</h1><pre class="source lang-java linenums">@file:Suppress(&quot;unused&quot;)
+
+package org.maxur.mserv.core.service.properties
+
+import org.maxur.mserv.core.Locator
+import org.maxur.mserv.core.utils.fold
+import java.net.URI
+
+/**
+ * Represent the Properties source configuration.
+ *
+ * @author myunusov
+ * @version 1.0
+ * @since &lt;pre&gt;24.06.2017&lt;/pre&gt;
+ */
+<span class="fc" id="L16">abstract class PropertiesSource(</span>
+<span class="fc" id="L17">        open val format: String? = null,</span>
+<span class="fc" id="L18">        open val uri: URI? = null,</span>
+<span class="fc" id="L19">        open val rootKey: String? = null</span>
+) {
+
+<span class="fc" id="L22">    companion object {</span>
+        /**
+         * Open properties resource.
+         *
+         * @param format the properties format
+         * @param rootKey the root key of properties
+         * @param uri the uri of properties source
+         */
+        fun open(format: String, uri: URI? = null, rootKey: String? = null): Properties =
+<span class="fc" id="L31">                Locator</span>
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">                        .service(PropertiesFactory::class, format)!!</span>
+<span class="fc" id="L33">                        .make(object : PropertiesSource(format, uri, rootKey) {})</span>
+<span class="pc" id="L34">                        .fold({ throw it }, { it })</span>
+
+        fun default(): Properties {
+<span class="fc" id="L37">            Locator.services(PropertiesFactory::class).map {</span>
+<span class="fc" id="L38">                it.make(object : PropertiesSource() {})</span>
+<span class="pc" id="L39">                        .fold({ }, { return it })</span>
+<span class="nc" id="L40">            }</span>
+<span class="nc" id="L41">            return NullProperties</span>
+        }
+
+<span class="fc" id="L44">        fun nothing(): Properties = NullProperties</span>
+    }
+}
+
+
+<span class="pc" id="L49">object NullProperties : PropertiesSource(), Properties {</span>
+<span class="nc" id="L50">    override fun asString(key: String): String? = error(key)</span>
+<span class="nc" id="L51">    override fun asLong(key: String): Long? = error(key)</span>
+<span class="nc" id="L52">    override fun asInteger(key: String): Int? = error(key)</span>
+<span class="nc" id="L53">    override fun asURI(key: String): URI? = error(key)</span>
+<span class="nc" id="L54">    override fun &lt;P&gt; read(key: String, clazz: Class&lt;P&gt;): P? = error(key)</span>
+    private fun &lt;T&gt; error(key: String): T =
+<span class="fc" id="L56">            throw IllegalStateException(&quot;Service Configuration is not found. Key '$key' unresolved&quot;)</span>
+}
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

@@ -1,0 +1,571 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UTF8Reader.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">maxur-mserv-core</a> &gt; <a href="index.source.html" class="el_package">com.jasonclawson.jackson.dataformat.hocon</a> &gt; <span class="el_source">UTF8Reader.java</span></div><h1>UTF8Reader.java</h1><pre class="source lang-java linenums">package com.jasonclawson.jackson.dataformat.hocon;
+
+
+import java.io.CharConversionException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.lang.ref.SoftReference;
+
+/**
+ * This code was poached from jackson-dataformat-yaml. https://github.com/FasterXML/jackson-dataformat-yaml
+ * com.fasterxml.jackson.dataformat.yaml.UTF8Reader
+ * &lt;p&gt;
+ * Optimized Reader that reads UTF-8 encoded content from an input stream.
+ * In addition to doing (hopefully) optimal conversion, it can also take
+ * array of &quot;pre-read&quot; (leftover) bytes; this is necessary when preliminary
+ * stream/reader is trying to figure out underlying character encoding.
+ */
+public final class UTF8Reader
+    extends Reader
+{
+    private final static int DEFAULT_BUFFER_SIZE = 8000;
+
+    /**
+     * This &lt;code&gt;ThreadLocal&lt;/code&gt; contains a {@link java.lang.ref.SoftReference}
+     * to a byte array used for holding content to decode
+     */
+<span class="nc" id="L28">    final protected static ThreadLocal&lt;SoftReference&lt;byte[][]&gt;&gt; _bufferRecycler</span>
+        = new ThreadLocal&lt;SoftReference&lt;byte[][]&gt;&gt;();
+
+    /**
+     * The Buffer holder.
+     */
+    protected final byte[][] _bufferHolder;
+    
+    private InputStream _inputSource;
+
+    private final boolean _autoClose;
+
+    /**
+     * The Input buffer.
+     */
+    protected byte[] _inputBuffer;
+
+    /**
+     * Pointer to the next available byte (if any), iff less than
+     * &lt;code&gt;mByteBufferEnd&lt;/code&gt;
+     */
+    protected int _inputPtr;
+
+    /**
+     * Pointed to the end marker, that is, position one after the last
+     * valid available byte.
+     */
+    protected int _inputEnd;
+
+    /**
+     * Decoded first character of a surrogate pair, if one needs to be buffered
+     */
+<span class="nc" id="L60">    protected int _surrogate = -1;</span>
+
+    /**
+     * Total read character count; used for error reporting purposes
+     */
+<span class="nc" id="L65">    int _charCount = 0;</span>
+
+    /**
+     * Total read byte count; used for error reporting purposes
+     */
+<span class="nc" id="L70">    int _byteCount = 0;</span>
+
+    /*
+    /**********************************************************************
+    /* Life-cycle
+    /**********************************************************************
+     */
+
+    /**
+     * Instantiates a new Utf 8 reader.
+     *
+     * @param in        the in
+     * @param autoClose the auto close
+     */
+    public UTF8Reader(InputStream in, boolean autoClose)
+    {
+<span class="nc" id="L86">        super(in);</span>
+<span class="nc" id="L87">        _inputSource = in;</span>
+<span class="nc" id="L88">        _bufferHolder = _findBufferHolder();</span>
+<span class="nc" id="L89">        byte[] buffer = _bufferHolder[0];</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        if (buffer == null) {</span>
+<span class="nc" id="L91">            _bufferHolder[0] = buffer = new byte[DEFAULT_BUFFER_SIZE];</span>
+        }
+<span class="nc" id="L93">        _inputBuffer = buffer;</span>
+<span class="nc" id="L94">        _inputPtr = 0;</span>
+<span class="nc" id="L95">        _inputEnd = 0;</span>
+<span class="nc" id="L96">        _autoClose = autoClose;</span>
+<span class="nc" id="L97">    }</span>
+
+    /**
+     * Instantiates a new Utf 8 reader.
+     *
+     * @param buf       the buf
+     * @param ptr       the ptr
+     * @param len       the len
+     * @param autoClose the auto close
+     */
+    public UTF8Reader(byte[] buf, int ptr, int len, boolean autoClose)
+    {
+<span class="nc" id="L109">        super(bogusStream());</span>
+<span class="nc" id="L110">        _inputSource = null;</span>
+<span class="nc" id="L111">        _inputBuffer = buf;</span>
+<span class="nc" id="L112">        _inputPtr = ptr;</span>
+<span class="nc" id="L113">        _inputEnd = ptr+len;</span>
+<span class="nc" id="L114">        _autoClose = autoClose; </span>
+<span class="nc" id="L115">        _bufferHolder = null;</span>
+<span class="nc" id="L116">    }</span>
+
+    private static InputStream bogusStream() {
+<span class="nc" id="L119">        return new InputStream() {</span>
+            @Override
+            public int read() throws IOException {
+<span class="nc" id="L122">                return -1;</span>
+            }
+        };
+    }
+    
+    private static byte[][] _findBufferHolder()
+    {
+<span class="nc" id="L129">        byte[][] bufs = null;</span>
+<span class="nc" id="L130">        SoftReference&lt;byte[][]&gt; ref = _bufferRecycler.get();</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">        if (ref != null) {</span>
+<span class="nc" id="L132">            bufs = ref.get();</span>
+        }
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        if (bufs == null) {</span>
+<span class="nc" id="L135">            bufs = new byte[1][];</span>
+<span class="nc" id="L136">            _bufferRecycler.set(new SoftReference&lt;byte[][]&gt;(bufs));</span>
+        }
+<span class="nc" id="L138">        return bufs;</span>
+    }
+
+
+    /*
+    /**********************************************************************
+    /* Reader API
+    /**********************************************************************
+     */
+
+    @Override
+    public void close()
+        throws IOException
+    {
+<span class="nc" id="L152">        InputStream in = _inputSource;</span>
+
+<span class="nc bnc" id="L154" title="All 2 branches missed.">        if (in != null) {</span>
+<span class="nc" id="L155">            _inputSource = null;</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">            if (_autoClose) {</span>
+<span class="nc" id="L157">                in.close();</span>
+            }
+        }
+<span class="nc" id="L160">        freeBuffers();</span>
+<span class="nc" id="L161">    }</span>
+
+<span class="nc" id="L163">    private char[] _tmpBuffer = null;</span>
+
+    /**
+     * Although this method is implemented by the base class, AND it should
+     * never be called by Woodstox code, let's still implement it bit more
+     * efficiently just in case
+     */
+    @Override
+    public int read()
+        throws IOException
+    {
+<span class="nc bnc" id="L174" title="All 2 branches missed.">        if (_tmpBuffer == null) {</span>
+<span class="nc" id="L175">            _tmpBuffer = new char[1];</span>
+        }
+<span class="nc bnc" id="L177" title="All 2 branches missed.">        if (read(_tmpBuffer, 0, 1) &lt; 1) {</span>
+<span class="nc" id="L178">            return -1;</span>
+        }
+<span class="nc" id="L180">        return _tmpBuffer[0];</span>
+    }
+
+    @Override
+    public int read(char[] cbuf) throws IOException {
+<span class="nc" id="L185">        return read(cbuf, 0, cbuf.length);</span>
+    }
+    
+    @Override
+    public int read(char[] cbuf, int start, int len)
+        throws IOException
+    {
+        // Already EOF?
+<span class="nc bnc" id="L193" title="All 2 branches missed.">        if (_inputBuffer == null) {</span>
+<span class="nc" id="L194">            return -1;</span>
+        }
+<span class="nc" id="L196">        len += start;</span>
+<span class="nc" id="L197">        int outPtr = start;</span>
+
+        // Ok, first; do we have a surrogate from last round?
+<span class="nc bnc" id="L200" title="All 2 branches missed.">        if (_surrogate &gt;= 0) {</span>
+<span class="nc" id="L201">            cbuf[outPtr++] = (char) _surrogate;</span>
+<span class="nc" id="L202">            _surrogate = -1;</span>
+            // No need to load more, already got one char
+        } else {
+            /* To prevent unnecessary blocking (esp. with network streams),
+             * we'll only require decoding of a single char
+             */
+<span class="nc" id="L208">            int left = (_inputEnd - _inputPtr);</span>
+
+            /* So; only need to load more if we can't provide at least
+             * one more character. We need not do thorough check here,
+             * but let's check the common cases here: either completely
+             * empty buffer (left == 0), or one with less than max. byte
+             * count for a single char, and starting of a multi-byte
+             * encoding (this leaves possibility of a 2/3-byte char
+             * that is still fully accessible... but that can be checked
+             * by the load method)
+             */
+
+<span class="nc bnc" id="L220" title="All 2 branches missed.">            if (left &lt; 4) {</span>
+                // Need to load more?
+<span class="nc bnc" id="L222" title="All 4 branches missed.">                if (left &lt; 1 || _inputBuffer[_inputPtr] &lt; 0) {</span>
+<span class="nc bnc" id="L223" title="All 2 branches missed.">                    if (!loadMore(left)) { // (legal) EOF?</span>
+<span class="nc" id="L224">                        return -1;</span>
+                    }
+                }
+            }
+        }
+<span class="nc" id="L229">        final byte[] buf = _inputBuffer;</span>
+<span class="nc" id="L230">        int inPtr = _inputPtr;</span>
+<span class="nc" id="L231">        final int inBufLen = _inputEnd;</span>
+
+        main_loop:
+<span class="nc bnc" id="L234" title="All 2 branches missed.">        while (outPtr &lt; len) {</span>
+            // At this point we have at least one byte available
+<span class="nc" id="L236">            int c = (int) buf[inPtr++];</span>
+
+            // Let's first do the quickie loop for common case; 7-bit ASCII
+<span class="nc bnc" id="L239" title="All 2 branches missed.">            if (c &gt;= 0) { // ASCII? can probably loop, then</span>
+<span class="nc" id="L240">                cbuf[outPtr++] = (char) c; // ok since MSB is never on</span>
+
+                // Ok, how many such chars could we safely process without overruns?
+                // (will combine 2 in-loop comparisons into just one)
+<span class="nc" id="L244">                int outMax = (len - outPtr); // max output</span>
+<span class="nc" id="L245">                int inMax = (inBufLen - inPtr); // max input</span>
+<span class="nc bnc" id="L246" title="All 2 branches missed.">                int inEnd = inPtr + ((inMax &lt; outMax) ? inMax : outMax);</span>
+
+                ascii_loop:
+                while (true) {
+<span class="nc bnc" id="L250" title="All 2 branches missed.">                    if (inPtr &gt;= inEnd) {</span>
+<span class="nc" id="L251">                        break main_loop;</span>
+                    }
+<span class="nc" id="L253">                    c = buf[inPtr++];</span>
+<span class="nc bnc" id="L254" title="All 2 branches missed.">                    if (c &lt; 0) { // or multi-byte</span>
+<span class="nc" id="L255">                        break ascii_loop;</span>
+                    }
+<span class="nc" id="L257">                    cbuf[outPtr++] = (char) c;</span>
+                }
+            }
+
+            int needed;
+
+            // Ok; if we end here, we got multi-byte combination
+<span class="nc bnc" id="L264" title="All 2 branches missed.">            if ((c &amp; 0xE0) == 0xC0) { // 2 bytes (0x0080 - 0x07FF)</span>
+<span class="nc" id="L265">                c = (c &amp; 0x1F);</span>
+<span class="nc" id="L266">                needed = 1;</span>
+<span class="nc bnc" id="L267" title="All 2 branches missed.">            } else if ((c &amp; 0xF0) == 0xE0) { // 3 bytes (0x0800 - 0xFFFF)</span>
+<span class="nc" id="L268">                c = (c &amp; 0x0F);</span>
+<span class="nc" id="L269">                needed = 2;</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">            } else if ((c &amp; 0xF8) == 0xF0) {</span>
+                // 4 bytes; double-char BS, with surrogates and all...
+<span class="nc" id="L272">                c = (c &amp; 0x0F);</span>
+<span class="nc" id="L273">                needed = 3;</span>
+            } else {
+<span class="nc" id="L275">                reportInvalidInitial(c &amp; 0xFF, outPtr-start);</span>
+                // never gets here...
+<span class="nc" id="L277">                needed = 1;</span>
+            }
+            /* Do we have enough bytes? If not, let's just push back the
+             * byte and leave, since we have already gotten at least one
+             * char decoded. This way we will only block (with read from
+             * input stream) when absolutely necessary.
+             */
+<span class="nc bnc" id="L284" title="All 2 branches missed.">            if ((inBufLen - inPtr) &lt; needed) {</span>
+<span class="nc" id="L285">                --inPtr;</span>
+<span class="nc" id="L286">                break main_loop;</span>
+            }
+
+<span class="nc" id="L289">            int d = (int) buf[inPtr++];</span>
+<span class="nc bnc" id="L290" title="All 2 branches missed.">            if ((d &amp; 0xC0) != 0x080) {</span>
+<span class="nc" id="L291">                reportInvalidOther(d &amp; 0xFF, outPtr-start);</span>
+            }
+<span class="nc" id="L293">            c = (c &lt;&lt; 6) | (d &amp; 0x3F);</span>
+
+<span class="nc bnc" id="L295" title="All 2 branches missed.">            if (needed &gt; 1) { // needed == 1 means 2 bytes total</span>
+<span class="nc" id="L296">                d = buf[inPtr++]; // 3rd byte</span>
+<span class="nc bnc" id="L297" title="All 2 branches missed.">                if ((d &amp; 0xC0) != 0x080) {</span>
+<span class="nc" id="L298">                    reportInvalidOther(d &amp; 0xFF, outPtr-start);</span>
+                }
+<span class="nc" id="L300">                c = (c &lt;&lt; 6) | (d &amp; 0x3F);</span>
+<span class="nc bnc" id="L301" title="All 2 branches missed.">                if (needed &gt; 2) { // 4 bytes? (need surrogates)</span>
+<span class="nc" id="L302">                    d = buf[inPtr++];</span>
+<span class="nc bnc" id="L303" title="All 2 branches missed.">                    if ((d &amp; 0xC0) != 0x080) {</span>
+<span class="nc" id="L304">                        reportInvalidOther(d &amp; 0xFF, outPtr-start);</span>
+                    }
+<span class="nc" id="L306">                    c = (c &lt;&lt; 6) | (d &amp; 0x3F);</span>
+                    /* Ugh. Need to mess with surrogates. Ok; let's inline them
+                     * there, then, if there's room: if only room for one,
+                     * need to save the surrogate for the rainy day...
+                     */
+<span class="nc" id="L311">                    c -= 0x10000; // to normalize it starting with 0x0</span>
+<span class="nc" id="L312">                    cbuf[outPtr++] = (char) (0xD800 + (c &gt;&gt; 10));</span>
+                    // hmmh. can this ever be 0? (not legal, at least?)
+<span class="nc" id="L314">                    c = (0xDC00 | (c &amp; 0x03FF));</span>
+
+                    // Room for second part?
+<span class="nc bnc" id="L317" title="All 2 branches missed.">                    if (outPtr &gt;= len) { // nope</span>
+<span class="nc" id="L318">                        _surrogate = c;</span>
+<span class="nc" id="L319">                        break main_loop;</span>
+                    }
+                    // sure, let's fall back to normal processing:
+                }
+                // Otherwise, should we check that 3-byte chars are
+                // legal ones (should not expand to surrogates?
+                // For now, let's not...
+                /*
+                else {
+                    if (c &gt;= 0xD800 &amp;&amp; c &lt; 0xE000) {
+                        reportInvalid(c, outPtr-start, &quot;(a surrogate character) &quot;);
+                    }
+                }
+                */
+            }
+<span class="nc" id="L334">            cbuf[outPtr++] = (char) c;</span>
+<span class="nc bnc" id="L335" title="All 2 branches missed.">            if (inPtr &gt;= inBufLen) {</span>
+<span class="nc" id="L336">                break main_loop;</span>
+            }
+<span class="nc" id="L338">        }</span>
+
+<span class="nc" id="L340">        _inputPtr = inPtr;</span>
+<span class="nc" id="L341">        len = outPtr - start;</span>
+<span class="nc" id="L342">        _charCount += len;</span>
+<span class="nc" id="L343">        return len;</span>
+    }
+    
+    /*
+    /**********************************************************************
+    /* Internal/package methods:
+    /**********************************************************************
+     */
+
+    /**
+     * Gets stream.
+     *
+     * @return the stream
+     */
+<span class="nc" id="L357">    protected final InputStream getStream() { return _inputSource; }</span>
+
+    /**
+     * Method for reading as many bytes from the underlying stream as possible
+     * (that fit in the buffer), to the beginning of the buffer.
+     *
+     * @return the int
+     * @throws IOException the io exception
+     */
+    protected final int readBytes()
+        throws IOException
+    {
+<span class="nc" id="L369">        _inputPtr = 0;</span>
+<span class="nc" id="L370">        _inputEnd = 0;</span>
+<span class="nc bnc" id="L371" title="All 2 branches missed.">        if (_inputSource != null) {</span>
+<span class="nc" id="L372">            int count = _inputSource.read(_inputBuffer, 0, _inputBuffer.length);</span>
+<span class="nc bnc" id="L373" title="All 2 branches missed.">            if (count &gt; 0) {</span>
+<span class="nc" id="L374">                _inputEnd = count;</span>
+            }
+<span class="nc" id="L376">            return count;</span>
+        }
+<span class="nc" id="L378">        return -1;</span>
+    }
+
+    /**
+     * Method for reading as many bytes from the underlying stream as possible
+     * (that fit in the buffer considering offset), to the specified offset.
+     *
+     * @param offset the offset
+     * @return Number of bytes read, if any; -1 to indicate none available  (that is, end of input)
+     * @throws IOException the io exception
+     */
+    protected final int readBytesAt(int offset)
+        throws IOException
+    {
+        // shouldn't modify mBytePtr, assumed to be 'offset'
+<span class="nc bnc" id="L393" title="All 2 branches missed.">        if (_inputSource != null) {</span>
+<span class="nc" id="L394">            int count = _inputSource.read(_inputBuffer, offset, _inputBuffer.length - offset);</span>
+<span class="nc bnc" id="L395" title="All 2 branches missed.">            if (count &gt; 0) {</span>
+<span class="nc" id="L396">                _inputEnd += count;</span>
+            }
+<span class="nc" id="L398">            return count;</span>
+        }
+<span class="nc" id="L400">        return -1;</span>
+    }
+
+    /**
+     * This method should be called along with (or instead of) normal
+     * close. After calling this method, no further reads should be tried.
+     * Method will try to recycle read buffers (if any).
+     */
+    public final void freeBuffers()
+    {
+<span class="nc bnc" id="L410" title="All 2 branches missed.">        if (_bufferHolder != null) {</span>
+<span class="nc" id="L411">            byte[] buf = _inputBuffer;</span>
+<span class="nc bnc" id="L412" title="All 2 branches missed.">            if (buf != null) {</span>
+<span class="nc" id="L413">                _inputBuffer = null;</span>
+<span class="nc" id="L414">                _bufferHolder[0] = buf;</span>
+            }
+        }
+<span class="nc" id="L417">    }</span>
+
+    /*
+    /**********************************************************************
+    /* Internal methods
+    /**********************************************************************
+     */
+
+    private void reportInvalidInitial(int mask, int offset)
+        throws IOException
+    {
+        // input (byte) ptr has been advanced by one, by now:
+<span class="nc" id="L429">        int bytePos = _byteCount + _inputPtr - 1;</span>
+<span class="nc" id="L430">        int charPos = _charCount + offset + 1;</span>
+
+<span class="nc" id="L432">        throw new CharConversionException(&quot;Invalid UTF-8 start byte 0x&quot;+Integer.toHexString(mask)</span>
+                +&quot; (at char #&quot;+charPos+&quot;, byte #&quot;+bytePos+&quot;)&quot;);
+    }
+
+    private void reportInvalidOther(int mask, int offset)
+        throws IOException
+    {
+<span class="nc" id="L439">        int bytePos = _byteCount + _inputPtr - 1;</span>
+<span class="nc" id="L440">        int charPos = _charCount + offset;</span>
+
+<span class="nc" id="L442">        throw new CharConversionException(&quot;Invalid UTF-8 middle byte 0x&quot;+Integer.toHexString(mask)</span>
+                +&quot; (at char #&quot;+charPos+&quot;, byte #&quot;+bytePos+&quot;)&quot;);
+    }
+
+    private void reportUnexpectedEOF(int gotBytes, int needed)
+        throws IOException
+    {
+<span class="nc" id="L449">        int bytePos = _byteCount + gotBytes;</span>
+<span class="nc" id="L450">        int charPos = _charCount;</span>
+
+<span class="nc" id="L452">        throw new CharConversionException(&quot;Unexpected EOF in the middle of a multi-byte char: got &quot;</span>
+                +gotBytes+&quot;, needed &quot;+needed +&quot;, at char #&quot;+charPos+&quot;, byte #&quot;+bytePos+&quot;)&quot;);
+    }
+
+    /*
+    private void reportInvalid(int value, int offset, String msg) throws IOException
+    { 
+        int bytePos = _byteCount + _inputPtr - 1;
+        int charPos = _charCount + offset;
+
+        throw new CharConversionException(&quot;Invalid UTF-8 character 0x&quot;+Integer.toHexString(value)+msg
+                +&quot; at char #&quot;+charPos+&quot;, byte #&quot;+bytePos+&quot;)&quot;);
+    }
+    */
+
+    /**
+     * @param available Number of &quot;unused&quot; bytes in the input buffer
+     *
+     * @return True, if enough bytes were read to allow decoding of at least
+     *   one full character; false if EOF was encountered instead.
+     */
+    private boolean loadMore(int available)
+        throws IOException
+    {
+<span class="nc" id="L476">        _byteCount += (_inputEnd - available);</span>
+
+        // Bytes that need to be moved to the beginning of buffer?
+<span class="nc bnc" id="L479" title="All 2 branches missed.">        if (available &gt; 0) {</span>
+<span class="nc bnc" id="L480" title="All 2 branches missed.">            if (_inputPtr &gt; 0) {</span>
+                // sanity check: can only move if we &quot;own&quot; buffers
+<span class="nc bnc" id="L482" title="All 2 branches missed.">                if (_bufferHolder == null) {</span>
+<span class="nc" id="L483">                    throw new IllegalStateException(&quot;Internal error: need to move partially decoded character; buffer not modifiable&quot;);</span>
+                }
+
+<span class="nc bnc" id="L486" title="All 2 branches missed.">                for (int i = 0; i &lt; available; ++i) {</span>
+<span class="nc" id="L487">                    _inputBuffer[i] = _inputBuffer[_inputPtr+i];</span>
+                }
+<span class="nc" id="L489">                _inputPtr = 0;</span>
+<span class="nc" id="L490">		_inputEnd = available;</span>
+            }
+        } else {
+            /* Ok; here we can actually reasonably expect an EOF,
+             * so let's do a separate read right away:
+             */
+<span class="nc" id="L496">            int count = readBytes();</span>
+<span class="nc bnc" id="L497" title="All 2 branches missed.">            if (count &lt; 1) {</span>
+<span class="nc" id="L498">                freeBuffers(); // to help GC?</span>
+<span class="nc bnc" id="L499" title="All 2 branches missed.">                if (count &lt; 0) { // -1</span>
+<span class="nc" id="L500">                    return false;</span>
+                }
+                // 0 count is no good; let's err out
+<span class="nc" id="L503">                reportStrangeStream();</span>
+            }
+        }
+
+        /* We now have at least one byte... and that allows us to
+         * calculate exactly how many bytes we need!
+         */
+        @SuppressWarnings(&quot;cast&quot;)
+<span class="nc" id="L511">        int c = (int) _inputBuffer[_inputPtr];</span>
+<span class="nc bnc" id="L512" title="All 2 branches missed.">        if (c &gt;= 0) { // single byte (ascii) char... cool, can return</span>
+<span class="nc" id="L513">            return true;</span>
+        }
+
+        // Ok, a multi-byte char, let's check how many bytes we'll need:
+        int needed;
+<span class="nc bnc" id="L518" title="All 2 branches missed.">        if ((c &amp; 0xE0) == 0xC0) { // 2 bytes (0x0080 - 0x07FF)</span>
+<span class="nc" id="L519">            needed = 2;</span>
+<span class="nc bnc" id="L520" title="All 2 branches missed.">        } else if ((c &amp; 0xF0) == 0xE0) { // 3 bytes (0x0800 - 0xFFFF)</span>
+<span class="nc" id="L521">            needed = 3;</span>
+<span class="nc bnc" id="L522" title="All 2 branches missed.">        } else if ((c &amp; 0xF8) == 0xF0) {</span>
+            // 4 bytes; double-char BS, with surrogates and all...
+<span class="nc" id="L524">            needed = 4;</span>
+        } else {
+<span class="nc" id="L526">            reportInvalidInitial(c &amp; 0xFF, 0);</span>
+            // never gets here... but compiler whines without this:
+<span class="nc" id="L528">            needed = 1;</span>
+        }
+
+        /* And then we'll just need to load up to that many bytes;
+         * if an EOF is hit, that'll be an error. But we need not do
+         * actual decoding here, just load enough bytes.
+         */
+<span class="nc bnc" id="L535" title="All 2 branches missed.">        while ((_inputPtr + needed) &gt; _inputEnd) {</span>
+<span class="nc" id="L536">            int count = readBytesAt(_inputEnd);</span>
+<span class="nc bnc" id="L537" title="All 2 branches missed.">            if (count &lt; 1) {</span>
+<span class="nc bnc" id="L538" title="All 2 branches missed.">                if (count &lt; 0) { // -1, EOF... no good!</span>
+<span class="nc" id="L539">                    freeBuffers();</span>
+<span class="nc" id="L540">                    reportUnexpectedEOF(_inputEnd, needed);</span>
+                }
+                // 0 count is no good; let's err out
+<span class="nc" id="L543">                reportStrangeStream();</span>
+            }
+<span class="nc" id="L545">        }</span>
+<span class="nc" id="L546">        return true;</span>
+    }
+
+    /**
+     * Report bounds.
+     *
+     * @param cbuf  the cbuf
+     * @param start the start
+     * @param len   the len
+     * @throws IOException the io exception
+     */
+    protected void reportBounds(char[] cbuf, int start, int len) throws IOException {
+<span class="nc" id="L558">        throw new ArrayIndexOutOfBoundsException(&quot;read(buf,&quot;+start+&quot;,&quot;+len+&quot;), cbuf[&quot;+cbuf.length+&quot;]&quot;);</span>
+    }
+
+    /**
+     * Report strange stream.
+     *
+     * @throws IOException the io exception
+     */
+    protected void reportStrangeStream() throws IOException {
+<span class="nc" id="L567">        throw new IOException(&quot;Strange I/O stream, returned 0 bytes on read&quot;);</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

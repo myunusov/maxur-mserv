@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RestResourceConfig.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">maxur-mserv-core</a> &gt; <a href="index.source.html" class="el_package">org.maxur.mserv.core.rest</a> &gt; <span class="el_source">RestResourceConfig.kt</span></div><h1>RestResourceConfig.kt</h1><pre class="source lang-java linenums">package org.maxur.mserv.core.rest
+
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider
+import org.glassfish.jersey.ServiceLocatorProvider
+import org.glassfish.jersey.jackson.JacksonFeature
+import org.glassfish.jersey.media.multipart.MultiPartFeature
+import org.glassfish.jersey.server.ResourceConfig
+import org.glassfish.jersey.server.ServerProperties
+import org.jvnet.hk2.annotations.Contract
+import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
+import javax.ws.rs.core.Feature
+import javax.ws.rs.core.FeatureContext
+
+
+/**
+ * @author myunusov
+ * @version 1.0
+ * @since &lt;pre&gt;12.06.2017&lt;/pre&gt;
+ */
+@Contract
+<span class="nc" id="L21">abstract class RestResourceConfig : ResourceConfig() {</span>
+
+<span class="nc" id="L23">    val packages: MutableList&lt;String&gt; = ArrayList()</span>
+
+    init {
+<span class="nc" id="L26">        resources(RestResourceConfig::class.java.`package`.name)</span>
+<span class="nc" id="L27">        property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true)</span>
+<span class="nc" id="L28">        property(ServerProperties.BV_DISABLE_VALIDATE_ON_EXECUTABLE_OVERRIDE_CHECK, true)</span>
+<span class="nc" id="L29">        register(jacksonProvider())</span>
+<span class="nc" id="L30">        register(JacksonFeature::class.java)</span>
+<span class="nc" id="L31">        register(RuntimeExceptionHandler::class.java)</span>
+<span class="nc" id="L32">        register(ServiceLocatorFeature())</span>
+<span class="nc" id="L33">        register(ServiceEventListener(&quot;/&quot;))</span>
+<span class="nc" id="L34">        register(MultiPartFeature::class.java)</span>
+    }
+
+<span class="nc" id="L37">    final override fun property(name: String, value: Any): ResourceConfig = super.property(name, value)</span>
+<span class="nc" id="L38">    final override fun register(component: Any): ResourceConfig = super.register(component)</span>
+<span class="nc" id="L39">    final override fun register(componentClass: Class&lt;*&gt;): ResourceConfig = super.register(componentClass)</span>
+
+    /**
+     * Adds array of package names which will be used to scan for components
+     * @see ResourceConfig.packages(String...)
+     * Add package names to packages array for use it for late (ex. swagger)
+     * &lt;p/&gt;
+     * Package scanning ignores inheritance and therefore {@link Path} annotation
+     * on parent classes and interfaces will be ignored.
+     * &lt;p/&gt;
+     * Packages will be scanned recursively, including all nested packages.
+     *
+     * @param packages array of package names.
+     * @return updated resource configuration instance.
+
+     */
+    fun resources(vararg packages: String): ResourceConfig {
+<span class="nc" id="L56">        this.packages.addAll(packages)</span>
+<span class="nc" id="L57">        return packages(*packages)</span>
+    }
+
+    private fun jacksonProvider(): JacksonJaxbJsonProvider {
+<span class="nc" id="L61">        val provider = JacksonJaxbJsonProvider()</span>
+<span class="nc" id="L62">        provider.setMapper(ObjectMapperProvider().provide())</span>
+<span class="nc" id="L63">        return provider</span>
+    }
+
+    /**
+     * service locator feature
+     */
+<span class="nc" id="L69">    private class ServiceLocatorFeature : Feature {</span>
+
+        override fun configure(context: FeatureContext): Boolean {
+<span class="nc" id="L72">            ServiceLocatorProvider.getServiceLocator(context)</span>
+<span class="nc" id="L73">            return true</span>
+        }
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

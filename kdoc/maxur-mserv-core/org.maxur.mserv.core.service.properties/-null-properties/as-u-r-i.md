@@ -1,0 +1,21 @@
+---
+title: NullProperties.asURI - maxur-mserv-core
+---
+
+[maxur-mserv-core](../../index.html) / [org.maxur.mserv.core.service.properties](../index.html) / [NullProperties](index.html) / [asURI](.)
+
+# asURI
+
+`fun asURI(key: `[`String`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html)`): `[`URI`](http://docs.oracle.com/javase/8/docs/api/java/net/URI.html)`?` [(source)](https://github.com/myunusov/maxur-mserv/tree/master/maxur-mserv-core/src/main/kotlin/org/maxur/mserv/core/service/properties/PropertiesSource.kt#L53)
+
+Overrides [Properties.asURI](../-properties/as-u-r-i.html)
+
+return properties by key
+
+### Parameters
+
+`key` - properties key
+
+**Return**
+properties by key
+

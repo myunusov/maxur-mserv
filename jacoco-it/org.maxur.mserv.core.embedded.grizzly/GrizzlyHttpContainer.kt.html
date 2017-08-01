@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GrizzlyHttpContainer.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">maxur-mserv-core</a> &gt; <a href="index.source.html" class="el_package">org.maxur.mserv.core.embedded.grizzly</a> &gt; <span class="el_source">GrizzlyHttpContainer.kt</span></div><h1>GrizzlyHttpContainer.kt</h1><pre class="source lang-java linenums">package org.maxur.mserv.core.embedded.grizzly
+
+import org.glassfish.grizzly.CompletionHandler
+import org.glassfish.grizzly.http.server.HttpHandler
+import org.glassfish.grizzly.http.server.Request
+import org.glassfish.grizzly.http.server.Response
+import org.glassfish.hk2.api.ServiceLocator
+import org.glassfish.hk2.api.TypeLiteral
+import org.glassfish.hk2.utilities.binding.AbstractBinder
+import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainer
+import org.glassfish.jersey.grizzly2.httpserver.internal.LocalizationMessages
+import org.glassfish.jersey.internal.PropertiesDelegate
+import org.glassfish.jersey.internal.inject.ReferencingFactory
+import org.glassfish.jersey.internal.util.collection.Ref
+import org.glassfish.jersey.process.internal.RequestScoped
+import org.glassfish.jersey.server.*
+import org.glassfish.jersey.server.internal.ContainerUtils
+import org.glassfish.jersey.server.spi.Container
+import org.glassfish.jersey.server.spi.ContainerResponseWriter
+import org.glassfish.jersey.server.spi.RequestScopedInitializer
+import org.slf4j.LoggerFactory
+import java.io.IOException
+import java.io.OutputStream
+import java.net.URI
+import java.net.URISyntaxException
+import java.security.Principal
+import java.util.*
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import javax.inject.Provider
+import javax.ws.rs.core.Application
+import javax.ws.rs.core.SecurityContext
+
+<span class="nc" id="L34">class GrizzlyHttpContainer(@Volatile private var appHandler: ApplicationHandler?): HttpHandler(), Container {</span>
+
+<span class="nc" id="L36">    companion object {</span>
+<span class="nc" id="L37">        val log: org.slf4j.Logger = LoggerFactory.getLogger(GrizzlyHttpContainer::class.java)</span>
+    }
+<span class="nc" id="L39">    private val RequestTYPE = object : TypeLiteral&lt;Ref&lt;Request&gt;&gt;() {}.type</span>
+<span class="nc" id="L40">    private val ResponseTYPE = object : TypeLiteral&lt;Ref&lt;Response&gt;&gt;() {}.type</span>
+
+     /**
+     * Cached value of configuration property
+     * [org.glassfish.jersey.server.ServerProperties.RESPONSE_SET_STATUS_OVER_SEND_ERROR].
+     * If `true` method [org.glassfish.grizzly.http.server.Response.setStatus] is used over
+     * [org.glassfish.grizzly.http.server.Response.sendError].
+     */
+    private var configSetStatusOverSendError: Boolean = false
+
+    /**
+     * Cached value of configuration property
+     * [org.glassfish.jersey.server.ServerProperties.REDUCE_CONTEXT_PATH_SLASHES_ENABLED].
+     * If `true` method [org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainer.getRequestUri]
+     * will reduce the of leading context-path slashes to only one.
+     */
+    private var configReduceContextPathSlashesEnabled: Boolean = false
+
+
+    /**
+     * Create a new Grizzly HTTP container.
+
+     * @param application   JAX-RS / Jersey application to be deployed on Grizzly HTTP container.
+     * *
+     * @param parentLocator parent HK2 service locator.
+     */
+<span class="nc" id="L66">    constructor(application: Application, parentLocator: ServiceLocator)</span>
+<span class="nc" id="L67">            : this(ApplicationHandler(application, GrizzlyBinder(), parentLocator))  {</span>
+<span class="nc" id="L68">        cacheConfigSetStatusOverSendError()</span>
+<span class="nc" id="L69">        cacheConfigEnableLeadingContextPathSlashes()</span>
+    }
+
+    /**
+     * Referencing factory for Grizzly request.
+     */
+    private class GrizzlyRequestReferencingFactory @Inject
+<span class="nc" id="L76">    constructor(referenceFactory: Provider&lt;Ref&lt;Request&gt;&gt;) : ReferencingFactory&lt;Request&gt;(referenceFactory)</span>
+
+    /**
+     * Referencing factory for Grizzly response.
+     */
+    private class GrizzlyResponseReferencingFactory @Inject
+<span class="nc" id="L82">    constructor(referenceFactory: Provider&lt;Ref&lt;Response&gt;&gt;) : ReferencingFactory&lt;Response&gt;(referenceFactory)</span>
+
+    /**
+     * An internal binder to enable Grizzly HTTP container specific types injection.
+     *
+     *
+     * This binder allows to inject underlying Grizzly HTTP request and response instances.
+     * Note that since Grizzly `Request` class is not proxiable as it does not expose an empty constructor,
+     * the injection of Grizzly request instance into singleton JAX-RS and Jersey providers is only supported via
+     * [injection provider][javax.inject.Provider].
+     */
+<span class="nc" id="L93">    internal class GrizzlyBinder : AbstractBinder() {</span>
+
+        override fun configure() {
+<span class="nc" id="L96">            bindFactory(GrizzlyRequestReferencingFactory::class.java).to(Request::class.java)</span>
+<span class="nc" id="L97">                    .proxy(false).`in`(RequestScoped::class.java)</span>
+<span class="nc" id="L98">            bindFactory(ReferencingFactory.referenceFactory&lt;Request&gt;()).to(object : TypeLiteral&lt;Ref&lt;Request&gt;&gt;() {</span>
+<span class="nc" id="L99">            }).`in`(RequestScoped::class.java)</span>
+
+<span class="nc" id="L101">            bindFactory(GrizzlyResponseReferencingFactory::class.java).to(Response::class.java)</span>
+<span class="nc" id="L102">                    .proxy(true).proxyForSameScope(false).`in`(RequestScoped::class.java)</span>
+<span class="nc" id="L103">            bindFactory(ReferencingFactory.referenceFactory&lt;Response&gt;()).to(object : TypeLiteral&lt;Ref&lt;Response&gt;&gt;() {</span>
+<span class="nc" id="L104">            }).`in`(RequestScoped::class.java)</span>
+<span class="nc" id="L105">        }</span>
+    }
+
+<span class="nc" id="L108">    private class ResponseWriter internal constructor(</span>
+            private val grizzlyResponse: Response,
+            private val configSetStatusOverSendError: Boolean
+    ) : ContainerResponseWriter {
+
+<span class="nc" id="L113">        private val EMPTY_COMPLETION_HANDLER = object : CompletionHandler&lt;Response&gt; {</span>
+<span class="nc" id="L114">            override fun cancelled() = Unit</span>
+<span class="nc" id="L115">            override fun failed(throwable: Throwable) = Unit</span>
+<span class="nc" id="L116">            override fun completed(result: Response) = Unit</span>
+<span class="nc" id="L117">            override fun updated(result: Response) = Unit</span>
+        }
+
+        private val name: String
+
+        init {
+<span class="nc bnc" id="L123" title="All 2 branches missed.">            if (log.isDebugEnabled()) {</span>
+<span class="nc" id="L124">                this.name = &quot;ResponseWriter {id=${UUID.randomUUID()}, grizzlyResponse=${grizzlyResponse.hashCode()}}&quot;</span>
+<span class="nc" id="L125">                log.debug(&quot;{0} - init&quot;, name)</span>
+            } else {
+<span class="nc" id="L127">                this.name = &quot;ResponseWriter&quot;</span>
+<span class="nc" id="L128">            }</span>
+        }
+
+        override fun toString(): String {
+<span class="nc" id="L132">            return name</span>
+        }
+
+        override fun commit() {
+<span class="nc" id="L136">            try {</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">                if (grizzlyResponse.isSuspended) {</span>
+<span class="nc" id="L138">                    grizzlyResponse.resume()</span>
+                }
+            } finally {
+<span class="nc" id="L141">                log.debug(&quot;{0} - commit() called&quot;, name)</span>
+            }
+<span class="nc" id="L143">        }</span>
+
+        override fun suspend(
+                timeOut: Long,
+                timeUnit: TimeUnit,
+                timeoutHandler: ContainerResponseWriter.TimeoutHandler?
+        ): Boolean {
+<span class="nc" id="L150">            try {</span>
+<span class="nc" id="L151">                grizzlyResponse.suspend(timeOut, timeUnit, EMPTY_COMPLETION_HANDLER</span>
+<span class="nc" id="L152">                ) {</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">                    timeoutHandler?.onTimeout(this@ResponseWriter)</span>
+
+                    // TODO should we return true in some cases instead?
+                    // Returning false relies on the fact that the timeoutHandler will resume the response.
+<span class="nc" id="L157">                    false</span>
+                }
+<span class="nc" id="L159">                return true</span>
+<span class="nc" id="L160">            } catch (ex: IllegalStateException) {</span>
+<span class="nc" id="L161">                return false</span>
+            } finally {
+<span class="nc" id="L163">                log.debug(&quot;{0} - suspend(...) called&quot;, name)</span>
+            }
+        }
+
+        @Throws(IllegalStateException::class)
+        override fun setSuspendTimeout(timeOut: Long, timeUnit: TimeUnit) {
+<span class="nc" id="L169">            try {</span>
+<span class="nc" id="L170">                grizzlyResponse.suspendContext.setTimeout(timeOut, timeUnit)</span>
+            } finally {
+<span class="nc" id="L172">                log.debug(&quot;{0} - setTimeout(...) called&quot;, name)</span>
+            }
+<span class="nc" id="L174">        }</span>
+
+        @Throws(ContainerException::class)
+        override fun writeResponseStatusAndHeaders(contentLength: Long,
+                                                   context: ContainerResponse): OutputStream {
+<span class="nc" id="L179">            try {</span>
+<span class="nc" id="L180">                val statusInfo = context.statusInfo</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">                if (statusInfo.reasonPhrase == null) {</span>
+<span class="nc" id="L182">                    grizzlyResponse.status = statusInfo.statusCode</span>
+                } else {
+<span class="nc" id="L184">                    grizzlyResponse.setStatus(statusInfo.statusCode, statusInfo.reasonPhrase)</span>
+                }
+
+<span class="nc" id="L187">                grizzlyResponse.contentLengthLong = contentLength</span>
+
+<span class="nc bnc" id="L189" title="All 2 branches missed.">                for ((key, value) in context.stringHeaders) {</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">                    for (v in value) {</span>
+<span class="nc" id="L191">                        grizzlyResponse.addHeader(key, v)</span>
+                    }
+                }
+
+<span class="nc" id="L195">                return grizzlyResponse.outputStream</span>
+            } finally {
+<span class="nc" id="L197">                log.debug(&quot;{0} - writeResponseStatusAndHeaders() called&quot;, name)</span>
+            }
+        }
+
+        override fun failure(error: Throwable) {
+<span class="nc" id="L202">            try {</span>
+<span class="nc bnc" id="L203" title="All 2 branches missed.">                if (!grizzlyResponse.isCommitted) {</span>
+<span class="nc" id="L204">                    try {</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">                        if (configSetStatusOverSendError) {</span>
+<span class="nc" id="L206">                            grizzlyResponse.reset()</span>
+<span class="nc" id="L207">                            grizzlyResponse.setStatus(500, &quot;Request failed.&quot;)</span>
+                        } else {
+<span class="nc" id="L209">                            grizzlyResponse.sendError(500, &quot;Request failed.&quot;)</span>
+<span class="nc" id="L210">                        }</span>
+<span class="nc" id="L211">                    } catch (ex: IllegalStateException) {</span>
+                        // a race condition externally committing the response can still occur...
+<span class="nc" id="L213">                        log.trace(&quot;Unable to reset failed response.&quot;, ex)</span>
+<span class="nc" id="L214">                    } catch (ex: IOException) {</span>
+<span class="nc" id="L215">                        throw ContainerException(</span>
+<span class="nc" id="L216">                                LocalizationMessages.EXCEPTION_SENDING_ERROR_RESPONSE(500, &quot;Request failed.&quot;),</span>
+<span class="nc" id="L217">                                ex)</span>
+                    }
+
+                }
+            } finally {
+<span class="nc" id="L222">                log.debug(&quot;{0} - failure(...) called&quot;, name)</span>
+<span class="nc" id="L223">                rethrow(error)</span>
+            }
+<span class="nc" id="L225">        }</span>
+
+        override fun enableResponseBuffering(): Boolean {
+<span class="nc" id="L228">            return true</span>
+        }
+
+        /**
+         * Rethrow the original exception as required by JAX-RS, 3.3.4
+
+         * @param error throwable to be re-thrown
+         */
+        private fun rethrow(error: Throwable) {
+<span class="nc bnc" id="L237" title="All 2 branches missed.">            if (error is RuntimeException) {</span>
+<span class="nc" id="L238">                throw error</span>
+            } else {
+<span class="nc" id="L240">                throw ContainerException(error)</span>
+            }
+        }
+    }
+
+    override fun start() {
+<span class="nc" id="L246">        super.start()</span>
+<span class="nc bnc" id="L247" title="All 2 branches missed.">        appHandler!!.onStartup(this)</span>
+<span class="nc" id="L248">    }</span>
+
+    override fun service(request: Request, response: Response) {
+<span class="nc" id="L251">        val responseWriter = ResponseWriter(response, configSetStatusOverSendError)</span>
+<span class="nc" id="L252">        try {</span>
+<span class="nc" id="L253">            log.debug(&quot;GrizzlyHttpContainer.service(...) started&quot;)</span>
+<span class="nc" id="L254">            val baseUri = getBaseUri(request)</span>
+<span class="nc" id="L255">            val requestUri = getRequestUri(request)</span>
+<span class="nc" id="L256">            val requestContext = ContainerRequest(baseUri,</span>
+<span class="nc" id="L257">                    requestUri, request.method.methodString,</span>
+<span class="nc" id="L258">                    getSecurityContext(request), GrizzlyRequestPropertiesDelegate(request))</span>
+<span class="nc" id="L259">            requestContext.entityStream = request.inputStream</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">            for (headerName in request.headerNames) {</span>
+<span class="nc" id="L261">                requestContext.headers(headerName, request.getHeaders(headerName))</span>
+            }
+<span class="nc" id="L263">            requestContext.setWriter(responseWriter)</span>
+
+<span class="nc" id="L265">            requestContext.requestScopedInitializer = RequestScopedInitializer { locator -&gt;</span>
+<span class="nc" id="L266">                locator.getService&lt;Ref&lt;Request&gt;&gt;(RequestTYPE).set(request)</span>
+<span class="nc" id="L267">                locator.getService&lt;Ref&lt;Response&gt;&gt;(ResponseTYPE).set(response)</span>
+<span class="nc" id="L268">            }</span>
+<span class="nc bnc" id="L269" title="All 2 branches missed.">            appHandler!!.handle(requestContext)</span>
+        } finally {
+<span class="nc" id="L271">            log.debug(&quot;GrizzlyHttpContainer.service(...) finished&quot;)</span>
+        }
+<span class="nc" id="L273">    }</span>
+
+    private fun containsContextPath(request: Request): Boolean {
+<span class="nc bnc" id="L276" title="All 6 branches missed.">        return request.contextPath != null &amp;&amp; request.contextPath.isNotEmpty()</span>
+    }
+
+    override fun getConfiguration(): ResourceConfig {
+<span class="nc bnc" id="L280" title="All 2 branches missed.">        return appHandler!!.configuration</span>
+    }
+
+    override fun reload() {
+<span class="nc bnc" id="L284" title="All 2 branches missed.">        reload(appHandler!!.configuration)</span>
+<span class="nc" id="L285">    }</span>
+
+    override fun reload(configuration: ResourceConfig) {
+<span class="nc bnc" id="L288" title="All 2 branches missed.">        appHandler!!.onShutdown(this)</span>
+
+<span class="nc" id="L290">        appHandler = ApplicationHandler(configuration, GrizzlyBinder())</span>
+<span class="nc bnc" id="L291" title="All 2 branches missed.">        appHandler!!.onReload(this)</span>
+<span class="nc bnc" id="L292" title="All 2 branches missed.">        appHandler!!.onStartup(this)</span>
+<span class="nc" id="L293">        cacheConfigSetStatusOverSendError()</span>
+<span class="nc" id="L294">        cacheConfigEnableLeadingContextPathSlashes()</span>
+<span class="nc" id="L295">    }</span>
+
+    override fun getApplicationHandler(): ApplicationHandler {
+<span class="nc bnc" id="L298" title="All 2 branches missed.">        return appHandler!!</span>
+    }
+
+    override fun destroy() {
+<span class="nc" id="L302">        super.destroy()</span>
+<span class="nc bnc" id="L303" title="All 2 branches missed.">        appHandler!!.onShutdown(this)</span>
+<span class="nc" id="L304">        appHandler = null</span>
+<span class="nc" id="L305">    }</span>
+
+    private fun getSecurityContext(request: Request): SecurityContext {
+<span class="nc" id="L308">        return object : SecurityContext {</span>
+
+            override fun isUserInRole(role: String): Boolean {
+<span class="nc" id="L311">                return false</span>
+            }
+
+            override fun isSecure(): Boolean {
+<span class="nc" id="L315">                return request.isSecure</span>
+            }
+
+            override fun getUserPrincipal(): Principal {
+<span class="nc" id="L319">                return request.userPrincipal</span>
+            }
+
+            override fun getAuthenticationScheme(): String {
+<span class="nc" id="L323">                return request.authType</span>
+            }
+        }
+    }
+
+    private fun getBaseUri(request: Request): URI {
+<span class="nc" id="L329">        try {</span>
+<span class="nc" id="L330">            return URI(request.scheme, null, request.serverName,</span>
+<span class="nc" id="L331">                    request.serverPort, getBasePath(request), null, null)</span>
+<span class="nc" id="L332">        } catch (ex: URISyntaxException) {</span>
+<span class="nc" id="L333">            throw IllegalArgumentException(ex)</span>
+        }
+
+    }
+
+    private fun getBasePath(request: Request): String {
+<span class="nc" id="L339">        val contextPath = request.contextPath</span>
+
+<span class="nc bnc" id="L341" title="All 6 branches missed.">        if (contextPath == null || contextPath.isEmpty()) {</span>
+<span class="nc" id="L342">            return &quot;/&quot;</span>
+<span class="nc bnc" id="L343" title="All 2 branches missed.">        } else if (contextPath[contextPath.length - 1] != '/') {</span>
+<span class="nc" id="L344">            return contextPath + &quot;/&quot;</span>
+        } else {
+<span class="nc" id="L346">            return contextPath</span>
+        }
+    }
+
+    private fun getRequestUri(request: Request): URI {
+<span class="nc" id="L351">        try {</span>
+<span class="nc" id="L352">            val serverAddress = getServerAddress(request)</span>
+
+            var uri: String
+<span class="nc bnc" id="L355" title="All 4 branches missed.">            if (configReduceContextPathSlashesEnabled &amp;&amp; containsContextPath(request)) {</span>
+<span class="nc" id="L356">                uri = ContainerUtils.reduceLeadingSlashes(request.requestURI)</span>
+            } else {
+<span class="nc" id="L358">                uri = request.requestURI</span>
+            }
+
+<span class="nc" id="L361">            val queryString = request.queryString</span>
+<span class="nc bnc" id="L362" title="All 2 branches missed.">            if (queryString != null) {</span>
+<span class="nc" id="L363">                uri = uri + &quot;?&quot; + ContainerUtils.encodeUnsafeCharacters(queryString)</span>
+            }
+
+<span class="nc" id="L366">            return URI(serverAddress + uri)</span>
+<span class="nc" id="L367">        } catch (ex: URISyntaxException) {</span>
+<span class="nc" id="L368">            throw IllegalArgumentException(ex)</span>
+        }
+
+    }
+
+    @Throws(URISyntaxException::class)
+    private fun getServerAddress(request: Request): String {
+<span class="nc" id="L375">        return URI(request.scheme, null, request.serverName, request.serverPort, null, null, null).toString()</span>
+    }
+
+    /**
+     * The method reads and caches value of configuration property
+     * [org.glassfish.jersey.server.ServerProperties.RESPONSE_SET_STATUS_OVER_SEND_ERROR] for future purposes.
+     */
+    private fun cacheConfigSetStatusOverSendError() {
+<span class="nc" id="L383">        this.configSetStatusOverSendError = ServerProperties.getValue(getConfiguration().properties,</span>
+<span class="nc" id="L384">                ServerProperties.RESPONSE_SET_STATUS_OVER_SEND_ERROR, false, Boolean::class.java)</span>
+<span class="nc" id="L385">    }</span>
+
+    /**
+     * The method reads and caches value of configuration property
+     * [org.glassfish.jersey.server.ServerProperties.REDUCE_CONTEXT_PATH_SLASHES_ENABLED] for future purposes.
+     */
+    private fun cacheConfigEnableLeadingContextPathSlashes() {
+<span class="nc" id="L392">        this.configReduceContextPathSlashesEnabled = ServerProperties.getValue(getConfiguration().properties,</span>
+<span class="nc" id="L393">                ServerProperties.REDUCE_CONTEXT_PATH_SLASHES_ENABLED, false, Boolean::class.java)</span>
+<span class="nc" id="L394">    }</span>
+
+}
+
+
+<span class="nc" id="L399">class GrizzlyRequestPropertiesDelegate(private val request: Request) : PropertiesDelegate {</span>
+<span class="nc" id="L400">    override fun getProperty(name: String): Any? = request.getAttribute(name)</span>
+<span class="nc" id="L401">    override fun getPropertyNames(): Collection&lt;String&gt;? = request.attributeNames</span>
+<span class="nc" id="L402">    override fun setProperty(name: String, value: Any) = request.setAttribute(name, value)</span>
+<span class="nc" id="L403">    override fun removeProperty(name: String) = request.removeAttribute(name)</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

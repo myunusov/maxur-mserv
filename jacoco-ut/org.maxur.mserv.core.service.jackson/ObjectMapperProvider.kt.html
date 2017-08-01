@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ObjectMapperProvider.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">maxur-mserv-core</a> &gt; <a href="index.source.html" class="el_package">org.maxur.mserv.core.service.jackson</a> &gt; <span class="el_source">ObjectMapperProvider.kt</span></div><h1>ObjectMapperProvider.kt</h1><pre class="source lang-java linenums">package org.maxur.mserv.core.service.jackson
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect
+import com.fasterxml.jackson.annotation.PropertyAccessor
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
+import com.fasterxml.jackson.module.paranamer.ParanamerModule
+import dk.nykredit.jackson.dataformat.hal.JacksonHALModule
+import org.glassfish.hk2.api.Factory
+
+<span class="nc" id="L13">class ObjectMapperProvider : Factory&lt;ObjectMapper&gt; {</span>
+
+<span class="fc" id="L15">    companion object {</span>
+<span class="fc" id="L16">        fun config(objectMapper: ObjectMapper): ObjectMapper = objectMapper</span>
+<span class="fc" id="L17">                .setVisibility(PropertyAccessor.SETTER, JsonAutoDetect.Visibility.NONE)</span>
+<span class="fc" id="L18">                .setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE)</span>
+<span class="fc" id="L19">                .setVisibility(PropertyAccessor.IS_GETTER, JsonAutoDetect.Visibility.NONE)</span>
+<span class="fc" id="L20">                .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)</span>
+                // .registerModule(KotlinModule())  XXX error on Path class deserialization  
+<span class="fc" id="L22">                .registerModule(Jdk8Module())</span>
+<span class="fc" id="L23">                .registerModule(ParanamerModule())</span>
+<span class="fc" id="L24">                .registerModule(JavaTimeModule())</span>
+<span class="fc" id="L25">                .registerModule(JacksonHALModule())</span>
+<span class="fc" id="L26">                .registerModule(ParameterNamesModule())</span>
+    }
+
+<span class="nc" id="L29">    private val objectMapper: ObjectMapper = config(ObjectMapper())</span>
+
+<span class="nc" id="L31">    override fun dispose(instance: ObjectMapper?) = Unit</span>
+<span class="nc" id="L32">    override fun provide(): ObjectMapper = objectMapper</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

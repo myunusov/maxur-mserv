@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServiceResource.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">maxur-mserv-core</a> &gt; <a href="index.source.html" class="el_package">org.maxur.mserv.core.rest</a> &gt; <span class="el_source">ServiceResource.kt</span></div><h1>ServiceResource.kt</h1><pre class="source lang-java linenums">package org.maxur.mserv.core.rest
+
+import dk.nykredit.jackson.dataformat.hal.HALLink
+import dk.nykredit.jackson.dataformat.hal.annotation.Link
+import dk.nykredit.jackson.dataformat.hal.annotation.Resource
+import io.swagger.annotations.*
+import org.maxur.mserv.core.MicroService
+import java.net.URI
+import javax.inject.Inject
+import javax.ws.rs.*
+import javax.ws.rs.core.MediaType
+
+
+/**
+ * The type Application resource.
+ *
+ * @author Maxim Yunusov
+ * @version 1.0
+ * @since &lt;pre&gt;11/29/13&lt;/pre&gt;
+ */
+@Path(&quot;/service&quot;)
+@Api(value = &quot;/service&quot;, description = &quot;Endpoint for Service specific operations&quot;)
+<span class="nc" id="L23">class ServiceResource @Inject constructor(val service: MicroService) {</span>
+
+    @GET
+    @Produces(&quot;application/hal+json&quot;)
+    @ApiOperation(value = &quot;Represent this service&quot;,
+            response = ServiceView::class, produces = &quot;application/hal+json&quot;)
+    @ApiResponses(value = *arrayOf(
+            ApiResponse(code = 200, message = &quot;Successful operation&quot;),
+            ApiResponse(code = 500, message = &quot;Internal server error&quot;)
+        )
+    )
+<span class="nc" id="L34">    fun service() : ServiceView = ServiceView(service)</span>
+
+    @PUT()
+    @Path(&quot;/{state}&quot;)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = &quot;Change service state&quot;,
+            notes = &quot;Commands for stop or restart service&quot;
+    )
+    @ApiResponses(value = *arrayOf(
+            ApiResponse(code = 204, message = &quot;Successful operation&quot;),
+            ApiResponse(code = 400, message = &quot;On invalid command&quot;),
+            ApiResponse(code = 500, message = &quot;Internal server error&quot;)
+        )
+    )
+    fun state(
+            @ApiParam(name = &quot;state&quot;, value = &quot;New service state&quot;, required = true, allowableValues=&quot;stop, restart&quot;)
+            @PathParam(&quot;state&quot;) command: String
+<span class="nc bnc" id="L53" title="All 7 branches missed.">    ) = when (command.toUpperCase()) {</span>
+<span class="nc" id="L54">        &quot;STOP&quot; -&gt; service.deferredStop()</span>
+<span class="nc" id="L55">        &quot;RESTART&quot; -&gt; service.deferredRestart()</span>
+<span class="nc" id="L56">        else -&gt; throw IllegalArgumentException(&quot;Command '${command}' unknown&quot;)</span>
+<span class="nc" id="L57">    }</span>
+}
+
+@Suppress(&quot;unused&quot;)
+@Resource
+@ApiModel(value=&quot;Service View&quot;, description=&quot;Service Presentation Model&quot;)
+<span class="nc" id="L63">class ServiceView(service: MicroService) {</span>
+
+    @ApiModelProperty(value = &quot;Service name&quot;)
+<span class="nc" id="L66">    val name: String = &quot;${service.name}: ${service.version}&quot;</span>
+
+    @Link
+<span class="nc" id="L69">    var self: HALLink = HALLink.Builder(URI(&quot;service&quot;)).build()</span>
+
+    @Link(&quot;stop&quot;)
+<span class="nc" id="L72">    var stop: HALLink = HALLink.Builder(URI(&quot;service/stop&quot;)).build()</span>
+
+    @Link(&quot;restart&quot;)
+<span class="nc" id="L75">    var restart: HALLink = HALLink.Builder(URI(&quot;service/restart&quot;)).build()</span>
+
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

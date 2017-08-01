@@ -1,0 +1,15 @@
+$dokka.format:jekyll
+$dokka.linkExtension:html
+
+org.maxur.mserv.core
+org.maxur.mserv.core.annotation
+org.maxur.mserv.core.domain
+org.maxur.mserv.core.embedded
+org.maxur.mserv.core.embedded.grizzly
+org.maxur.mserv.core.embedded.properties
+org.maxur.mserv.core.rest
+org.maxur.mserv.core.service.hk2
+org.maxur.mserv.core.service.jackson
+org.maxur.mserv.core.service.msbuilder
+org.maxur.mserv.core.service.properties
+org.maxur.mserv.core.utils
