@@ -268,14 +268,14 @@
                         <artifactId>dokka-maven-plugin</artifactId>
                         <version>${dokka.version}</version>
                         <executions>
-<!--                            <execution>
+                            <execution>
                                 <phase>pre-site</phase>
                                 <goals>
                                     <goal>dokka</goal>
                                 </goals>
-                            </execution>-->
+                            </execution>
                             <execution>
-                                <id>maxur-javadoc</id>
+                                <id>kdoc</id>
                                 <phase>package</phase>
                                 <goals>
                                     <goal>javadocJar</goal>
@@ -307,18 +307,53 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>jdoc</id>
+                                <phase>pre-site</phase>
+                                <goals>
+                                    <goal>javadoc</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
             <reporting>
                 <plugins>
                     <plugin>
+                        <artifactId>maven-project-info-reports-plugin</artifactId>
+                        <version>${maven-project-info-reports-plugin.version}</version>
+                        <configuration>
+                            <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
+                            <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+                            <showAvatarImages>true</showAvatarImages>
+                        </configuration>
+                        <reportSets>
+                            <reportSet>
+                                <reports>
+                                    <report>index</report>
+                                    <report>summary</report>
+                                    <report>license</report>
+                                    <report>project-team</report>
+                                    <report>issue-tracking</report>
+                                    <report>scm</report>
+                                    <report>cim</report>
+                                    <report>dependencies</report>
+                                    <report>plugins</report>
+                                </reports>
+                            </reportSet>
+                        </reportSets>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-jxr-plugin</artifactId>
+                        <version>${maven-jxr-plugin.version}</version>
+                    </plugin>
+                    <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.10.4</version>
                         <configuration>
                             <useStandardDocletOptions>true</useStandardDocletOptions>
-
                             <source>${project.source.compile}</source>
                             <encoding>${project.source.encoding}</encoding>
                             <charset>${project.source.encoding}</charset>
@@ -327,11 +362,8 @@
                             <version>true</version>
                             <author>true</author>
                             <keywords>true</keywords>
-
                             <linksource>true</linksource>
                             <excludePackageNames>*.it,*.test</excludePackageNames>
-                            <aggregate>true</aggregate>
-
                             <additionalparam>
                                 -inferrel -inferdep -quiet -hide java.*
                                 -collpackages java.util.* -qualify
@@ -346,9 +378,7 @@
                                 -nodefonttagname "Trebuchet MS"
                                 -view
                             </additionalparam>
-
                             <detectLinks>true</detectLinks>
-
                         </configuration>
                     </plugin>
                 </plugins>
@@ -1000,11 +1030,7 @@
                 </executions>
                 <configuration>
                     <revisionOnScmFailure>true</revisionOnScmFailure>
-                    <format>#{0} ({1,date})</format>
-                    <items>
-                        <item>buildNumber\d*</item>
-                        <item>timestamp</item>
-                    </items>
+                    <shortRevisionLength>5</shortRevisionLength>
                 </configuration>
             </plugin>
 
@@ -1016,7 +1042,7 @@
                         <manifestEntries>
                             <implementation-version>${project.version}</implementation-version>
                             <!--suppress MavenModelInspection -->
-                            <implementation-build>${scmBranch} - ${buildNumber}</implementation-build>
+                            <implementation-build>${scmBranch}-${buildNumber}-${timestamp}</implementation-build>
                         </manifestEntries>
                     </archive>
                 </configuration>

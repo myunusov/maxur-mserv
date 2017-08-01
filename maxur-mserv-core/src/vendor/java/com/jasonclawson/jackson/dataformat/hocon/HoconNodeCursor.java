@@ -1,15 +1,15 @@
 package com.jasonclawson.jackson.dataformat.hocon;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
-
 import com.fasterxml.jackson.core.JsonStreamContext;
 import com.fasterxml.jackson.core.JsonToken;
 import com.typesafe.config.ConfigList;
 import com.typesafe.config.ConfigObject;
 import com.typesafe.config.ConfigValue;
 import com.typesafe.config.ConfigValueType;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * The type Hocon node cursor.

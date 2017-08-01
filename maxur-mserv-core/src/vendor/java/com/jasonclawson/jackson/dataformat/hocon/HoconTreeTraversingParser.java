@@ -1,10 +1,5 @@
 package com.jasonclawson.jackson.dataformat.hocon;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-
 import com.fasterxml.jackson.core.Base64Variant;
 import com.fasterxml.jackson.core.JsonLocation;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -17,6 +12,11 @@ import com.fasterxml.jackson.core.base.ParserMinimalBase;
 import com.typesafe.config.ConfigObject;
 import com.typesafe.config.ConfigValue;
 import com.typesafe.config.ConfigValueType;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * The type Hocon tree traversing parser.
