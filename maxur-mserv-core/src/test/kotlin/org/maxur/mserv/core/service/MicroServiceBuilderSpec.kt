@@ -1,17 +1,23 @@
 package org.maxur.mserv.core.service
 
-import com.winterbe.expekt.should
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Condition
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.context
 import org.jetbrains.spek.api.dsl.describe
 import org.jetbrains.spek.api.dsl.it
+import org.junit.platform.runner.JUnitPlatform
+import org.junit.runner.RunWith
 import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.service.msbuilder.Java
 import org.maxur.mserv.core.service.msbuilder.Kotlin
 import org.maxur.mserv.core.service.properties.Properties
 import org.maxur.mserv.core.service.properties.PropertiesSource
+import java.util.function.Predicate
 import kotlin.test.assertFailsWith
 
+
+@RunWith(JUnitPlatform::class)
 class MicroServiceBuilderSpec : Spek({
 
     describe("Build empty micro-service") {
@@ -25,17 +31,17 @@ class MicroServiceBuilderSpec : Spek({
                 val service = Kotlin.service {
                     withoutProperties()
                 }
-                service.should.be.not.`null`
+                assertThat(service).isNotNull()
                 val source = Locator.service(Properties::class)
-                source.should.be.not.`null`
+                assertThat(source).isNotNull()
             }
             it("should return new micro-service for java client") {
                 val service = Java.service()
                         .withoutProperties()
                         .build()
-                service.should.be.not.`null`
+                assertThat(service).isNotNull()
                 val source = Locator.service(Properties::class)
-                source.should.be.not.`null`
+                assertThat(source).isNotNull()
             }
         }
 
@@ -56,13 +62,13 @@ class MicroServiceBuilderSpec : Spek({
                                         format = name
                                     }
                                 }
-                                service.should.be.not.`null`
+                                assertThat(service).isNotNull()
                                 val source = Locator.service(PropertiesSource::class)
-                                source.should.be.not.`null`
+                                assertThat(source).isNotNull()
                                 source!!.apply {
-                                    format.should.be.equal(name)
-                                    rootKey.should.be.equal(root)
-                                    uri.should.be.satisfy { it.toString().endsWith("application.$ext") }
+                                    assertThat(format).isEqualTo(name)
+                                    assertThat(rootKey).isEqualTo(root)
+                                    assertThat(uri.toString()).endsWith("application.$ext")
                                 }
                                 Locator.shutdown()
                             }
@@ -71,13 +77,13 @@ class MicroServiceBuilderSpec : Spek({
                                 val service = Java.service()
                                         .properties(name)
                                         .build()
-                                service.should.be.not.`null`
+                                assertThat(service).isNotNull()
                                 val source = Locator.service(PropertiesSource::class)
-                                source.should.be.not.`null`
+                                assertThat(source).isNotNull()
                                 source!!.apply {
-                                    format.should.be.equal(name)
-                                    rootKey.should.be.equal(root)
-                                    uri.should.be.satisfy { it.toString().endsWith("application.$ext") }
+                                    assertThat(format).isEqualTo(name)
+                                    assertThat(rootKey).isEqualTo(root)
+                                    assertThat(uri.toString()).endsWith("application.$ext")
                                 }
                                 Locator.shutdown()
                             }
@@ -105,13 +111,13 @@ class MicroServiceBuilderSpec : Spek({
                                         url = "src/test/resources/application.$ext"
                                     }
                                 }
-                                service.should.be.not.`null`
+                                assertThat(service).isNotNull()
                                 val source = Locator.service(PropertiesSource::class)
-                                source.should.be.not.`null`
+                                assertThat(source).isNotNull()
                                 source!!.apply {
-                                    format.should.be.equal(name)
-                                    rootKey.should.be.equal(root)
-                                    uri.should.be.satisfy { it.toString().endsWith("application.$ext") }
+                                    assertThat(format).isEqualTo(name)
+                                    assertThat(rootKey).isEqualTo(root)
+                                    assertThat(uri.toString()).endsWith("application.$ext")
                                 }
                                 Locator.shutdown()
                             }
@@ -121,13 +127,13 @@ class MicroServiceBuilderSpec : Spek({
                                         .properties(name)
                                         .url("src/test/resources/application.$ext")
                                         .build()
-                                service.should.be.not.`null`
+                                assertThat(service).isNotNull()
                                 val source = Locator.service(PropertiesSource::class)
-                                source.should.be.not.`null`
+                                assertThat(source).isNotNull()
                                 source!!.apply {
-                                    format.should.be.equal(name)
-                                    rootKey.should.be.equal(root)
-                                    uri.should.be.satisfy { it.toString().endsWith("application.$ext") }
+                                    assertThat(format).isEqualTo(name)
+                                    assertThat(rootKey).isEqualTo(root)
+                                    assertThat(uri.toString()).endsWith("application.$ext")
                                 }
                                 Locator.shutdown()
                             }
@@ -155,13 +161,13 @@ class MicroServiceBuilderSpec : Spek({
                                         rootKey = "USER"
                                     }
                                 }
-                                service.should.be.not.`null`
+                                assertThat(service).isNotNull()
                                 val source = Locator.service(PropertiesSource::class)
-                                source.should.be.not.`null`
+                                assertThat(source).isNotNull()
                                 source!!.apply {
-                                    format.should.be.equal(name)
-                                    rootKey.should.be.equal(root)
-                                    uri.should.be.satisfy { it.toString().endsWith("application.$ext") }
+                                    assertThat(format).isEqualTo(name)
+                                    assertThat(rootKey).isEqualTo(root)
+                                    assertThat(uri.toString()).endsWith("application.$ext")
                                 }
                                 Locator.shutdown()
                             }
@@ -171,13 +177,13 @@ class MicroServiceBuilderSpec : Spek({
                                         .properties(name)
                                         .rootKey("USER")
                                         .build()
-                                service.should.be.not.`null`
+                                assertThat(service).isNotNull()
                                 val source = Locator.service(PropertiesSource::class)
-                                source.should.be.not.`null`
+                                assertThat(source).isNotNull()
                                 source!!.apply {
-                                    format.should.be.equal(name)
-                                    rootKey.should.be.equal(root)
-                                    uri.should.be.satisfy { it.toString().endsWith("application.$ext") }
+                                    assertThat(format).isEqualTo(name)
+                                    assertThat(rootKey).isEqualTo(root)
+                                    assertThat(uri.toString()).endsWith("application.$ext")
                                 }
                                 Locator.shutdown()
                             }
@@ -262,17 +268,19 @@ class MicroServiceBuilderSpec : Spek({
                     }
         }
 
+        val supportedFormat = condition (
+                { it in arrayOf("Hocon", "Yaml", "Json") }, "supported format"
+        )
+
         context("Build micro-service with default properties") {
             it("should return new micro-service") {
                 val service = Kotlin.service {
                 }
-                service.should.be.not.`null`
+                assertThat(service).isNotNull()
                 val source = Locator.service(PropertiesSource::class)
-                source.should.be.not.`null`
-                source!!.format.should.be.not.`null`
-                source.apply {
-                    format.should.be.satisfy { arrayOf("Hocon", "Yaml", "Json").contains(it) }
-                }
+                assertThat(source).isNotNull()
+                assertThat(source!!.format).isNotNull()
+                assertThat(source.format).`is`(supportedFormat)
             }
         }
     }
@@ -284,8 +292,11 @@ class MicroServiceBuilderSpec : Spek({
                 withoutProperties()
                 rest { }
             }
-            service.should.be.not.`null`
+            assertThat(service).isNotNull()
         }
     }
 
 })
+
+private fun condition(function: (String) -> Boolean, description: String): Condition<String>
+        = Condition(Predicate(function), description)
