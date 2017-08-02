@@ -79,10 +79,12 @@
         <hibernate-validator.version>5.4.1.Final</hibernate-validator.version>
 
         <ktlint.version>0.8.3</ktlint.version>
-        <junit5.version>5.0.0-M4</junit5.version>
-        <junit-vintage-engine.version>4.12.0-M4</junit-vintage-engine.version>
+        <junit5.version>5.0.0-RC2</junit5.version>
+        <junit-vintage-engine.version>4.12.0-RC2</junit-vintage-engine.version>
         <slf4j.version>1.7.25</slf4j.version>
         <gmaven-plugin.version>1.5</gmaven-plugin.version>
+        <maven-surefire-plugin.version>2.20</maven-surefire-plugin.version>
+        <maven-failsafe-plugin.version>2.20</maven-failsafe-plugin.version>
     </properties>
 
     <profiles>
@@ -856,20 +858,13 @@
         </dependency>
         <dependency>
             <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-launcher</artifactId>
-            <version>${junit-platform.version}</version>
+            <artifactId>junit-platform-runner</artifactId>
+            <version>1.0.0-M4</version>
         </dependency>
         <dependency>
-            <groupId>com.winterbe</groupId>
-            <artifactId>expekt</artifactId>
-            <version>${expekt.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <artifactId>kotlin-stdlib</artifactId>
-                    <groupId>org.jetbrains.kotlin</groupId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <version>${junit-platform.version}</version>
         </dependency>
         <dependency>
             <groupId>com.nhaarman</groupId>
@@ -1089,8 +1084,8 @@
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin.version}</version>
                 <configuration>
                     <includes>
                         <include>**/*Spec.*</include>
@@ -1101,28 +1096,11 @@
                     <reuseForks>true</reuseForks>
                     <childDelegation>true</childDelegation>
                 </configuration>
-                <dependencies>
-                    <!-- Allow running both JUnit4 and JUnit5 tests -->
-                    <dependency>
-                        <groupId>org.junit.platform</groupId>
-                        <artifactId>junit-platform-surefire-provider</artifactId>
-                        <version>${junit-platform.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.junit.jupiter</groupId>
-                        <artifactId>junit-jupiter-engine</artifactId>
-                        <version>${junit5.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.junit.vintage</groupId>
-                        <artifactId>junit-vintage-engine</artifactId>
-                        <version>${junit-vintage-engine.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
 
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${maven-failsafe-plugin.version}</version>
                 <configuration>
                     <encoding>${project.build.sourceEncoding}</encoding>
                     <perCoreThreadCount>true</perCoreThreadCount>
@@ -1130,24 +1108,6 @@
                     <!--suppress MavenModelInspection -->
                     <argLine>${failsafeArgLine} -Xmx512m</argLine>
                 </configuration>
-                <dependencies>
-                    <!-- Allow running both JUnit4 and JUnit5 tests -->
-                    <dependency>
-                        <groupId>org.junit.platform</groupId>
-                        <artifactId>junit-platform-surefire-provider</artifactId>
-                        <version>${junit-platform.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.junit.jupiter</groupId>
-                        <artifactId>junit-jupiter-engine</artifactId>
-                        <version>${junit5.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.junit.vintage</groupId>
-                        <artifactId>junit-vintage-engine</artifactId>
-                        <version>${junit-vintage-engine.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
 
             <plugin>

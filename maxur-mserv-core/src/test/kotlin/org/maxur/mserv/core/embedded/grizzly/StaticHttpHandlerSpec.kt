@@ -1,15 +1,17 @@
 package org.maxur.mserv.core.embedded.grizzly
 
 import com.nhaarman.mockito_kotlin.verify
-import com.winterbe.expekt.should
+import org.assertj.core.api.Assertions.assertThat
 import org.glassfish.grizzly.http.Method
 import org.glassfish.grizzly.http.util.HttpStatus
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.describe
 import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
+import org.junit.platform.runner.JUnitPlatform
+import org.junit.runner.RunWith
 
-
+@RunWith(JUnitPlatform::class)
 class StaticHttpHandlerSpec : Spek({
 
     describe("a StaticHttpHandler") {
@@ -17,14 +19,14 @@ class StaticHttpHandlerSpec : Spek({
         on("Create StaticHttpHandler on folder by classpath") {
             it("should return new StaticHttpHandler instance") {
                 val handler = StaticHttpHandler("web", "classpath:/web/")
-                handler.should.be.not.`null`
+                assertThat(handler).isNotNull()
             }
         }
 
         on("Create StaticHttpHandler on folder") {
             it("should return new StaticHttpHandler instance") {
                 val handler = StaticHttpHandler("web", "src/test/resources/web/")
-                handler.should.be.not.`null`
+                assertThat(handler).isNotNull()
             }
         }
 
@@ -94,7 +96,7 @@ class StaticHttpHandlerSpec : Spek({
 
         on("valid request of page by absolute path in fs") {
             it("should return status 200") {
-                val folder = System.getProperty("user.dir").replace('\\', '/');
+                val folder = System.getProperty("user.dir").replace('\\', '/')
                 val handler = StaticHttpHandler("web", "file:///$folder/src/test/resources/web/")
                 val (response, request) = RequestUtil.resreq("/index.html")
                 handler.service(request, response)
