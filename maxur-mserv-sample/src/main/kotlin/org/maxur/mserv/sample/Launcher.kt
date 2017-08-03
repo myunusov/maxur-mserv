@@ -27,12 +27,8 @@ object Launcher {
         Kotlin.service {
             title = ":name"
             packages = "org.maxur.mserv.sample"
-            properties {
-                format = "hocon"
-            }
-            services += rest {
-                afterStart += this@Launcher::afterWebServiceStart
-            }
+            properties { format = "hocon" }
+            services += rest { afterStart += this@Launcher::afterWebServiceStart }
             beforeStart += this@Launcher::beforeStart
             afterStart += { service ->  log().info("${service.name} is started") }
             afterStop += { _ ->  log().info("Microservice is stopped") }
