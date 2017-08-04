@@ -1,0 +1,48 @@
+:rootdir:
+:testdir: {rootDir}/src/test
+:sitedir: {rootDir}/target/site
+:icons: font
+:experimental:
+:toclevels: 4
+:toc: left
+:toc: macro
+
+= Maxur μService v ${release.version}
+Maxim Yunusov
+
+image:https://raw.githubusercontent.com/wiki/myunusov/maxur-mserv/maxur-logo.png[Logo]
+
+toc::[]
+
+Yet another microservices framework
+
+== Java
+
+[source,java,numbered]
+----
+include::{testdir}/java/org/maxur/mserv/doc/MicroServiceIT.java[tags=launcher]
+----
+<1> TODO
+<2> TODO
+<3> TODO
+<4> TODO
+<5> TODO
+<6> TODO
+
+
+== REST
+
+include::{sitedir}/swagger/paths.adoc[leveloffset=+1]
+
+==== Service
+
+include::{sitedir}/swagger/operations/service.adoc[leveloffset=+1]
+
+==== State
+
+include::{sitedir}/swagger/operations/state.adoc[leveloffset=+1]
+
+include::{sitedir}/swagger/definitions.adoc[leveloffset=+1]
+
+
+

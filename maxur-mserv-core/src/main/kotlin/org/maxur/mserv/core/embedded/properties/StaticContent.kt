@@ -3,6 +3,7 @@
 package org.maxur.mserv.core.embedded.properties
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import org.maxur.mserv.core.domain.Path
 import java.net.URI
 
 data class StaticContent(

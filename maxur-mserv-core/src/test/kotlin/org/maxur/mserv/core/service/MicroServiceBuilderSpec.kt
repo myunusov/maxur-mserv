@@ -36,9 +36,12 @@ class MicroServiceBuilderSpec : Spek({
                 assertThat(source).isNotNull()
             }
             it("should return new micro-service for java client") {
-                val service = Java.service()
-                        .withoutProperties()
+                val service =
+                // tag::withoutproperties[]
+                        Java.service()
+                        .withoutProperties() // <1>
                         .build()
+                // end::withoutproperties[]
                 assertThat(service).isNotNull()
                 val source = Locator.service(Properties::class)
                 assertThat(source).isNotNull()
