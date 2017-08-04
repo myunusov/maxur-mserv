@@ -79,7 +79,7 @@
         <hibernate-validator.version>5.4.1.Final</hibernate-validator.version>
 
         <ktlint.version>0.8.3</ktlint.version>
-        <junit5.version>5.0.0-RC2</junit5.version>
+        <junit5.version>5.0.0-M4</junit5.version>
         <junit-platform.version>1.0.0-M4</junit-platform.version>
         <junit-vintage-engine.version>4.12.0-RC2</junit-vintage-engine.version>
         <slf4j.version>1.7.25</slf4j.version>
@@ -1031,6 +1031,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit5.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -1241,6 +1247,7 @@
                         <configuration>
                             <sourceDirs>
                                 <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
+                                <sourceDir>${project.basedir}/src/test/java</sourceDir>
                             </sourceDirs>
                         </configuration>
                     </execution>

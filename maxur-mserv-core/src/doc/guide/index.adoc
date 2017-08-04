@@ -20,9 +20,15 @@ Yet another microservices framework
 
 [source,java,numbered]
 ----
-include::{testdir}/kotlin/org/maxur/mserv/core/service/MicroServiceBuilderSpec.kt[tags=withoutproperties]
+include::{testdir}/java/org/maxur/mserv/doc/MicroServiceIT.java[tags=launcher]
 ----
 <1> TODO
+<2> TODO
+<3> TODO
+<4> TODO
+<5> TODO
+<6> TODO
+
 
 == REST
 
