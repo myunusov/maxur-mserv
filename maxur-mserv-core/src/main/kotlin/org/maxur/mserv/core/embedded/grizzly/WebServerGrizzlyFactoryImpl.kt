@@ -2,8 +2,6 @@
 
 package org.maxur.mserv.core.embedded.grizzly
 
-import io.swagger.jaxrs.config.BeanConfig
-import io.swagger.jaxrs.listing.ApiListingResource
 import jersey.repackaged.com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.glassfish.grizzly.http.server.HttpServer
 import org.glassfish.grizzly.http.server.NetworkListener
@@ -17,9 +15,8 @@ import org.jvnet.hk2.annotations.Service
 import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.domain.Holder
+import org.maxur.mserv.core.domain.Path
 import org.maxur.mserv.core.embedded.*
-import org.maxur.mserv.core.embedded.properties.Path
-import org.maxur.mserv.core.embedded.properties.StaticContent
 import org.maxur.mserv.core.embedded.properties.WebAppProperties
 import org.maxur.mserv.core.rest.RestResourceConfig
 import org.slf4j.bridge.SLF4JBridgeHandler
@@ -35,8 +32,6 @@ import javax.inject.Inject
 class WebServerGrizzlyFactoryImpl @Inject constructor(val locator: Locator) : EmbeddedServiceFactory() {
 
     companion object {
-        val SWAGGER_URL = "classpath:/META-INF/resources/webjars/swagger-ui/3.0.20/"
-        val HAL_URL = "classpath:/META-INF/resources/webjars/hal-browser/3325375/"
         init {
             SLF4JBridgeHandler.removeHandlersForRootLogger()
             SLF4JBridgeHandler.install()
@@ -44,61 +39,31 @@ class WebServerGrizzlyFactoryImpl @Inject constructor(val locator: Locator) : Em
     }
 
     override fun make(properties: Holder<Any>): EmbeddedService? {
-        // TODO mov this logic to domain
         val webAppProperties: WebAppProperties = properties.get(locator)!!
-        val restServiceName = webAppProperties.rest!!.name
-        val restConfig: RestResourceConfig = locator.service(RestResourceConfig::class, restServiceName) ?:
-                return resourceConfigNotFoundError(locator, restServiceName ?: "undefined")
 
-        val staticContent = ArrayList<StaticContent>()
+        val restConfig = webAppProperties.rest?.let {
+            restConfig(it.name)
+        } ?: object : RestResourceConfig() {
+            init {
+                setApplicationName(name)
+            }
+        }
+        val staticContent = webAppProperties.staticContent(restConfig)
 
-        val config = RestAppConfig(
+        val config = WebAppConfig(
                 webAppProperties.url,
-                webAppProperties.rest,
+                webAppProperties.restPath,
                 staticContent,
                 restConfig
         )
-        staticContent.addAll(webAppProperties.staticContent)
-        if (webAppProperties.withHalBrowser) {
-            staticContent.add(halContent())
-        }
-        if (webAppProperties.withSwaggerUi) {
-            val doc = swaggerContent()
-            staticContent.add(doc)
-            initSwagger(restConfig.packages, config)
-            restConfig.resources(ApiListingResource::class.java.`package`.name)
-        }
-
         return WebServerGrizzlyImpl(config, locator)
     }
+    
+    private fun restConfig(name: String?): RestResourceConfig =
+            locator.service(RestResourceConfig::class, name) ?:
+                    resourceConfigNotFoundError(locator, name ?: "undefined")
 
-    private fun swaggerContent(): StaticContent {
-        return StaticContent(
-                Path("docs"),
-                arrayOf(URI(SWAGGER_URL)),
-                "index.html",
-                "index.html?url=/api/swagger.json"
-        )
-    }
-
-    private fun halContent(): StaticContent {
-        return StaticContent(
-                Path("hal"),
-                arrayOf(URI(HAL_URL)),
-                "browser.html",
-                "#/api/service"
-        )
-    }
-
-    private fun initSwagger(packages: MutableList<String>, restConfig: RestAppConfig) {
-        val config = BeanConfig()
-        config.basePath = "/" + restConfig.rest.path.path
-        config.host = "${restConfig.url.host}:${restConfig.url.port}"
-        config.resourcePackage = packages.joinToString(",")
-        config.scan = true
-    }
-
-    private fun resourceConfigNotFoundError(locator: Locator, name: String): EmbeddedService? {
+    private fun <T> resourceConfigNotFoundError(locator: Locator, name: String): T {
         val list = locator.names(ResourceConfig::class)
         throw IllegalStateException(
                 "Resource Config '$name' is not supported. Try one from this list: $list or create one"
@@ -108,7 +73,7 @@ class WebServerGrizzlyFactoryImpl @Inject constructor(val locator: Locator) : Em
 }
 
 open class WebServerGrizzlyImpl(
-        private val config: RestAppConfig,
+        private val config: WebAppConfig,
         locator: Locator
 ) : BaseService(locator), WebServer {
 
@@ -133,11 +98,11 @@ open class WebServerGrizzlyImpl(
         httpServer.shutdownNow()
         httpServer.start()
     }
-    
+
     private fun httpServer(): HttpServer {
         val listener = networkListener(config.url, false, null)
         val server = createHttpServer(listener)
-        makeDynamicHandler(server.serverConfiguration, config.rest.path)
+        makeDynamicHandler(server.serverConfiguration, config.restPath)
         makeStaticHandlers(server.serverConfiguration)
         return server
     }

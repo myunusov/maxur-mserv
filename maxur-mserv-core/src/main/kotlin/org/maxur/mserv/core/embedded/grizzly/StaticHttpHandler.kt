@@ -17,7 +17,7 @@ import org.glassfish.grizzly.http.util.Header
 import org.glassfish.grizzly.http.util.HttpStatus
 import org.glassfish.grizzly.http.util.MimeType
 import org.glassfish.grizzly.memory.MemoryManager
-import org.maxur.mserv.core.embedded.properties.Path
+import org.maxur.mserv.core.domain.Path
 import org.maxur.mserv.core.embedded.properties.StaticContent
 import org.slf4j.LoggerFactory
 import java.io.*
@@ -50,9 +50,12 @@ class StaticHttpHandler(
     private val resourceLocator: ResourceLocator = ResourceLocator(classLoader, staticContent)
     private val defaultPage: String = staticContent.page ?: "index.html"
 
-    constructor(path: String, vararg roots: String) : this(
-            StaticContent(Path(path), roots.map { URI.create(it) }.toTypedArray())
-    )
+    constructor(path: String, vararg roots: String) :
+            this(StaticContent(Path(path), roots.map { URI.create(it) }.toTypedArray()))
+
+
+    constructor(path: String, vararg roots: URI) :
+            this(StaticContent(Path(path), arrayOf(*roots)))
 
     /**
      * {@inheritDoc}

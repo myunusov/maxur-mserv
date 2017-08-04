@@ -1,11 +1,13 @@
 :rootdir:
-:sourcedir: {rootDir}/src
+:testdir: {rootDir}/src/test
+:sitedir: {rootDir}/target/site
 :icons: font
 :experimental:
+:toclevels: 4
 :toc: left
 :toc: macro
 
-= Maxur μService v${release.version}
+= Maxur μService v ${release.version}
 Maxim Yunusov
 
 image:https://raw.githubusercontent.com/wiki/myunusov/maxur-mserv/maxur-logo.png[Logo]
@@ -14,25 +16,27 @@ toc::[]
 
 Yet another microservices framework
 
-== REST
-
-=== Resources
-
-include::{rootDir}/target/site/swagger/paths.adoc[leveloffset=+2]
-
-==== Service
-
-include::{rootDir}/target/site/swagger/operations/service.adoc[leveloffset=+2]
-
-==== State
-
-include::{rootDir}/target/site/swagger/operations/state.adoc[leveloffset=+2]
-
 == Java
 
 [source,java,numbered]
 ----
-include::{sourcedir}/test/kotlin/org/maxur/mserv/core/service/MicroServiceBuilderSpec.kt[tags=withoutproperties]
+include::{testdir}/kotlin/org/maxur/mserv/core/service/MicroServiceBuilderSpec.kt[tags=withoutproperties]
 ----
 <1> TODO
+
+== REST
+
+include::{sitedir}/swagger/paths.adoc[leveloffset=+1]
+
+==== Service
+
+include::{sitedir}/swagger/operations/service.adoc[leveloffset=+1]
+
+==== State
+
+include::{sitedir}/swagger/operations/state.adoc[leveloffset=+1]
+
+include::{sitedir}/swagger/definitions.adoc[leveloffset=+1]
+
+
 
