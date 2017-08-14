@@ -37,6 +37,7 @@
             <item name="Kotlin" href="kdoc/index.html" />
         </menu>
         <menu name="Reports" inherit="top"><item name="Release Notes" href="release-notes.html" /></menu>
+        <menu name="Development Guide" inherit="top"><item name="Getting Started" href="guide/index.html" /></menu>
         <footer>
             <![CDATA[All rights reserved.]]>
         </footer>

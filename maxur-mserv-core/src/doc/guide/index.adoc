@@ -1,6 +1,6 @@
 :rootdir:
 :testdir: {rootDir}/src/test
-:sitedir: {rootDir}/target/site
+:sitedir: {rootDir}/target/generated-site
 :icons: font
 :experimental:
 :toclevels: 4
