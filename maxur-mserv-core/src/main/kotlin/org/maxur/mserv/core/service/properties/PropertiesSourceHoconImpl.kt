@@ -28,7 +28,7 @@ internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource
 
     private var root: Config = try {
         rootNode().getConfig(rootKey)
-    } catch(e: ConfigException.Missing) {
+    } catch (e: ConfigException.Missing) {
         throw IllegalStateException("The properties source '$uri' not found. " +
                 "You need create one with '${rootKey ?: "/"}' section")
     }
@@ -41,7 +41,7 @@ internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource
             if (rawSource.uri == null)
                 ConfigFactory.load()
             else {
-                val uri: URI  = rawSource.uri!!
+                val uri: URI = rawSource.uri!!
                 when (uri.scheme) {
                     null -> loadFrom(File(uri.toString()))
                     "file" -> loadFrom(Paths.get(uri).toFile())
@@ -52,7 +52,6 @@ internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource
                     )
                 }
             }
-
 
     @Suppress("UNCHECKED_CAST")
     override fun <P> read(key: String, clazz: Class<P>): P? =
@@ -71,7 +70,6 @@ internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource
                 throw IllegalArgumentException("Properties file '${file.absolutePath}' is not found")
             else
                 ConfigFactory.parseFile(file)
-
 
     override fun asURI(key: String): URI? {
         val string = asString(key)

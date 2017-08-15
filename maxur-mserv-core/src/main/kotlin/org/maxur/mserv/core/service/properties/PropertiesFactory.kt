@@ -14,5 +14,3 @@ import org.maxur.mserv.core.utils.Either
 abstract class PropertiesFactory {
     abstract fun make(source: PropertiesSource): Either<Exception, Properties>
 }
-
-

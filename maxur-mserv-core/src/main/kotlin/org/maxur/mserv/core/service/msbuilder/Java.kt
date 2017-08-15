@@ -5,7 +5,6 @@ import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.domain.Holder
 import java.util.function.Consumer
 
-
 class Java {
     companion object dsl {
         @JvmStatic
@@ -59,7 +58,6 @@ class JBuilder : MicroServiceBuilder(), IJBuilder {
         return this
     }
 
-
     override fun service(type: String, properties: String): JBuilder {
         val holder = ServiceHolder()
         holder.type = type
@@ -111,7 +109,6 @@ class JBuilder : MicroServiceBuilder(), IJBuilder {
     override fun start() {
         build().start()
     }
-
 
 }
 

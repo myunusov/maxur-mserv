@@ -58,7 +58,6 @@ class StaticHttpHandlerSpec : Spek({
             }
         }
 
-
         on("valid request of root folder in classpath") {
             it("should return status 200") {
                 val handler = StaticHttpHandler("web", "classpath:/web/")
@@ -131,7 +130,7 @@ class StaticHttpHandlerSpec : Spek({
                 verify(response).setStatus(HttpStatus.OK_200)
             }
         }
-        
+
         on("request of invalid root folder") {
             it("should return status 404") {
                 val handler = StaticHttpHandler("web", "classpath:/error/")

@@ -42,5 +42,3 @@ open class Incident(@Suppress("unused") val message: String) : Serializable {
         }
     }
 }
-
-

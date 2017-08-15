@@ -16,7 +16,6 @@ import java.io.InputStream
 import java.net.URI
 import java.nio.file.Paths
 
-
 @Service(name = "Json")
 class PropertiesFactoryJsonImpl : PropertiesFactory() {
     override fun make(source: PropertiesSource): Either<Exception, Properties> =
@@ -46,10 +45,10 @@ internal class PropertiesSourceJacksonImpl(
             else
                 rootNode(uri!!)
             ) ?: throw IllegalStateException("The properties source '$uri' not found. " +
-                    "You need create one with '${rootKey ?: "/"}' section")
+            "You need create one with '${rootKey ?: "/"}' section")
 
-    private fun rootNode(uri: URI): JsonNode? = when(uri.scheme) {
-         null -> mapper.readTree(File(uri.toString()))
+    private fun rootNode(uri: URI): JsonNode? = when (uri.scheme) {
+        null -> mapper.readTree(File(uri.toString()))
         "file" -> mapper.readTree(Paths.get(uri).toFile())
         "classpath" -> inputStreamByResource(uri)?.let { mapper.readTree(it) }
         else -> throw IllegalArgumentException(
@@ -67,7 +66,7 @@ internal class PropertiesSourceJacksonImpl(
     override fun <P> read(key: String, clazz: Class<P>): P? {
         try {
             return mapper.treeToValue(node(key), clazz)
-        } catch(e: JsonMappingException) {
+        } catch (e: JsonMappingException) {
             throw IllegalStateException("Configuration parameter '$key' is not parsed.", e)
         }
     }

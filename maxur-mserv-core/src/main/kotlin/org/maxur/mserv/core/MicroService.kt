@@ -42,9 +42,7 @@ interface MicroService {
      * Restart this Service
      */
     fun deferredRestart()
-
 }
-
 
 /**
  * @param embeddedService Embedded service (may be composite)
@@ -83,7 +81,6 @@ class BaseMicroService constructor(
         }
         pool.shutdown()
     }
-
 
     override fun launch() {
         embeddedService.start()

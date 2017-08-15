@@ -11,7 +11,6 @@ import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
 import javax.ws.rs.core.Feature
 import javax.ws.rs.core.FeatureContext
 
-
 /**
  * @author myunusov
  * @version 1.0

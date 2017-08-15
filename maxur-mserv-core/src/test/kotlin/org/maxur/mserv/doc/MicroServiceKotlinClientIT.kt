@@ -26,7 +26,7 @@ class MicroServiceKotlinClientIT {
             // tag::launcher[]
     fun main() {
         Kotlin.service {
-            name = ":name"   // <1>
+            name = ":name" // <1>
             packages = "org.maxur.mserv.sample"  // <2>
             properties { format = "hocon" }      // <3>
             services += rest { } // <4>

@@ -5,7 +5,6 @@ import org.glassfish.jersey.server.monitoring.RequestEventListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-
 /**
  * The type Service request event listener.
 

@@ -22,7 +22,6 @@ import kotlin.reflect.KClass
  */
 class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
 
-
     var packages: List<String> = emptyList()
     val binders = ArrayList<Binder>()
 
@@ -34,9 +33,9 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
     val locator: ServiceLocator by lazy {
         if (packages.isNotEmpty()) {
             HK2RuntimeInitializer.init(
-                "mserv-locator",
-                true,
-                *packages.toTypedArray(), "org.maxur.mserv.core"
+                    "mserv-locator",
+                    true,
+                    *packages.toTypedArray(), "org.maxur.mserv.core"
             )
         } else {
             ServiceLocatorUtilities.createAndPopulateServiceLocator()
@@ -51,7 +50,7 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
         return service
     }
 
-    fun bind(vararg binders: Binder) : LocatorFactoryHK2Impl {
+    fun bind(vararg binders: Binder): LocatorFactoryHK2Impl {
         this.binders.addAll(binders)
         return this
     }
@@ -69,7 +68,7 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
         }
     }
 
-    private class ServiceProvider<T>(val func: (Locator) -> T): Factory<T> {
+    private class ServiceProvider<T>(val func: (Locator) -> T) : Factory<T> {
         val locator: Locator by lazy { Locator.current }
         val result: T by lazy { func.invoke(locator) }
         override fun dispose(instance: T) = Unit
@@ -90,9 +89,8 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
                     .to(ObjectMapper::class.java)
                     .`in`(Singleton::class.java)
         }
-
-
     }
+
     class LocatorBinder : AbstractBinder() {
 
         override fun configure() {
@@ -106,6 +104,4 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
     init {
         init()
     }
-
-
 }
