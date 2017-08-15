@@ -14,7 +14,7 @@ class Java {
 }
 
 interface IJBuilder {
-    fun title(value: String): JBuilder
+    fun name(value: String): JBuilder
     fun packages(value: String): JBuilder
     fun properties(format: String): JPropertiesBuilder
     fun properties(): JBuilder
@@ -32,7 +32,7 @@ interface IJBuilder {
 
 class JBuilder : MicroServiceBuilder(), IJBuilder {
 
-    override fun title(value: String): JBuilder {
+    override fun name(value: String): JBuilder {
         titleHolder = Holder.string(value)
         return this
     }

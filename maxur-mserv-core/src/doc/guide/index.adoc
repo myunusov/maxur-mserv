@@ -1,6 +1,6 @@
 :rootdir:
 :testdir: {rootDir}/src/test
-:sitedir: {rootDir}/target/site
+:sitedir: {rootDir}/target/generated-site
 :icons: font
 :experimental:
 :toclevels: 4
@@ -20,14 +20,27 @@ Yet another microservices framework
 
 [source,java,numbered]
 ----
-include::{testdir}/java/org/maxur/mserv/doc/MicroServiceIT.java[tags=launcher]
+include::{testdir}/java/org/maxur/mserv/doc/MicroServiceJavaClientIT.java[tags=launcher]
 ----
-<1> TODO
-<2> TODO
-<3> TODO
-<4> TODO
-<5> TODO
-<6> TODO
+<1> Read the name of the application  by _'name'_ as property key
+<2> Set package names to scan recursively by IoC locator
+<3> Set properties source as Hocon file with default attributes
+<4> Embed rest service
+<5> Set handler on _'before start'_ event
+<6> Start micro-service with all embedded services
+
+== Kotlin
+
+[source,kotlin,numbered]
+----
+include::{testdir}/kotlin/org/maxur/mserv/doc/MicroServiceKotlinClientIT.kt[tags=launcher]
+----
+<1> Read the name of the application  by _'name'_ as property key
+<2> Set package names to scan recursively by IoC locator
+<3> Set properties source as Hocon file with default attributes
+<4> Embed rest service
+<5> Set handler on _'before start'_ event
+<6> Start micro-service with all embedded services
 
 
 == REST

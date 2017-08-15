@@ -9,7 +9,7 @@ object Kotlin {
 
 class KBuilder(): MicroServiceBuilder() {
 
-    var title: String = "Anonymous"
+    var name: String = "Anonymous"
         set(value) {
             titleHolder = Holder.string(value)
         }
