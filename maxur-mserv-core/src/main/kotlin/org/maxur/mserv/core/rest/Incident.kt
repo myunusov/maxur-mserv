@@ -20,7 +20,7 @@ limitations under the License.
 package org.maxur.mserv.core.rest
 
 import java.io.Serializable
-import java.util.*
+import java.util.Arrays
 import java.util.stream.Collectors
 
 /**
@@ -41,7 +41,6 @@ open class Incident(@Suppress("unused") val message: String) : Serializable {
                     .collect(Collectors.toList<Incident>())
         }
     }
-
 }
 
 

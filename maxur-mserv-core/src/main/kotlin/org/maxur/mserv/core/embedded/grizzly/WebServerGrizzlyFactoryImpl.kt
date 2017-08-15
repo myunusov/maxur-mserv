@@ -16,7 +16,11 @@ import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.domain.Holder
 import org.maxur.mserv.core.domain.Path
-import org.maxur.mserv.core.embedded.*
+import org.maxur.mserv.core.embedded.EmbeddedService
+import org.maxur.mserv.core.embedded.EmbeddedServiceFactory
+import org.maxur.mserv.core.embedded.WebAppConfig
+import org.maxur.mserv.core.embedded.WebEntries
+import org.maxur.mserv.core.embedded.WebServer
 import org.maxur.mserv.core.embedded.properties.WebAppProperties
 import org.maxur.mserv.core.rest.RestResourceConfig
 import org.slf4j.bridge.SLF4JBridgeHandler
@@ -58,7 +62,7 @@ class WebServerGrizzlyFactoryImpl @Inject constructor(val locator: Locator) : Em
         )
         return WebServerGrizzlyImpl(config, locator)
     }
-    
+
     private fun restConfig(name: String?): RestResourceConfig =
             locator.service(RestResourceConfig::class, name) ?:
                     resourceConfigNotFoundError(locator, name ?: "undefined")
@@ -168,7 +172,6 @@ open class WebServerGrizzlyImpl(
         }
         return listener
     }
-
-
+    
 }
 

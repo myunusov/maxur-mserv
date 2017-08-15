@@ -63,7 +63,7 @@ class GrizzlyHttpContainer(@Volatile private var appHandler: ApplicationHandler?
 
     /**
      * Create a new Grizzly HTTP container.
-     * @param application   JAX-RS / Jersey application to be deployed on Grizzly HTTP container.
+     * @param application JAX-RS / Jersey application to be deployed on Grizzly HTTP container.
      * @param parentLocator parent HK2 service locator.
      */
     constructor(application: Application, parentLocator: ServiceLocator)
