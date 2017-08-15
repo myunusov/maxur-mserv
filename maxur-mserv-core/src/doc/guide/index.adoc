@@ -20,7 +20,7 @@ Yet another microservices framework
 
 [source,java,numbered]
 ----
-include::{testdir}/java/org/maxur/mserv/doc/MicroServiceIT.java[tags=launcher]
+include::{testdir}/java/org/maxur/mserv/doc/MicroServiceJavaClientIT.java[tags=launcher]
 ----
 <1> Read the name of the application  by _'name'_ as property key
 <2> Set package names to scan recursively by IoC locator
@@ -28,6 +28,20 @@ include::{testdir}/java/org/maxur/mserv/doc/MicroServiceIT.java[tags=launcher]
 <4> Embed rest service
 <5> Set handler on _'before start'_ event
 <6> Start micro-service with all embedded services
+
+== Kotlin
+
+[source,kotlin,numbered]
+----
+include::{testdir}/kotlin/org/maxur/mserv/doc/MicroServiceKotlinClientIT.kt[tags=launcher]
+----
+<1> Read the name of the application  by _'name'_ as property key
+<2> Set package names to scan recursively by IoC locator
+<3> Set properties source as Hocon file with default attributes
+<4> Embed rest service
+<5> Set handler on _'before start'_ event
+<6> Start micro-service with all embedded services
+
 
 == REST
 

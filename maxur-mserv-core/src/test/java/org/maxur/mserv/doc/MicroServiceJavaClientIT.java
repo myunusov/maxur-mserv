@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @version 1.0
  * @since <pre>8/4/2017</pre>
  */
-public class MicroServiceIT {
+public class MicroServiceJavaClientIT {
 
     @After
     public void tearDown() throws Exception {
