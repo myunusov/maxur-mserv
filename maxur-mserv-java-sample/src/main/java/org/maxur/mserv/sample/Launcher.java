@@ -27,7 +27,7 @@ public final class Launcher {
      */
     public static void main(String[] args) {
         Java.service()
-            .title(":name")
+            .name(":name")
             .packages("org.maxur.mserv.sample")
             .properties("hocon")
             .rest()

@@ -22,13 +22,12 @@ Yet another microservices framework
 ----
 include::{testdir}/java/org/maxur/mserv/doc/MicroServiceIT.java[tags=launcher]
 ----
-<1> TODO
-<2> TODO
-<3> TODO
-<4> TODO
-<5> TODO
-<6> TODO
-
+<1> Read the name of the application  by _'name'_ as property key
+<2> Set package names to scan recursively by IoC locator
+<3> Set properties source as Hocon file with default attributes
+<4> Embed rest service
+<5> Set handler on _'before start'_ event
+<6> Start micro-service with all embedded services
 
 == REST
 

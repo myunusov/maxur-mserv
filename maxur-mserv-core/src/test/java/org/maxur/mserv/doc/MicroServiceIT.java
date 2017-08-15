@@ -29,13 +29,13 @@ public class MicroServiceIT {
     // tag::launcher[]
     public void main() {
         Java.service()
-            .title(":name") // <1>
-            .packages("org.maxur.mserv.sample")  // <2>
+            .name(":name") // <1>
+            .packages("org.maxur.mserv.sample") // <2>
             .properties("hocon") // <3>
             .rest() // <4>
             .beforeStart(this::beforeStart) // <5>
             .afterStop(this::afterStop)
-            .start();  // <6>
+            .start(); // <6>
     }
     // end::launcher[]
 

@@ -25,7 +25,7 @@ object Launcher {
      */
     @JvmStatic fun main(args: Array<String>) {
         Kotlin.service {
-            title = ":name"
+            name = ":name"
             packages = "org.maxur.mserv.sample"
             properties { format = "hocon" }
             services += rest { afterStart += this@Launcher::afterWebServiceStart }
