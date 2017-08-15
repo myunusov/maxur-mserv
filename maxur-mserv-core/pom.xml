@@ -92,6 +92,7 @@
         <groovy-all.version>2.4.12</groovy-all.version>
         <resty.version>0.3.2</resty.version>
         <ant.version>1.10.1</ant.version>
+        <jackson-dataformat-hocon.version>1.1.1</jackson-dataformat-hocon.version>
     </properties>
 
     <profiles>
@@ -812,6 +813,25 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.honton.chas.hocon</groupId>
+            <artifactId>jackson-dataformat-hocon</artifactId>
+            <version>${jackson-dataformat-hocon.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
         <!-- grizzly2 -->
         <dependency>
@@ -1084,24 +1104,6 @@
         <sourceDirectory>src/main/kotlin</sourceDirectory>
         <testSourceDirectory>src/test/kotlin</testSourceDirectory>
         <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>add-source</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>${project.basedir}/src/vendor/java</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
 
             <plugin>
                 <groupId>org.glassfish.hk2</groupId>
@@ -1276,7 +1278,6 @@
                         <configuration>
                             <sourceDirs>
                                 <sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
-                                <sourceDir>${project.basedir}/src/vendor/java</sourceDir>
                             </sourceDirs>
                         </configuration>
                     </execution>

@@ -20,8 +20,16 @@ import org.glassfish.grizzly.memory.MemoryManager
 import org.maxur.mserv.core.domain.Path
 import org.maxur.mserv.core.embedded.properties.StaticContent
 import org.slf4j.LoggerFactory
-import java.io.*
-import java.net.*
+import java.io.Closeable
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.io.InputStream
+import java.net.JarURLConnection
+import java.net.MalformedURLException
+import java.net.URI
+import java.net.URL
+import java.net.URLConnection
 import java.nio.file.Paths
 import java.util.jar.JarEntry
 
@@ -52,7 +60,6 @@ class StaticHttpHandler(
 
     constructor(path: String, vararg roots: String) :
             this(StaticContent(Path(path), roots.map { URI.create(it) }.toTypedArray()))
-
 
     constructor(path: String, vararg roots: URI) :
             this(StaticContent(Path(path), arrayOf(*roots)))
@@ -228,7 +235,6 @@ class StaticHttpHandler(
         }
     }
 
-
     inner class RedirectedResource(url: String) : Resource() {
 
         override fun mustBeRedirected(resourcePath: String): Boolean = false
@@ -245,7 +251,7 @@ class StaticHttpHandler(
 
     }
 
-    inner abstract class Resource {
+    abstract inner class Resource {
 
         abstract val path: String
 
@@ -300,7 +306,7 @@ class StaticHttpHandler(
             outputStream.notifyCanWrite(NonBlockingDownloadHandler(response, outputStream, input, chunkSize))
         }
 
-        inner private class NonBlockingDownloadHandler
+        private inner class NonBlockingDownloadHandler
         internal constructor(private val response: Response,
                              private val outputStream: NIOOutputStream,
                              private val inputStream: InputStream,
@@ -457,7 +463,6 @@ class StaticHttpHandler(
                 System.getProperty(CHECK_NON_SLASH_TERMINATED_FOLDERS_PROP) == null ||
                         java.lang.Boolean.getBoolean(CHECK_NON_SLASH_TERMINATED_FOLDERS_PROP)
 
-
         fun find(resourcePath: String): Resource? {
             val path = resourcePath.trimStart('/')
             if (path.isEmpty() || path.endsWith("/")) {
@@ -484,7 +489,6 @@ class StaticHttpHandler(
 
     }
 
-
     inner class FileResource(
             folder: File,
             resourcePath: String,
@@ -492,9 +496,9 @@ class StaticHttpHandler(
     ) : Resource() {
 
         override fun mustBeRedirected(resourcePath: String): Boolean =
-            // TODO !this@StaticHttpHandler.isDirectorySlashOff &&
-                 file.isDirectory &&
-            !resourcePath.endsWith("/")
+                // TODO !this@StaticHttpHandler.isDirectorySlashOff &&
+                file.isDirectory &&
+                        !resourcePath.endsWith("/")
 
         override val path: String = file.path
 
@@ -545,24 +549,9 @@ class StaticHttpHandler(
                     else -> UnknownResource(url)
                 }
     }
-
-
 }
-
 
 interface Root {
     fun validate(): Root
     fun lookupResource(resourcePath: String, mayBeFolder: Boolean): StaticHttpHandler.Resource?
 }
-
-
-
-
-
-
-
-
-
-
-
-

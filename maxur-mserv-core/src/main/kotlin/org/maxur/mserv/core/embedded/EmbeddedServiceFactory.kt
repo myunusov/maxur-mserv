@@ -23,7 +23,7 @@ abstract class EmbeddedServiceFactory {
 
     @PostConstruct
     fun init() {
-       name = descriptor?.name ?: "Undefined"
+        name = descriptor?.name ?: "Undefined"
     }
 
     abstract fun make(properties: Holder<Any>): EmbeddedService?
