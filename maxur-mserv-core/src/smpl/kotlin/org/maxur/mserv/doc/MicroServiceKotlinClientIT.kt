@@ -31,7 +31,6 @@ class MicroServiceKotlinClientIT {
         Locator.shutdown()
     }
 
-
     private fun afterStop(service: WebServer) {
         assertThat(service).isNotNull()
     }

@@ -83,7 +83,6 @@
         <junit-vintage-engine.version>4.12.0-RC2</junit-vintage-engine.version>
         <slf4j.version>1.7.25</slf4j.version>
 
-
         <gmaven-plugin.version>1.5</gmaven-plugin.version>
         <maven-surefire-plugin.version>2.20</maven-surefire-plugin.version>
         <maven-failsafe-plugin.version>2.20</maven-failsafe-plugin.version>
