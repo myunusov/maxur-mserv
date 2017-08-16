@@ -1,6 +1,7 @@
 package org.maxur.mserv.core.service.hk2
 
 import org.glassfish.hk2.api.ServiceLocator
+import org.glassfish.hk2.api.ServiceLocatorState
 import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.service.properties.Properties
 import javax.inject.Inject
@@ -28,7 +29,11 @@ class LocatorHK2Impl @Inject constructor(val locator: ServiceLocator) : Locator 
 
     override fun <T> services(clazz: Class<T>): List<T> = locator.getAllServices(clazz).map { it as T}
 
-    override fun shutdown() = locator.shutdown()
+    override fun shutdown() =
+            if (locator.state == ServiceLocatorState.RUNNING)
+                locator.shutdown()
+            else
+                Unit
 
 }
 
