@@ -1,7 +1,6 @@
 package org.maxur.mserv.doc
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.maxur.mserv.core.Locator
@@ -14,17 +13,11 @@ import org.mockito.junit.MockitoJUnitRunner
 @RunWith(MockitoJUnitRunner::class)
 class MicroServiceKotlinClientIT {
 
-    @After
-    @Throws(Exception::class)
-    fun tearDown() {
-        val service = Locator.service(BaseService::class.java)
-        service?.stop()
-        Locator.shutdown()
-    }
+    private var service1: BaseService? = null
 
     @Test
-            // tag::launcher[]
     fun main() {
+        // tag::launcher[]
         Kotlin.service {
             name = ":name"   // <1>
             packages = "org.maxur.mserv.sample"  // <2>
@@ -33,14 +26,19 @@ class MicroServiceKotlinClientIT {
             beforeStart += this@MicroServiceKotlinClientIT::beforeStart // <5>
             afterStop += this@MicroServiceKotlinClientIT::afterStop
         }.start() // <6>
+        // end::launcher[]
+        service1?.stop()
+        Locator.shutdown()
     }
-    // end::launcher[]
+
 
     private fun afterStop(service: WebServer) {
         assertThat(service).isNotNull()
     }
 
-    private fun beforeStart(config: PropertiesSource) {
+    private fun beforeStart(service: BaseService, config: PropertiesSource) {
+        service1 = service
+        assertThat(service).isNotNull()
         assertThat(config).isNotNull()
         assertThat(config.format).isEqualToIgnoringCase("Hocon")
     }

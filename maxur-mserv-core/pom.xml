@@ -98,6 +98,15 @@
 
     <profiles>
         <profile>
+            <id>dep-junit</id>
+            <activation>
+                <property>
+                    <name>unreachable</name>
+                    <value>unknown</value>
+                </property>
+            </activation>
+        </profile>
+        <profile>
             <id>check-dep</id>
             <build>
                 <plugins>
@@ -313,7 +322,8 @@
                             <outputDir>${basedir}/target/generated-site/swagger/</outputDir>
                             <swaggerInput>${basedir}/target/classes/swagger.json</swaggerInput>
                             <config>
-                                <swagger2markup.separatedOperationsEnabled>true</swagger2markup.separatedOperationsEnabled>
+                                <swagger2markup.separatedOperationsEnabled>true
+                                </swagger2markup.separatedOperationsEnabled>
                             </config>
                         </configuration>
                         <dependencies>
@@ -1139,7 +1149,24 @@
         <sourceDirectory>src/main/kotlin</sourceDirectory>
         <testSourceDirectory>src/test/kotlin</testSourceDirectory>
         <plugins>
-
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-test-source</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/smpl/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>hk2-inhabitant-generator</artifactId>
@@ -1325,12 +1352,14 @@
                         <configuration>
                             <sourceDirs>
                                 <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
-                                <sourceDir>${project.basedir}/src/test/java</sourceDir>
+                                <sourceDir>${project.basedir}/src/smpl/java</sourceDir>
+                                <sourceDir>${project.basedir}/src/smpl/kotlin</sourceDir>
                             </sourceDirs>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
@@ -1369,12 +1398,14 @@
                     <providerSelection>2.0</providerSelection>
                     <source><![CDATA[
                         import us.monoid.web.Resty
+
                         def result = new Resty()
                                 .xml("http://repo1.maven.org/maven2/org/maxur/maxur-mserv-core/maven-metadata.xml")
                                 .get("metadata/versioning/latest")
                                 .item(0)
                                 .textContent
-                        project.properties['release.version']=result]]>
+                        project.properties['release.version'] = result
+                        ]]>
                     </source>
                 </configuration>
                 <dependencies>
