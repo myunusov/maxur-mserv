@@ -38,14 +38,14 @@ object RequestUtil {
         val responsePacket = mock<HttpResponsePacket> {
             on { isContentTypeSet } doReturn false
         }
-        
+
         val response = mock<Response> {
             on { response } doReturn responsePacket
             on { isSendFileEnabled } doReturn true
             on { outputBuffer } doReturn mock<OutputBuffer>()
             on { nioOutputStream } doReturn mock<NIOOutputStream>()
         }
-        
+
         val request = mock<Request> {
             on { getResponse() } doReturn response
             on { decodedRequestURI } doReturn uri

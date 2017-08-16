@@ -12,7 +12,6 @@ import javax.ws.rs.ext.ExceptionMapper
 
 /**
  * The type Runtime exception handler.
-
  * @author myunusov
  * *
  * @version 1.0
@@ -28,7 +27,7 @@ class RuntimeExceptionHandler : ExceptionMapper<RuntimeException> {
     override fun toResponse(exception: RuntimeException): Response {
         when (exception) {
             is IllegalArgumentException -> return onIllegalArgument(exception)
-            is WebApplicationException  -> return onWebApplicationException(exception)
+            is WebApplicationException -> return onWebApplicationException(exception)
             else -> {
                 log.error(exception.message, exception)
                 return status(Status.INTERNAL_SERVER_ERROR)
@@ -68,8 +67,4 @@ class RuntimeExceptionHandler : ExceptionMapper<RuntimeException> {
         }
     }
 
-
 }
-
-
-

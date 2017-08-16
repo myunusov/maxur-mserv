@@ -20,7 +20,6 @@ import javax.ws.rs.core.Feature
 import javax.ws.rs.core.FeatureContext
 import kotlin.reflect.KClass
 
-
 /**
  * @author myunusov
  * @version 1.0
@@ -70,6 +69,5 @@ abstract class AbstractResourceAT : JerseyTest() {
             ServiceLocatorProvider.getServiceLocator(context)
             return true
         }
-
     }
 }

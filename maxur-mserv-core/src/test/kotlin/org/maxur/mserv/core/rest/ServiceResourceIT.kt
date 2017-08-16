@@ -14,7 +14,6 @@ import javax.ws.rs.client.Entity
 import javax.ws.rs.core.MediaType
 import kotlin.reflect.KClass
 
-
 @RunWith(MockitoJUnitRunner::class)
 class ServiceResourceIT : AbstractResourceAT() {
 
@@ -59,7 +58,6 @@ class ServiceResourceIT : AbstractResourceAT() {
         assertThat(response.status).isEqualTo(204)
         verify(service).deferredStop()
     }
-
 
     @Test
     @Throws(IOException::class)

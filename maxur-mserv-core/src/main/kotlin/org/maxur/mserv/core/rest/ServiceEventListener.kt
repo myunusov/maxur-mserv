@@ -7,7 +7,6 @@ import org.glassfish.jersey.server.monitoring.RequestEventListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-
 /**
  * The type Service event listener.
 
@@ -22,7 +21,7 @@ class ServiceEventListener(private val prefix: String) : ApplicationEventListene
     companion object {
         val log: Logger = LoggerFactory.getLogger(ServiceRequestEventListener::class.java)
     }
-    
+
     @Volatile private var requestCnt = 0
 
     override fun onEvent(event: ApplicationEvent) {

@@ -45,7 +45,6 @@ abstract class PropertiesSource(
     }
 }
 
-
 object NullProperties : PropertiesSource(), Properties {
     override fun asString(key: String): String? = error(key)
     override fun asLong(key: String): Long? = error(key)
@@ -55,5 +54,3 @@ object NullProperties : PropertiesSource(), Properties {
     private fun <T> error(key: String): T =
             throw IllegalStateException("Service Configuration is not found. Key '$key' unresolved")
 }
-
-

@@ -69,9 +69,7 @@ class PropertiesJacksonImplSpec : Spek({
                 assertFailsWith<IllegalStateException> {
                     sut.read("id", PropertiesSourceHoconImpl::class)
                 }
-            }            
+            }
         }
-
     }
-    
 })

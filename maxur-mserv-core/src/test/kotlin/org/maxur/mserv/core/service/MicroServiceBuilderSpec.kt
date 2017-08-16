@@ -16,7 +16,6 @@ import org.maxur.mserv.core.service.properties.PropertiesSource
 import java.util.function.Predicate
 import kotlin.test.assertFailsWith
 
-
 @RunWith(JUnitPlatform::class)
 class MicroServiceBuilderSpec : Spek({
 
@@ -287,7 +286,6 @@ class MicroServiceBuilderSpec : Spek({
             }
         }
     }
-
 
     describe("a rest micro-service") {
         it("should return new micro-service") {

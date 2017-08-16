@@ -12,7 +12,7 @@ interface Locator {
         override fun <T> services(clazz: Class<T>): List<T> = error()
         override fun names(clazz: Class<*>): List<String> = error()
         override fun <R> property(key: String, clazz: Class<R>): R? = error()
-        override fun shutdown(): Unit = error()
+        override fun shutdown() = error<Unit>()
         override fun <T> implementation(): T = error()
         private fun <T> error(): T =
                 throw IllegalStateException("Service Locator is not initialized.")
@@ -54,7 +54,6 @@ interface Locator {
 
     fun <T : Any> services(clazz: KClass<T>): List<T> = services(clazz.java)
     fun <T> services(clazz: Class<T>): List<T>
-
 
     fun <T : Any> names(clazz: KClass<T>): List<String> = names(clazz.java)
     fun names(clazz: Class<*>): List<String>

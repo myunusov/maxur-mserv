@@ -12,7 +12,6 @@ import java.lang.reflect.Method
 import java.lang.reflect.Type
 import javax.inject.Inject
 
-
 /**
  * Resolve configuration by ConfigParameter annotations.
  *
@@ -62,7 +61,6 @@ class PropertiesInjectionResolver @Inject constructor(val service: Properties) :
         val clazz = injectee.injecteeClass
         return clazz.getAnnotation(Value::class.java)
     }
-
 
     private fun resolveByKey(name: String, type: Type): Any? {
         if (type !is Class<*>) {

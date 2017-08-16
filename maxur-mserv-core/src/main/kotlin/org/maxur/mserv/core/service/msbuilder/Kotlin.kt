@@ -7,7 +7,7 @@ object Kotlin {
     fun service(init: KBuilder.() -> Unit): MicroService = KBuilder(init).build()
 }
 
-class KBuilder(): MicroServiceBuilder() {
+class KBuilder() : MicroServiceBuilder() {
 
     var name: String = "Anonymous"
         set(value) {
@@ -18,7 +18,6 @@ class KBuilder(): MicroServiceBuilder() {
         set(value) {
             packagesHolder.addAll(value.split("\\s*,\\s*"))
         }
-
 
     constructor(init: KBuilder.() -> Unit) : this() {
         init()
@@ -40,7 +39,5 @@ class KBuilder(): MicroServiceBuilder() {
         type = "Grizzly"
         properties = ":webapp"
         init()
-    }    
+    }
 }
-
-

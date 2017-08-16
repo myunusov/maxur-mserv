@@ -19,7 +19,7 @@ class MicroServiceKotlinClientIT {
     fun main() {
         // tag::launcher[]
         Kotlin.service {
-            name = ":name"   // <1>
+            name = ":name" // <1>
             packages = "org.maxur.mserv.sample"  // <2>
             properties { format = "hocon" }      // <3>
             services += rest { } // <4>
@@ -30,7 +30,6 @@ class MicroServiceKotlinClientIT {
         service1?.stop()
         Locator.shutdown()
     }
-
 
     private fun afterStop(service: WebServer) {
         assertThat(service).isNotNull()

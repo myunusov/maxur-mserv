@@ -6,14 +6,13 @@ import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.service.properties.Properties
 import javax.inject.Inject
 
-
 class LocatorHK2Impl @Inject constructor(val locator: ServiceLocator) : Locator {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T> implementation(): T = locator as T
 
     override fun names(clazz: Class<*>): List<String> =
-        locator.getAllServiceHandles(clazz).map { it.activeDescriptor.name }
+            locator.getAllServiceHandles(clazz).map { it.activeDescriptor.name }
 
     override fun <T> property(key: String, clazz: Class<T>): T? =
             locator.getService(Properties::class.java).read(key, clazz)
@@ -27,7 +26,7 @@ class LocatorHK2Impl @Inject constructor(val locator: ServiceLocator) : Locator 
                         .firstOrNull()
             }
 
-    override fun <T> services(clazz: Class<T>): List<T> = locator.getAllServices(clazz).map { it as T}
+    override fun <T> services(clazz: Class<T>): List<T> = locator.getAllServices(clazz).map { it as T }
 
     override fun shutdown() =
             if (locator.state == ServiceLocatorState.RUNNING)
@@ -36,8 +35,3 @@ class LocatorHK2Impl @Inject constructor(val locator: ServiceLocator) : Locator 
                 Unit
 
 }
-
-
-
-
-

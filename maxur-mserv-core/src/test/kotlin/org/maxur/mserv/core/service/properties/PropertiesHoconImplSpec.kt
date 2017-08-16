@@ -18,8 +18,8 @@ class PropertiesHoconImplSpec : Spek({
 
     describe("a Properties Source as Hocon File") {
 
-        fun hocon(uri: URI?= null, root: String? = null): PropertiesSource
-                = object : PropertiesSource ("Hocon", uri, root) {}
+        fun hocon(uri: URI? = null, root: String? = null): PropertiesSource
+                = object : PropertiesSource("Hocon", uri, root) {}
 
         context("Load properties source by url") {
             it("should return opened source with url by default") {
@@ -66,9 +66,9 @@ class PropertiesHoconImplSpec : Spek({
                 assertFailsWith<IllegalStateException> {
                     sut.read("id", PropertiesSourceHoconImpl::class)
                 }
-            }            
+            }
         }
 
     }
-    
+
 })

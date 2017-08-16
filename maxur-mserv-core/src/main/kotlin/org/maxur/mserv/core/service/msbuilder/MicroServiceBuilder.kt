@@ -60,7 +60,7 @@ abstract class MicroServiceBuilder {
                 bind(propertiesHolder::build, Properties::class, PropertiesSource::class)
                 bind({ locator -> BaseMicroService(services.build(locator), locator) }, MicroService::class)
             }.make()
-        } catch(e: Exception) {
+        } catch (e: Exception) {
             return onConfigurationError(Locator.current)
         }
     }
@@ -78,7 +78,7 @@ abstract class MicroServiceBuilder {
         return service
     }
 
-    private fun <T> onConfigurationError(locator: Locator?) : T {
+    private fun <T> onConfigurationError(locator: Locator?): T {
         val errorMessage = locator
                 ?.service(ErrorHandler::class)
                 ?.latestError
@@ -143,8 +143,7 @@ class ServiceHolder {
         }
 
     private fun makeServiceHolder(): Holder<EmbeddedService> {
-        return Holder.get {
-            locator ->
+        return Holder.get { locator ->
             locator
                     .locate(clazz, typeHolder ?: "unknown")
                     .make(propertiesHolder) ?:
@@ -185,19 +184,18 @@ sealed class PropertiesHolder {
             set(value) {
                 uri = URI.create(value)
             }
-        override fun build(locator: Locator): Properties =  PropertiesSource.open(format, uri, rootKey)
+
+        override fun build(locator: Locator): Properties = PropertiesSource.open(format, uri, rootKey)
     }
 
     object NullPropertiesHolder : PropertiesHolder() {
-        override fun build(locator: Locator): Properties =  PropertiesSource.nothing()
+        override fun build(locator: Locator): Properties = PropertiesSource.nothing()
     }
 
-    object DefaultPropertiesHolder : PropertiesHolder()  {
-        override fun build(locator: Locator): Properties =  PropertiesSource.default()
+    object DefaultPropertiesHolder : PropertiesHolder() {
+        override fun build(locator: Locator): Properties = PropertiesSource.default()
     }
 }
-
-
 
 class HookHolder {
 
@@ -222,6 +220,7 @@ class ErrorHookHolder {
     operator fun plusAssign(value: KFunction<Any>) {
         list.add(value)
     }
+
     operator fun plusAssign(value: (Exception) -> Unit) {
         val observer = object {
             fun invoke(e: Exception) = value.invoke(e)
@@ -229,5 +228,3 @@ class ErrorHookHolder {
         list.add(observer::invoke)
     }
 }
-
-

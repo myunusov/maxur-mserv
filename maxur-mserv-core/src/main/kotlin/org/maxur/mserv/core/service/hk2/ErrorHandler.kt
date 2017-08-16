@@ -8,7 +8,6 @@ import org.jvnet.hk2.annotations.Service
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-
 /**
  * Application Configurations
  *
@@ -17,7 +16,7 @@ import org.slf4j.LoggerFactory
  * @since <pre>01.09.2015</pre>
  */
 @Service
-open class ErrorHandler: ErrorService {
+open class ErrorHandler : ErrorService {
 
     companion object {
         val log: Logger = LoggerFactory.getLogger(ErrorHandler::class.java)

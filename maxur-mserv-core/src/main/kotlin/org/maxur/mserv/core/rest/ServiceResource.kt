@@ -3,13 +3,23 @@ package org.maxur.mserv.core.rest
 import dk.nykredit.jackson.dataformat.hal.HALLink
 import dk.nykredit.jackson.dataformat.hal.annotation.Link
 import dk.nykredit.jackson.dataformat.hal.annotation.Resource
-import io.swagger.annotations.*
+import io.swagger.annotations.Api
+import io.swagger.annotations.ApiModel
+import io.swagger.annotations.ApiModelProperty
+import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.ApiParam
+import io.swagger.annotations.ApiResponse
+import io.swagger.annotations.ApiResponses
 import org.maxur.mserv.core.MicroService
 import java.net.URI
 import javax.inject.Inject
-import javax.ws.rs.*
+import javax.ws.rs.Consumes
+import javax.ws.rs.GET
+import javax.ws.rs.PUT
+import javax.ws.rs.Path
+import javax.ws.rs.PathParam
+import javax.ws.rs.Produces
 import javax.ws.rs.core.MediaType
-
 
 /**
  * The type Application resource.
@@ -29,9 +39,9 @@ class ServiceResource @Inject constructor(val service: MicroService) {
     @ApiResponses(value = *arrayOf(
             ApiResponse(code = 200, message = "Successful operation"),
             ApiResponse(code = 500, message = "Internal server error")
-        )
     )
-    fun service() : ServiceView = ServiceView(service)
+    )
+    fun service(): ServiceView = ServiceView(service)
 
     @PUT()
     @Path("/{state}")
@@ -45,21 +55,21 @@ class ServiceResource @Inject constructor(val service: MicroService) {
             ApiResponse(code = 204, message = "Successful operation"),
             ApiResponse(code = 400, message = "On invalid command"),
             ApiResponse(code = 500, message = "Internal server error")
-        )
+    )
     )
     fun state(
-            @ApiParam(name = "state", value = "New service state", required = true, allowableValues="stop, restart")
+            @ApiParam(name = "state", value = "New service state", required = true, allowableValues = "stop, restart")
             @PathParam("state") command: String
     ) = when (command.toUpperCase()) {
         "STOP" -> service.deferredStop()
         "RESTART" -> service.deferredRestart()
-        else -> throw IllegalArgumentException("Command '${command}' unknown")
+        else -> throw IllegalArgumentException("Command '$command' unknown")
     }
 }
 
 @Suppress("unused")
 @Resource
-@ApiModel(value="Service View", description="Service Presentation Model")
+@ApiModel(value = "Service View", description = "Service Presentation Model")
 class ServiceView(service: MicroService) {
 
     @ApiModelProperty(value = "Service name")
@@ -73,7 +83,6 @@ class ServiceView(service: MicroService) {
 
     @Link("restart")
     var restart: HALLink = HALLink.Builder(URI("service/restart")).build()
-
 
 }
 

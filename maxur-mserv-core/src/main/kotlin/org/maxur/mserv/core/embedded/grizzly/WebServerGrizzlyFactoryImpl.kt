@@ -7,7 +7,6 @@ import org.glassfish.grizzly.http.server.HttpServer
 import org.glassfish.grizzly.http.server.NetworkListener
 import org.glassfish.grizzly.http.server.ServerConfiguration
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator
-import org.glassfish.hk2.api.ServiceLocator
 import org.glassfish.jersey.process.JerseyProcessingUncaughtExceptionHandler
 import org.glassfish.jersey.server.ResourceConfig
 import org.glassfish.jersey.server.spi.Container
@@ -49,7 +48,7 @@ class WebServerGrizzlyFactoryImpl @Inject constructor(val locator: Locator) : Em
             restConfig(it.name)
         } ?: object : RestResourceConfig() {
             init {
-                setApplicationName(name)
+                applicationName = name
             }
         }
         val staticContent = webAppProperties.staticContent(restConfig)
@@ -81,7 +80,7 @@ open class WebServerGrizzlyImpl(
         locator: Locator
 ) : BaseService(locator), WebServer {
 
-    fun ServerConfiguration.title(): String = "$name '$httpServerName-$httpServerVersion'"
+    private fun ServerConfiguration.title(): String = "$name '$httpServerName-$httpServerVersion'"
 
     private val httpServer: HttpServer = httpServer()
 
@@ -113,7 +112,7 @@ open class WebServerGrizzlyImpl(
 
     private fun makeDynamicHandler(serverConfiguration: ServerConfiguration, path: Path) {
         serverConfiguration.addHttpHandler(
-                GrizzlyHttpContainer(config.resourceConfig, locator.implementation<ServiceLocator>()),
+                GrizzlyHttpContainer(config.resourceConfig, locator.implementation()),
                 "/${path.contextPath}"
         )
     }
@@ -130,8 +129,7 @@ open class WebServerGrizzlyImpl(
     override fun entries(): WebEntries {
         val cfg = httpServer.serverConfiguration
         val entries = WebEntries(config.url)
-        cfg.httpHandlersWithMapping.forEach {
-            (_, regs) ->
+        cfg.httpHandlersWithMapping.forEach { (_, regs) ->
             run {
                 for (reg in regs) entries.add(
                         reg.contextPath,
@@ -172,6 +170,6 @@ open class WebServerGrizzlyImpl(
         }
         return listener
     }
-    
+
 }
 
