@@ -13,7 +13,12 @@ import org.glassfish.jersey.internal.PropertiesDelegate
 import org.glassfish.jersey.internal.inject.ReferencingFactory
 import org.glassfish.jersey.internal.util.collection.Ref
 import org.glassfish.jersey.process.internal.RequestScoped
-import org.glassfish.jersey.server.*
+import org.glassfish.jersey.server.ApplicationHandler
+import org.glassfish.jersey.server.ContainerException
+import org.glassfish.jersey.server.ContainerRequest
+import org.glassfish.jersey.server.ContainerResponse
+import org.glassfish.jersey.server.ResourceConfig
+import org.glassfish.jersey.server.ServerProperties
 import org.glassfish.jersey.server.internal.ContainerUtils
 import org.glassfish.jersey.server.spi.Container
 import org.glassfish.jersey.server.spi.ContainerResponseWriter
@@ -24,22 +29,23 @@ import java.io.OutputStream
 import java.net.URI
 import java.net.URISyntaxException
 import java.security.Principal
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Provider
 import javax.ws.rs.core.Application
 import javax.ws.rs.core.SecurityContext
 
-class GrizzlyHttpContainer(@Volatile private var appHandler: ApplicationHandler?): HttpHandler(), Container {
+class GrizzlyHttpContainer(@Volatile private var appHandler: ApplicationHandler?) : HttpHandler(), Container {
 
     companion object {
         val log: org.slf4j.Logger = LoggerFactory.getLogger(GrizzlyHttpContainer::class.java)
     }
+
     private val RequestTYPE = object : TypeLiteral<Ref<Request>>() {}.type
     private val ResponseTYPE = object : TypeLiteral<Ref<Response>>() {}.type
 
-     /**
+    /**
      * Cached value of configuration property
      * [org.glassfish.jersey.server.ServerProperties.RESPONSE_SET_STATUS_OVER_SEND_ERROR].
      * If `true` method [org.glassfish.grizzly.http.server.Response.setStatus] is used over
@@ -55,16 +61,13 @@ class GrizzlyHttpContainer(@Volatile private var appHandler: ApplicationHandler?
      */
     private var configReduceContextPathSlashesEnabled: Boolean = false
 
-
     /**
      * Create a new Grizzly HTTP container.
-
-     * @param application   JAX-RS / Jersey application to be deployed on Grizzly HTTP container.
-     * *
+     * @param application JAX-RS / Jersey application to be deployed on Grizzly HTTP container.
      * @param parentLocator parent HK2 service locator.
      */
     constructor(application: Application, parentLocator: ServiceLocator)
-            : this(ApplicationHandler(application, GrizzlyBinder(), parentLocator))  {
+            : this(ApplicationHandler(application, GrizzlyBinder(), parentLocator)) {
         cacheConfigSetStatusOverSendError()
         cacheConfigEnableLeadingContextPathSlashes()
     }
@@ -392,9 +395,7 @@ class GrizzlyHttpContainer(@Volatile private var appHandler: ApplicationHandler?
         this.configReduceContextPathSlashesEnabled = ServerProperties.getValue(getConfiguration().properties,
                 ServerProperties.REDUCE_CONTEXT_PATH_SLASHES_ENABLED, false, Boolean::class.java)
     }
-
 }
-
 
 class GrizzlyRequestPropertiesDelegate(private val request: Request) : PropertiesDelegate {
     override fun getProperty(name: String): Any? = request.getAttribute(name)

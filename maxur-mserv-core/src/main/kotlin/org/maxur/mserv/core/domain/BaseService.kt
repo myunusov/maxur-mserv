@@ -7,7 +7,6 @@ import kotlin.reflect.KParameter
 import kotlin.reflect.KType
 import kotlin.reflect.full.isSubclassOf
 
-
 abstract class BaseService(val locator: Locator) {
 
     var beforeStart: MutableList<KFunction<Any>> = ArrayList()
@@ -42,18 +41,17 @@ abstract class BaseService(val locator: Locator) {
     /**
      * shutdown this service.
      */
-    abstract protected fun shutdown()
+    protected abstract fun shutdown()
 
     /**
      * launch this service.
      */
-    abstract protected fun launch()
+    protected abstract fun launch()
 
     /**
      * relaunch this service.
      */
-    abstract protected fun relaunch()
-
+    protected abstract fun relaunch()
 
     /**
      * Represent State of micro-service
@@ -87,7 +85,6 @@ abstract class BaseService(val locator: Locator) {
             afterStop.forEach { call(it, service) }
         })
 
-
         protected fun launch(service: BaseService) = check(service, {
             beforeStart.forEach { call(it, service) }
             launch()
@@ -105,7 +102,7 @@ abstract class BaseService(val locator: Locator) {
         private fun check(service: BaseService, function: BaseService.() -> Unit) {
             try {
                 service.apply(function)
-            } catch(e: Exception) {
+            } catch (e: Exception) {
                 service.onError.forEach { call(it, service, e) }
             }
         }

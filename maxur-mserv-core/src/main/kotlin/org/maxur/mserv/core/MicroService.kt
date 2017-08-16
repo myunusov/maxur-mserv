@@ -11,7 +11,7 @@ import java.util.concurrent.Executors
  * @version 1.0
  * @since <pre>12.06.2017</pre>
  */
-interface MicroService  {
+interface MicroService {
 
     /**
      * The service name

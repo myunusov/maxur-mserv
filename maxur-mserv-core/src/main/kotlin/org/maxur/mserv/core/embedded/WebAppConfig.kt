@@ -15,6 +15,6 @@ data class WebAppConfig(
     // TODO condition must be rewrite
     fun staticContentByPath(path: String): StaticContent? =
             staticContent.filter { it.path.asString == path || "/${it.path.asString}" == path }.firstOrNull()
-    
+
 }
 

@@ -24,7 +24,7 @@ class WebAppProperties(
 ) {
 
     val restPath: Path = rest?.path ?: Path("api")
-    
+
     companion object {
         val SWAGGER_URL = Resource("/META-INF/resources/webjars/swagger-ui/").subfolder ?:
                 throw IllegalStateException("Swagger UI is not found in class path")

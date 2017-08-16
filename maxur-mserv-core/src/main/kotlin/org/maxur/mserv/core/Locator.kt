@@ -62,7 +62,7 @@ interface Locator {
     fun property(key: String): String? = property(key, String::class)
     fun <T : Any> property(key: String, clazz: KClass<T>): T? = property(key, clazz.java)
     fun <T> property(key: String, clazz: Class<T>): T?
-    
+
     fun shutdown()
 
     fun <T> implementation(): T

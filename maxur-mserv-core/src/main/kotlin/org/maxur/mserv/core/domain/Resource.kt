@@ -5,14 +5,13 @@ import java.net.URI
 import java.net.URL
 import java.util.jar.JarEntry
 
-
 data class Resource(val path: String) {
 
     val url: URL? by lazy {
         this::class.java.getResource(path)?.toURI()?.toURL()
     }
 
-    val subfolder: URI?  by lazy {
+    val subfolder: URI? by lazy {
         url?.let { findSubfolder(it) }
     }
 
