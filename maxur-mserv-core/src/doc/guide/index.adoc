@@ -1,5 +1,5 @@
 :rootdir:
-:testdir: {rootDir}/src/test
+:testdir: {rootDir}/src/smpl
 :sitedir: {rootDir}/target/generated-site
 :icons: font
 :experimental:
