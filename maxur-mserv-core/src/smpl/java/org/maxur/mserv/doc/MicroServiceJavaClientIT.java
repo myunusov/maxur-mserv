@@ -1,6 +1,5 @@
 package org.maxur.mserv.doc;
 
-import org.junit.After;
 import org.junit.Test;
 import org.maxur.mserv.core.Locator;
 import org.maxur.mserv.core.domain.BaseService;
@@ -16,18 +15,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class MicroServiceJavaClientIT {
 
-    @After
-    public void tearDown() throws Exception {
-        final BaseService service = Locator.Companion.service(BaseService.class);
-        if (service != null) {
-            service.stop();
-        }
-        Locator.Companion.shutdown();
-    }
+    private BaseService service1 = null;
 
     @Test
-    // tag::launcher[]
     public void main() {
+        // tag::launcher[]
         Java.service()
             .name(":name") // <1>
             .packages("org.maxur.mserv.sample") // <2>
@@ -36,18 +28,20 @@ public class MicroServiceJavaClientIT {
             .beforeStart(this::beforeStart) // <5>
             .afterStop(this::afterStop)
             .start(); // <6>
-    }
-    // end::launcher[]
-
-    private void onError(Exception exception) {
-
+        // end::launcher[]
+        if (service1 != null) {
+            service1.stop();
+        }
+        Locator.Companion.shutdown();
     }
 
     private void afterStop(final BaseService service) {
-
+        assertThat(service).isNotNull();
     }
 
     private void beforeStart(final BaseService service) {
+        service1 = service;
+        assertThat(service).isNotNull();
         final Locator locator = service.getLocator();
         final PropertiesSource config = locator.service(PropertiesSource.class);
         assertThat(config).isNotNull();

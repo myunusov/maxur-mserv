@@ -11,10 +11,15 @@ import org.glassfish.jersey.server.ServerProperties
 import org.glassfish.jersey.test.JerseyTest
 import org.glassfish.jersey.test.TestProperties
 import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
+import org.slf4j.bridge.SLF4JBridgeHandler
+import java.util.logging.Level
+import java.util.logging.LogManager
+import java.util.logging.Logger
 import javax.ws.rs.core.Application
 import javax.ws.rs.core.Feature
 import javax.ws.rs.core.FeatureContext
 import kotlin.reflect.KClass
+
 
 /**
  * @author myunusov
@@ -22,6 +27,13 @@ import kotlin.reflect.KClass
  * @since <pre>07.07.2017</pre>
  */
 abstract class AbstractResourceAT : JerseyTest() {
+
+    init {
+        LogManager.getLogManager().reset()
+        SLF4JBridgeHandler.removeHandlersForRootLogger()
+        SLF4JBridgeHandler.install()
+        Logger.getLogger("global").setLevel(Level.FINEST)
+    }
 
     protected val mapper: ObjectMapper = ObjectMapperProvider().provide()
 
