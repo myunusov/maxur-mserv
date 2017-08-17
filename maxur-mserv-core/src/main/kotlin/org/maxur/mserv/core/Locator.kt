@@ -39,7 +39,7 @@ interface Locator {
             val tail: Field = this::class.java.getDeclaredField("tail")
             tail.isAccessible = true
             @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
-            return  (tail.get(this) as Map.Entry<K, V>?)?.value
+            return (tail.get(this) as Map.Entry<K, V>?)?.value
         }
 
         fun <T> service(clazz: Class<T>): T? = current.service(clazz)
@@ -47,7 +47,7 @@ interface Locator {
         fun <T : Any> service(clazz: KClass<T>, name: String): T? = current.service(clazz, name)
         fun <T : Any> service(parameter: KParameter): T? = current.service(parameter)
         fun <T : Any> services(clazz: KClass<T>): List<T> = current.services(clazz)
-        fun shutdown() = current.shutdown()
+        fun shutdown() = if (!(current is NullLocator)) current.shutdown() else Unit
     }
 
     @PostConstruct
