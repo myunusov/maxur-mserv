@@ -43,7 +43,7 @@ import javax.ws.rs.core.SecurityContext
 class GrizzlyHttpContainer(@Volatile private var appHandler: ApplicationHandler) : HttpHandler(), Container {
 
     companion object {
-        private val log: org.slf4j.Logger = LoggerFactory.getLogger(GrizzlyHttpContainer::class.java)
+        private val log = LoggerFactory.getLogger(GrizzlyHttpContainer::class.java)
     }
 
     private val RequestTYPE = object : TypeLiteral<Ref<Request>>() {}.type
@@ -132,9 +132,8 @@ class GrizzlyHttpContainer(@Volatile private var appHandler: ApplicationHandler)
         }
 
         private val name: String = if (log.isDebugEnabled) {
-            val result = "ResponseWriter {id=${UUID.randomUUID()}, grizzlyResponse=${grizzlyResponse.hashCode()}}"
-            log.debug("{0} - init", result)
-            result
+            "ResponseWriter {id=${UUID.randomUUID()}, grizzlyResponse=${grizzlyResponse.hashCode()}}"
+                .also { log.debug("{0} - init", it) }
         } else {
             "ResponseWriter"
         }
