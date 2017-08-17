@@ -3,7 +3,9 @@ package org.maxur.mserv.core.service.hk2
 import org.glassfish.hk2.api.Injectee
 import org.glassfish.hk2.api.InjectionResolver
 import org.glassfish.hk2.api.ServiceHandle
+import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.annotation.Value
+import org.maxur.mserv.core.service.properties.NullProperties
 import org.maxur.mserv.core.service.properties.Properties
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -19,11 +21,13 @@ import javax.inject.Inject
  * @version 1.0
  * @since <pre>12.06.2017</pre>
  */
-class PropertiesInjectionResolver @Inject constructor(val service: Properties) : InjectionResolver<Value> {
+class PropertiesInjectionResolver @Inject constructor(val locator: Locator) : InjectionResolver<Value> {
 
     companion object {
         val log: Logger = LoggerFactory.getLogger(PropertiesInjectionResolver::class.java)
     }
+
+    val service: Properties = locator.service(Properties::class) ?: NullProperties
 
     override fun resolve(injectee: Injectee, root: ServiceHandle<*>?): Any {
         val annotation = annotation(injectee)

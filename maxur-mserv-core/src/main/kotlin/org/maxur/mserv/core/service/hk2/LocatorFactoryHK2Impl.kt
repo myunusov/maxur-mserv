@@ -22,32 +22,43 @@ import kotlin.reflect.KClass
  */
 class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
 
+    companion object {
+        private var name_count = 0
+    }
+
     var packages: List<String> = emptyList()
     val binders = ArrayList<Binder>()
 
     init {
-        binders.add(ObjectMapperBinder())
-        binders.add(PropertiesInjectionResolverBinder())
+        init()
     }
 
-    val locator: ServiceLocator by lazy {
-        if (packages.isNotEmpty()) {
+    fun make(): Locator {
+        val serviceLocator = makeLocator()
+        binders.add(ObjectMapperBinder())
+        binders.add(PropertiesInjectionResolverBinder())
+        ServiceLocatorUtilities.enableImmediateScope(serviceLocator)
+        ServiceLocatorUtilities.bind(serviceLocator, LocatorBinder())
+        val locator = serviceLocator.getService(Locator::class.java)
+        ServiceLocatorUtilities.bind(serviceLocator, *binders.toTypedArray())
+        return locator
+    }
+
+    private fun makeLocator(): ServiceLocator {
+        return if (packages.isNotEmpty()) {
             HK2RuntimeInitializer.init(
-                    "mserv-locator",
+                    generateName(),
                     true,
                     *packages.toTypedArray(), "org.maxur.mserv.core"
             )
         } else {
-            ServiceLocatorUtilities.createAndPopulateServiceLocator()
+            ServiceLocatorUtilities.createAndPopulateServiceLocator(generateName())
         }
     }
 
-    fun make(): Locator {
-        ServiceLocatorUtilities.enableImmediateScope(locator)
-        ServiceLocatorUtilities.bind(locator, LocatorBinder())
-        val service = locator.getService(Locator::class.java)
-        ServiceLocatorUtilities.bind(locator, *binders.toTypedArray())
-        return service
+    private fun generateName() = synchronized(name_count) {
+        name_count++
+        "locator ${name_count}"
     }
 
     fun bind(vararg binders: Binder): LocatorFactoryHK2Impl {
@@ -101,7 +112,4 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
 
     }
 
-    init {
-        init()
-    }
 }

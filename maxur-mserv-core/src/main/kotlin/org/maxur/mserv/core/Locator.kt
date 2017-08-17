@@ -1,5 +1,6 @@
 package org.maxur.mserv.core
 
+import java.lang.reflect.Field
 import javax.annotation.PostConstruct
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
@@ -8,25 +9,38 @@ import kotlin.reflect.KParameter
 interface Locator {
 
     private object NullLocator : Locator {
+        override val name: String = "null"
         override fun <T> service(clazz: Class<T>, name: String?): T? = error()
         override fun <T> services(clazz: Class<T>): List<T> = error()
         override fun names(clazz: Class<*>): List<String> = error()
         override fun <R> property(key: String, clazz: Class<R>): R? = error()
-        override fun shutdown() = error<Unit>()
+        override fun close() = error<Unit>()
         override fun <T> implementation(): T = error()
         private fun <T> error(): T =
                 throw IllegalStateException("Service Locator is not initialized.")
     }
 
+    val name: String
+
     companion object {
-        private var localCurrent: ThreadLocal<Locator> = ThreadLocal()
+        private var locators: LinkedHashMap<String, Locator> = LinkedHashMap()
+        private var threadLocator: ThreadLocal<Locator> = ThreadLocal()
 
         var current: Locator = NullLocator
-            get() = localCurrent.get() ?: field
+            get() = threadLocator.get() ?: locators.lastValue() ?: field
             set(value) {
-                localCurrent.set(value)
-                field = value
+                locators.put(value.name, value)
+                threadLocator.set(value)
             }
+
+        fun locator(name: String): Locator = locators[name] ?: NullLocator
+
+        private fun <K, V> LinkedHashMap<K, V>.lastValue(): V? {
+            val tail: Field = this::class.java.getDeclaredField("tail")
+            tail.isAccessible = true
+            @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+            return  (tail.get(this) as Map.Entry<K, V>?)?.value
+        }
 
         fun <T> service(clazz: Class<T>): T? = current.service(clazz)
         fun <T : Any> service(clazz: KClass<T>): T? = current.service(clazz)
@@ -62,8 +76,15 @@ interface Locator {
     fun <T : Any> property(key: String, clazz: KClass<T>): T? = property(key, clazz.java)
     fun <T> property(key: String, clazz: Class<T>): T?
 
-    fun shutdown()
+    fun shutdown() {
+        locators.remove(this.name)
+        threadLocator.set(null)
+        close()
+    }
+
+    fun close()
 
     fun <T> implementation(): T
 
 }
+
