@@ -30,6 +30,7 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
     val binders = ArrayList<Binder>()
 
     init {
+        @Suppress("UNUSED_EXPRESSION")
         init()
     }
 
@@ -58,7 +59,7 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
 
     private fun generateName() = synchronized(name_count) {
         name_count++
-        "locator ${name_count}"
+        "locator $name_count"
     }
 
     fun bind(vararg binders: Binder): LocatorFactoryHK2Impl {

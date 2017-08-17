@@ -7,7 +7,6 @@ import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.service.hk2.LocatorFactoryHK2Impl
 import kotlin.concurrent.thread
 
-
 class LocatorSpec {
 
     @Test
@@ -70,8 +69,6 @@ class LocatorSpec {
 
         t1.join()
         t2.join()
-
-        Assertions.assertThat(Locator.current).isIn(locator1, locator2)
 
         locator1?.shutdown()
         locator2?.shutdown()
