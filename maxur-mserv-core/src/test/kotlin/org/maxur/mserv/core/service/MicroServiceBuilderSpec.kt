@@ -9,6 +9,7 @@ import org.jetbrains.spek.api.dsl.it
 import org.junit.platform.runner.JUnitPlatform
 import org.junit.runner.RunWith
 import org.maxur.mserv.core.Locator
+import org.maxur.mserv.core.TestLocatorHolder
 import org.maxur.mserv.core.service.msbuilder.Java
 import org.maxur.mserv.core.service.msbuilder.Kotlin
 import org.maxur.mserv.core.service.properties.Properties
@@ -20,6 +21,10 @@ import kotlin.test.assertFailsWith
 class MicroServiceBuilderSpec : Spek({
 
     describe("Build empty micro-service") {
+
+        beforeEachTest {
+            Locator.holder = TestLocatorHolder
+        }
 
         afterEachTest {
             Locator.shutdown()

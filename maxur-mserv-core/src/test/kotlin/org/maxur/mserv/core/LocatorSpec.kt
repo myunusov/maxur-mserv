@@ -1,13 +1,20 @@
-package org.maxur.mserv
+package org.maxur.mserv.core
 
 import org.assertj.core.api.Assertions
+import org.junit.BeforeClass
 import org.junit.Test
-
-import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.service.hk2.LocatorFactoryHK2Impl
 import kotlin.concurrent.thread
 
 class LocatorSpec {
+
+    companion object {
+        @JvmStatic
+        @BeforeClass
+        fun beforeClass() {
+            Locator.holder = TestLocatorHolder
+        }
+    }
 
     @Test
     fun testSingle() {
