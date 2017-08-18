@@ -7,6 +7,8 @@ import org.jetbrains.spek.api.dsl.describe
 import org.jetbrains.spek.api.dsl.it
 import org.junit.platform.runner.JUnitPlatform
 import org.junit.runner.RunWith
+import org.maxur.mserv.core.Locator
+import org.maxur.mserv.core.TestLocatorHolder
 import java.net.URI
 import java.net.URL
 import java.time.Duration
@@ -17,6 +19,10 @@ import kotlin.test.assertFailsWith
 class PropertiesHoconImplSpec : Spek({
 
     describe("a Properties Source as Hocon File") {
+
+        beforeEachTest {
+            Locator.holder = TestLocatorHolder
+        }
 
         fun hocon(uri: URI? = null, root: String? = null): PropertiesSource
                 = object : PropertiesSource("Hocon", uri, root) {}

@@ -8,6 +8,8 @@ import javax.inject.Inject
 
 class LocatorHK2Impl @Inject constructor(val locator: ServiceLocator) : Locator {
 
+    override val name = locator.name
+
     @Suppress("UNCHECKED_CAST")
     override fun <T> implementation(): T = locator as T
 
@@ -28,10 +30,9 @@ class LocatorHK2Impl @Inject constructor(val locator: ServiceLocator) : Locator 
 
     override fun <T> services(clazz: Class<T>): List<T> = locator.getAllServices(clazz).map { it as T }
 
-    override fun shutdown() =
-            if (locator.state == ServiceLocatorState.RUNNING)
-                locator.shutdown()
-            else
-                Unit
+    override fun close() {
+        if (locator.state == ServiceLocatorState.RUNNING)
+            locator.shutdown()
+    }
 
 }

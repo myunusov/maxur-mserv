@@ -7,33 +7,86 @@ import kotlin.reflect.KParameter
 @Suppress("UNCHECKED_CAST")
 interface Locator {
 
-    private object NullLocator : Locator {
+    object NullLocator : Locator {
+        override val name: String = "null"
         override fun <T> service(clazz: Class<T>, name: String?): T? = error()
         override fun <T> services(clazz: Class<T>): List<T> = error()
         override fun names(clazz: Class<*>): List<String> = error()
         override fun <R> property(key: String, clazz: Class<R>): R? = error()
-        override fun shutdown() = error<Unit>()
+        override fun close() = error<Unit>()
         override fun <T> implementation(): T = error()
         private fun <T> error(): T =
                 throw IllegalStateException("Service Locator is not initialized.")
     }
 
-    companion object {
-        private var localCurrent: ThreadLocal<Locator> = ThreadLocal()
+    val name: String
 
-        var current: Locator = NullLocator
-            get() = localCurrent.get() ?: field
+    interface LocatorHolder {
+        fun get(): Locator
+        fun put(value: Locator)
+        fun remove(name: String)
+    }
+
+    /*
+
+            private var locators: LinkedHashMap<String, Locator> = LinkedHashMap()
+            private var threadLocator: ThreadLocal<Locator> = ThreadLocal()
+
+            var current: Locator = NullLocator
+            get() = threadLocator.get() ?: locators.lastValue() ?: field
             set(value) {
-                localCurrent.set(value)
-                field = value
+                locators.put(value.name, value)
+                threadLocator.set(value)
             }
+
+        private fun <K, V> LinkedHashMap<K, V>.lastValue(): V? {
+            val tail: Field = this::class.java.getDeclaredField("tail")
+            tail.isAccessible = true
+            @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+            return (tail.get(this) as Map.Entry<K, V>?)?.value
+        }
+
+        private fun removeLocator(name: String) {
+            locators.remove(name)
+            threadLocator.set(null)
+        }
+     */
+
+    companion object {
+
+        var holder: LocatorHolder = object: LocatorHolder {
+            var locator: Locator = NullLocator
+
+            override fun get()= locator
+
+            override fun put(value: Locator) {
+                locator =  if (locator is NullLocator)
+                    value
+                else
+                    throw IllegalStateException("You can have only one service locator per microservice")
+            }
+            override fun remove(name: String) {
+                locator = if (locator.name == name)
+                    NullLocator
+                else
+                    throw IllegalArgumentException("Locator '$name' is not found")
+            }
+        }
+
+        var current: Locator
+            get() = holder.get()
+            set(value) = holder.put(value)
+
+        private fun removeLocator(name: String) {
+            holder.remove(name)
+        }
 
         fun <T> service(clazz: Class<T>): T? = current.service(clazz)
         fun <T : Any> service(clazz: KClass<T>): T? = current.service(clazz)
         fun <T : Any> service(clazz: KClass<T>, name: String): T? = current.service(clazz, name)
         fun <T : Any> service(parameter: KParameter): T? = current.service(parameter)
         fun <T : Any> services(clazz: KClass<T>): List<T> = current.services(clazz)
-        fun shutdown() = current.shutdown()
+        fun shutdown() = if (!(current is NullLocator)) current.shutdown() else Unit
     }
 
     @PostConstruct
@@ -62,8 +115,14 @@ interface Locator {
     fun <T : Any> property(key: String, clazz: KClass<T>): T? = property(key, clazz.java)
     fun <T> property(key: String, clazz: Class<T>): T?
 
-    fun shutdown()
+    fun shutdown() {
+        removeLocator(this.name)
+        close()
+    }
+
+    fun close()
 
     fun <T> implementation(): T
 
 }
+

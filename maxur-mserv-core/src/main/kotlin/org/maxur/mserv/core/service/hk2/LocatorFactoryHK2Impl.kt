@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import gov.va.oia.HK2Utilities.HK2RuntimeInitializer
 import org.glassfish.hk2.api.Factory
 import org.glassfish.hk2.api.InjectionResolver
-import org.glassfish.hk2.api.ServiceLocator
 import org.glassfish.hk2.api.TypeLiteral
 import org.glassfish.hk2.utilities.Binder
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities
@@ -22,32 +21,45 @@ import kotlin.reflect.KClass
  */
 class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
 
-    var packages: List<String> = emptyList()
-    val binders = ArrayList<Binder>()
-
-    init {
-        binders.add(ObjectMapperBinder())
-        binders.add(PropertiesInjectionResolverBinder())
+    companion object {
+        private var name_count = 0
     }
 
-    val locator: ServiceLocator by lazy {
-        if (packages.isNotEmpty()) {
-            HK2RuntimeInitializer.init(
-                    "mserv-locator",
-                    true,
-                    *packages.toTypedArray(), "org.maxur.mserv.core"
-            )
-        } else {
-            ServiceLocatorUtilities.createAndPopulateServiceLocator()
-        }
+    var packages: List<String> = emptyList()
+
+    private val binders = ArrayList<Binder>().apply {
+        add(ObjectMapperBinder())
+        add(PropertiesInjectionResolverBinder())
+    }
+
+    init {
+        @Suppress("UNUSED_EXPRESSION")
+        init()
     }
 
     fun make(): Locator {
-        ServiceLocatorUtilities.enableImmediateScope(locator)
-        ServiceLocatorUtilities.bind(locator, LocatorBinder())
-        val service = locator.getService(Locator::class.java)
-        ServiceLocatorUtilities.bind(locator, *binders.toTypedArray())
-        return service
+        val serviceLocator = makeLocator()
+        val locator = serviceLocator.getService(Locator::class.java)
+        ServiceLocatorUtilities.bind(serviceLocator, *binders.toTypedArray())
+        return locator
+    }
+
+    private fun makeLocator() = if (packages.isNotEmpty()) {
+        HK2RuntimeInitializer.init(
+                generateName(),
+                true,
+                *packages.toTypedArray(), "org.maxur.mserv.core"
+        )
+    } else {
+        ServiceLocatorUtilities.createAndPopulateServiceLocator(generateName())
+    }.also {
+        ServiceLocatorUtilities.enableImmediateScope(it)
+        ServiceLocatorUtilities.bind(it, LocatorBinder())
+    }
+
+    private fun generateName() = synchronized(name_count) {
+        name_count++
+        "locator $name_count"
     }
 
     fun bind(vararg binders: Binder): LocatorFactoryHK2Impl {
@@ -101,7 +113,4 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
 
     }
 
-    init {
-        init()
-    }
 }

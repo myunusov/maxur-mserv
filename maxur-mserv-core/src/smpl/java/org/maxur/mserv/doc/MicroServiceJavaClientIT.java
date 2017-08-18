@@ -1,7 +1,9 @@
 package org.maxur.mserv.doc;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.maxur.mserv.core.Locator;
+import org.maxur.mserv.core.TestLocatorHolder;
 import org.maxur.mserv.core.domain.BaseService;
 import org.maxur.mserv.core.service.msbuilder.Java;
 import org.maxur.mserv.core.service.properties.PropertiesSource;
@@ -17,6 +19,11 @@ public class MicroServiceJavaClientIT {
 
     private BaseService service1 = null;
 
+    @BeforeClass
+    public static void beforeClass() {
+        Locator.Companion.setHolder(TestLocatorHolder.INSTANCE);
+    }
+    
     @Test
     public void main() {
         // tag::launcher[]
