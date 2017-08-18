@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import gov.va.oia.HK2Utilities.HK2RuntimeInitializer
 import org.glassfish.hk2.api.Factory
 import org.glassfish.hk2.api.InjectionResolver
-import org.glassfish.hk2.api.ServiceLocator
 import org.glassfish.hk2.api.TypeLiteral
 import org.glassfish.hk2.utilities.Binder
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities
@@ -27,7 +26,11 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
     }
 
     var packages: List<String> = emptyList()
-    val binders = ArrayList<Binder>()
+
+    private val binders = ArrayList<Binder>().apply {
+        add(ObjectMapperBinder())
+        add(PropertiesInjectionResolverBinder())
+    }
 
     init {
         @Suppress("UNUSED_EXPRESSION")
@@ -36,25 +39,22 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
 
     fun make(): Locator {
         val serviceLocator = makeLocator()
-        binders.add(ObjectMapperBinder())
-        binders.add(PropertiesInjectionResolverBinder())
-        ServiceLocatorUtilities.enableImmediateScope(serviceLocator)
-        ServiceLocatorUtilities.bind(serviceLocator, LocatorBinder())
         val locator = serviceLocator.getService(Locator::class.java)
         ServiceLocatorUtilities.bind(serviceLocator, *binders.toTypedArray())
         return locator
     }
 
-    private fun makeLocator(): ServiceLocator {
-        return if (packages.isNotEmpty()) {
-            HK2RuntimeInitializer.init(
-                    generateName(),
-                    true,
-                    *packages.toTypedArray(), "org.maxur.mserv.core"
-            )
-        } else {
-            ServiceLocatorUtilities.createAndPopulateServiceLocator(generateName())
-        }
+    private fun makeLocator() = if (packages.isNotEmpty()) {
+        HK2RuntimeInitializer.init(
+                generateName(),
+                true,
+                *packages.toTypedArray(), "org.maxur.mserv.core"
+        )
+    } else {
+        ServiceLocatorUtilities.createAndPopulateServiceLocator(generateName())
+    }.also {
+        ServiceLocatorUtilities.enableImmediateScope(it)
+        ServiceLocatorUtilities.bind(it, LocatorBinder())
     }
 
     private fun generateName() = synchronized(name_count) {

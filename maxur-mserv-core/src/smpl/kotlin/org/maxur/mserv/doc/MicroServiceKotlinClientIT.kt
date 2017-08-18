@@ -17,7 +17,6 @@ class MicroServiceKotlinClientIT {
 
     private var service1: BaseService? = null
 
-
     companion object {
         @JvmStatic
         @BeforeClass
