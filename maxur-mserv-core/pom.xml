@@ -46,7 +46,7 @@
         <maxur-mserv.root.path>${basedir}/..</maxur-mserv.root.path>
         <release.version>${project.version}</release.version>
 
-        <kotlin.version>1.1.3</kotlin.version>
+        <kotlin.version>1.1.4-2</kotlin.version>
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
         <kotlin.compiler.jvmTarget>${project.jdk}</kotlin.compiler.jvmTarget>
 
@@ -61,12 +61,12 @@
         <hk2.version>2.5.0-b32</hk2.version>
 
         <swagger.version>1.5.16</swagger.version>
-        <swagger-ui.version>3.1.4</swagger-ui.version>
+        <swagger-ui.version>3.1.5</swagger-ui.version>
 
         <hal-browser.version>3325375</hal-browser.version>
 
-        <javax.servlet-api.version>3.1.0</javax.servlet-api.version>
-        <grizzly.version>2.4.0</grizzly.version>
+        <javax.servlet-api.version>4.0.0</javax.servlet-api.version>
+        <grizzly.version>2.4.1</grizzly.version>
 
         <hocon.config.version>1.3.1</hocon.config.version>
 
