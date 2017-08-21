@@ -49,26 +49,26 @@ class LocatorSpec {
     fun testParallel() {
 
         val t1 = thread(
-                start = false,
-                block = {
-                    locator1 = LocatorFactoryHK2Impl {}.make()
-                    assertThat(Locator.current).isEqualTo(locator1)
-                    while (locator2 == null) {
-                    }
-                    assertThat(locator1).isNotEqualTo(locator2)
-                    assertThat(Locator.current).isNotEqualTo(locator2)
-                })
+            start = false,
+            block = {
+                locator1 = LocatorFactoryHK2Impl {}.make()
+                assertThat(Locator.current).isEqualTo(locator1)
+                while (locator2 == null) {
+                }
+                assertThat(locator1).isNotEqualTo(locator2)
+                assertThat(Locator.current).isNotEqualTo(locator2)
+            })
 
         val t2 = thread(
-                start = false,
-                block = {
-                    locator2 = LocatorFactoryHK2Impl {}.make()
-                    assertThat(Locator.current).isEqualTo(locator2)
-                    while (locator1 == null) {
-                    }
-                    assertThat(locator2).isNotEqualTo(locator1)
-                    assertThat(Locator.current).isNotEqualTo(locator1)
-                })
+            start = false,
+            block = {
+                locator2 = LocatorFactoryHK2Impl {}.make()
+                assertThat(Locator.current).isEqualTo(locator2)
+                while (locator1 == null) {
+                }
+                assertThat(locator2).isNotEqualTo(locator1)
+                assertThat(Locator.current).isNotEqualTo(locator1)
+            })
 
         var error: Throwable? = null
 
@@ -143,7 +143,7 @@ class LocatorSpec {
     fun testCompanionObject() {
         synchronized(this) {
             val locator = FakeLocator
-            FakeLocator.init()
+            Locator.current = FakeLocator
             assertThat(Locator.service(Locator::class)).isEqualTo(locator)
             assertThat(Locator.service(Locator::class.java)).isEqualTo(locator)
             assertThat(Locator.service(Locator::class, "")).isEqualTo(locator)
@@ -190,21 +190,21 @@ class LocatorSpec {
         assertThat(locator.property("invalidkey")).isNull()
         assertThat(locator.property("key", FakeLocator::class)).isNull()
     }
-    
+
     @Suppress("UNCHECKED_CAST")
     object FakeLocator : Locator(name = "locator name") {
 
-        override fun <T> service(clazz: Class<T>, name: String?): T? =
-                if (clazz == Locator::class.java) this as T else null
+        override fun <T> service(contractOrImpl: Class<T>, name: String?): T? =
+            if (contractOrImpl == Locator::class.java) this as T else null
 
-        override fun <T> services(clazz: Class<T>): List<T> =
-                if (clazz == Locator::class.java) listOf(this) as List<T> else emptyList()
+        override fun <T> services(contractOrImpl: Class<T>): List<T> =
+            if (contractOrImpl == Locator::class.java) listOf(this) as List<T> else emptyList()
 
-        override fun names(clazz: Class<*>): List<String> = 
-                if (clazz == Locator::class.java) listOf("") else emptyList()
+        override fun names(contractOrImpl: Class<*>): List<String> =
+            if (contractOrImpl == Locator::class.java) listOf("") else emptyList()
 
         override fun <T> property(key: String, clazz: Class<T>): T? =
-                if (clazz == String::class.java && key == "key") "value" as T else null
+            if (clazz == String::class.java && key == "key") "value" as T else null
 
         override fun <T> implementation(): T = Object() as T
 
