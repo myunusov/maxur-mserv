@@ -1,5 +1,6 @@
 :rootdir:
-:testdir: {rootDir}/src/smpl
+:javadir: {rootDir}/../maxur-mserv-java-sample/src/test/java
+:ktdir: {rootDir}/../maxur-mserv-sample/src/test/kotlin
 :sitedir: {rootDir}/target/generated-site
 :icons: font
 :experimental:
@@ -7,7 +8,7 @@
 :toc: left
 :toc: macro
 
-= Maxur μService v ${release.version}
+= Maxur μService v 0.3-SNAPSHOT
 Maxim Yunusov
 
 image:https://raw.githubusercontent.com/wiki/myunusov/maxur-mserv/maxur-logo.png[Logo]
@@ -20,7 +21,7 @@ Yet another microservices framework
 
 [source,java,numbered]
 ----
-include::{testdir}/java/org/maxur/mserv/doc/MicroServiceJavaClientIT.java[tags=launcher]
+include::{javadir}/org/maxur/mserv/doc/MicroServiceJavaClientIT.java[tags=launcher]
 ----
 <1> Read the name of the application  by _'name'_ as property key
 <2> Set package names to scan recursively by IoC locator
@@ -33,7 +34,7 @@ include::{testdir}/java/org/maxur/mserv/doc/MicroServiceJavaClientIT.java[tags=l
 
 [source,kotlin,numbered]
 ----
-include::{testdir}/kotlin/org/maxur/mserv/doc/MicroServiceKotlinClientIT.kt[tags=launcher]
+include::{ktdir}/org/maxur/mserv/doc/MicroServiceKotlinClientIT.kt[tags=launcher]
 ----
 <1> Read the name of the application  by _'name'_ as property key
 <2> Set package names to scan recursively by IoC locator
@@ -56,6 +57,3 @@ include::{sitedir}/swagger/operations/service.adoc[leveloffset=+1]
 include::{sitedir}/swagger/operations/state.adoc[leveloffset=+1]
 
 include::{sitedir}/swagger/definitions.adoc[leveloffset=+1]
-
-
-

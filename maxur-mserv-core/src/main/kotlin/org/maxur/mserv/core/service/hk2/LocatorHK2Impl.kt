@@ -6,9 +6,7 @@ import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.service.properties.Properties
 import javax.inject.Inject
 
-class LocatorHK2Impl @Inject constructor(val locator: ServiceLocator) : Locator {
-
-    override val name = locator.name
+class LocatorHK2Impl @Inject constructor(val locator: ServiceLocator) : Locator(locator.name) {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T> implementation(): T = locator as T

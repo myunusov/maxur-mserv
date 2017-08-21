@@ -1,29 +1,16 @@
 package org.maxur.mserv.doc
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.BeforeClass
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.maxur.mserv.core.Locator
-import org.maxur.mserv.core.TestLocatorHolder
 import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.embedded.WebServer
 import org.maxur.mserv.core.service.msbuilder.Kotlin
 import org.maxur.mserv.core.service.properties.PropertiesSource
-import org.mockito.junit.MockitoJUnitRunner
 
-@RunWith(MockitoJUnitRunner::class)
 class MicroServiceKotlinClientIT {
 
     private var service1: BaseService? = null
-
-    companion object {
-        @JvmStatic
-        @BeforeClass
-        fun beforeClass() {
-            Locator.holder = TestLocatorHolder
-        }
-    }
 
     @Test
     fun main() {

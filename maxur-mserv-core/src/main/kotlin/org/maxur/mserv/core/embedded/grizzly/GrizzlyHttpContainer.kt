@@ -120,7 +120,6 @@ class GrizzlyHttpContainer internal constructor(
     /** {@inheritDoc} */
     override fun reload() = reload(appHandler.configuration)
 
-
     /** {@inheritDoc} */
     override fun reload(configuration: ResourceConfig) {
         appHandler.onShutdown(this)
