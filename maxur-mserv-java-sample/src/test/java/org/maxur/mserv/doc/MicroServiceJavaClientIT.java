@@ -1,7 +1,5 @@
 package org.maxur.mserv.doc;
 
-import org.jetbrains.annotations.NotNull;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.maxur.mserv.core.Locator;
 import org.maxur.mserv.core.domain.BaseService;
@@ -19,29 +17,6 @@ public class MicroServiceJavaClientIT {
 
     private BaseService service1 = null;
 
-    @BeforeClass
-    public static void beforeClass() {
-        Locator.Companion.setHolder(new Locator.LocatorHolder() {
-            private ThreadLocal<Locator> locator = new ThreadLocal<>();
-
-            @NotNull
-            @Override
-            public Locator get() {
-                return locator.get() != null ? locator.get() : Locator.NullLocator.INSTANCE;
-            }
-
-            @Override
-            public void put(@NotNull Locator value) {
-                locator.set(value);
-            }
-
-            @Override
-            public void remove(@NotNull String name) {
-                locator.set(null);
-            }
-        });
-    }
-    
     @Test
     public void main() {
         // tag::launcher[]
