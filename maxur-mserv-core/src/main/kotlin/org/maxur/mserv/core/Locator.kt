@@ -24,27 +24,29 @@ abstract class Locator(val name: String) {
         fun remove(name: String)
     }
 
+    protected class SingleHolder : LocatorHolder {
+        var locator: Locator = NullLocator
+
+        override fun get() = locator
+
+        override fun put(value: Locator) {
+            locator = if (locator is NullLocator)
+                value
+            else
+                throw IllegalStateException("You can have only one service locator per microservice")
+        }
+
+        override fun remove(name: String) {
+            locator = if (locator.name == name)
+                NullLocator
+            else
+                throw IllegalArgumentException("Locator '$name' is not found")
+        }
+    }
+
     companion object {
 
-        var holder: LocatorHolder = object : LocatorHolder {
-            var locator: Locator = NullLocator
-
-            override fun get() = locator
-
-            override fun put(value: Locator) {
-                locator = if (locator is NullLocator)
-                    value
-                else
-                    throw IllegalStateException("You can have only one service locator per microservice")
-            }
-
-            override fun remove(name: String) {
-                locator = if (locator.name == name)
-                    NullLocator
-                else
-                    throw IllegalArgumentException("Locator '$name' is not found")
-            }
-        }
+        var holder: LocatorHolder = SingleHolder()
 
         var current: Locator
             get() = holder.get()
@@ -56,9 +58,11 @@ abstract class Locator(val name: String) {
 
         fun <T> service(clazz: Class<T>): T? = current.service(clazz)
         fun <T : Any> service(clazz: KClass<T>): T? = current.service(clazz)
+        fun <T> service(clazz: Class<T>, name: String): T? = current.service(clazz, name)
         fun <T : Any> service(clazz: KClass<T>, name: String): T? = current.service(clazz, name)
         fun <T : Any> service(parameter: KParameter): T? = current.service(parameter)
         fun <T : Any> services(clazz: KClass<T>): List<T> = current.services(clazz)
+        fun <T> services(clazz: Class<T>): List<T> = current.services(clazz)
         fun shutdown() = if (!(current is NullLocator)) current.shutdown() else Unit
     }
 
