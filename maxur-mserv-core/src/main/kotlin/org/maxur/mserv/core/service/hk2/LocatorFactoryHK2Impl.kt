@@ -11,6 +11,7 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder
 import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.annotation.Value
 import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
+import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Singleton
 import kotlin.reflect.KClass
 
@@ -22,8 +23,10 @@ import kotlin.reflect.KClass
 class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
 
     companion object {
-        private var name_count = 0
+        private var nameCount = AtomicInteger()
     }
+
+    private val newName get() = "locator ${nameCount.andIncrement}"
 
     var packages: List<String> = emptyList()
 
@@ -46,20 +49,15 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
 
     private fun makeLocator() = if (packages.isNotEmpty()) {
         HK2RuntimeInitializer.init(
-                generateName(),
+                newName,
                 true,
                 *packages.toTypedArray(), "org.maxur.mserv.core"
         )
     } else {
-        ServiceLocatorUtilities.createAndPopulateServiceLocator(generateName())
+        ServiceLocatorUtilities.createAndPopulateServiceLocator(newName)
     }.also {
         ServiceLocatorUtilities.enableImmediateScope(it)
         ServiceLocatorUtilities.bind(it, LocatorBinder())
-    }
-
-    private fun generateName() = synchronized(name_count) {
-        name_count++
-        "locator $name_count"
     }
 
     fun bind(vararg binders: Binder): LocatorFactoryHK2Impl {

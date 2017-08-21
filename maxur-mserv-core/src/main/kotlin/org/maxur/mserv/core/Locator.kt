@@ -5,10 +5,9 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 
 @Suppress("UNCHECKED_CAST")
-interface Locator {
+abstract class Locator(val name: String) {
 
-    object NullLocator : Locator {
-        override val name: String = "null"
+    object NullLocator : Locator("null-locator") {
         override fun <T> service(clazz: Class<T>, name: String?): T? = error()
         override fun <T> services(clazz: Class<T>): List<T> = error()
         override fun names(clazz: Class<*>): List<String> = error()
@@ -19,59 +18,35 @@ interface Locator {
                 throw IllegalStateException("Service Locator is not initialized.")
     }
 
-    val name: String
-
     interface LocatorHolder {
         fun get(): Locator
         fun put(value: Locator)
         fun remove(name: String)
     }
 
-    /*
+    protected class SingleHolder : LocatorHolder {
+        var locator: Locator = NullLocator
 
-            private var locators: LinkedHashMap<String, Locator> = LinkedHashMap()
-            private var threadLocator: ThreadLocal<Locator> = ThreadLocal()
+        override fun get() = locator
 
-            var current: Locator = NullLocator
-            get() = threadLocator.get() ?: locators.lastValue() ?: field
-            set(value) {
-                locators.put(value.name, value)
-                threadLocator.set(value)
-            }
-
-        private fun <K, V> LinkedHashMap<K, V>.lastValue(): V? {
-            val tail: Field = this::class.java.getDeclaredField("tail")
-            tail.isAccessible = true
-            @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
-            return (tail.get(this) as Map.Entry<K, V>?)?.value
+        override fun put(value: Locator) {
+            locator = if (locator is NullLocator)
+                value
+            else
+                throw IllegalStateException("You can have only one service locator per microservice")
         }
 
-        private fun removeLocator(name: String) {
-            locators.remove(name)
-            threadLocator.set(null)
+        override fun remove(name: String) {
+            locator = if (locator.name == name)
+                NullLocator
+            else
+                throw IllegalArgumentException("Locator '$name' is not found")
         }
-     */
+    }
 
     companion object {
 
-        var holder: LocatorHolder = object: LocatorHolder {
-            var locator: Locator = NullLocator
-
-            override fun get()= locator
-
-            override fun put(value: Locator) {
-                locator =  if (locator is NullLocator)
-                    value
-                else
-                    throw IllegalStateException("You can have only one service locator per microservice")
-            }
-            override fun remove(name: String) {
-                locator = if (locator.name == name)
-                    NullLocator
-                else
-                    throw IllegalArgumentException("Locator '$name' is not found")
-            }
-        }
+        var holder: LocatorHolder = SingleHolder()
 
         var current: Locator
             get() = holder.get()
@@ -83,9 +58,11 @@ interface Locator {
 
         fun <T> service(clazz: Class<T>): T? = current.service(clazz)
         fun <T : Any> service(clazz: KClass<T>): T? = current.service(clazz)
+        fun <T> service(clazz: Class<T>, name: String): T? = current.service(clazz, name)
         fun <T : Any> service(clazz: KClass<T>, name: String): T? = current.service(clazz, name)
         fun <T : Any> service(parameter: KParameter): T? = current.service(parameter)
         fun <T : Any> services(clazz: KClass<T>): List<T> = current.services(clazz)
+        fun <T> services(clazz: Class<T>): List<T> = current.services(clazz)
         fun shutdown() = if (!(current is NullLocator)) current.shutdown() else Unit
     }
 
@@ -103,26 +80,28 @@ interface Locator {
     fun <T : Any> service(parameter: KParameter): T? = service(parameter.type.classifier as KClass<T>)
     fun <T : Any> service(clazz: KClass<T>, name: String? = null): T? = service(clazz.java, name)
     fun <T> service(clazz: Class<T>): T? = service(clazz, null)
-    fun <T> service(clazz: Class<T>, name: String?): T?
+    abstract fun <T> service(clazz: Class<T>, name: String?): T?
 
     fun <T : Any> services(clazz: KClass<T>): List<T> = services(clazz.java)
-    fun <T> services(clazz: Class<T>): List<T>
+    abstract fun <T> services(clazz: Class<T>): List<T>
 
     fun <T : Any> names(clazz: KClass<T>): List<String> = names(clazz.java)
-    fun names(clazz: Class<*>): List<String>
+    abstract fun names(clazz: Class<*>): List<String>
 
     fun property(key: String): String? = property(key, String::class)
     fun <T : Any> property(key: String, clazz: KClass<T>): T? = property(key, clazz.java)
-    fun <T> property(key: String, clazz: Class<T>): T?
+    abstract fun <T> property(key: String, clazz: Class<T>): T?
+
+    abstract fun <T> implementation(): T
 
     fun shutdown() {
         removeLocator(this.name)
         close()
     }
 
-    fun close()
+    protected abstract fun close()
 
-    fun <T> implementation(): T
+    override fun toString(): String = name
 
 }
 

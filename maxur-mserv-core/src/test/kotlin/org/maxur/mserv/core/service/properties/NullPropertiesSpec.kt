@@ -19,7 +19,7 @@ class NullPropertiesSpec : Spek({
         beforeEachTest {
             Locator.holder = TestLocatorHolder
         }
-        
+
         context("create new properties source") {
             val sut = NullProperties
 
