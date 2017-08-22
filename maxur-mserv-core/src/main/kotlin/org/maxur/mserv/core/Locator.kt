@@ -36,7 +36,7 @@ abstract class Locator(val name: String) {
         override fun <T> implementation(): T = error()
 
         private fun <T> error(): T =
-            throw IllegalStateException("Service Locator is not initialized.")
+                throw IllegalStateException("Service Locator is not initialized.")
     }
 
     /**
@@ -205,9 +205,9 @@ abstract class Locator(val name: String) {
      * provides the given implementation or contract
      */
     fun <T> locate(contractOrImpl: Class<T>, name: String): T = service(contractOrImpl, name) ?:
-        throw IllegalStateException(
-            "Service '$name' is not supported. Try one from this list: ${names(contractOrImpl)}"
-        )
+            throw IllegalStateException(
+                    "Service '$name' is not supported. Try one from this list: ${names(contractOrImpl)}"
+            )
 
     /**
      * Gets the best service from this locator that implements

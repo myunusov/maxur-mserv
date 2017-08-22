@@ -80,6 +80,6 @@ class PropertiesInjectionResolver @Inject constructor(val locator: Locator) : In
     }
 
     override fun isMethodParameterIndicator(): Boolean {
-        return false
+        return true
     }
 }

@@ -41,9 +41,7 @@ abstract class MicroServiceBuilder {
     var propertiesHolder: PropertiesHolder = PropertiesHolder.DefaultPropertiesHolder
 
     val services: ServicesHolder = ServicesHolder()
-    val beforeStart = HookHolder()
     val afterStart = HookHolder()
-    val afterStop = HookHolder()
     val beforeStop = HookHolder()
     val onError = ErrorHookHolder()
 
@@ -58,7 +56,11 @@ abstract class MicroServiceBuilder {
                 this.packages = packagesHolder
                 bind(*bindersHolder.toTypedArray())
                 bind(propertiesHolder::build, Properties::class, PropertiesSource::class)
-                bind({ locator -> BaseMicroService(services.build(locator), locator) }, MicroService::class)
+                bind({ locator -> services.build(locator) }, EmbeddedService::class)
+                bind({ locator ->
+                    BaseMicroService(locator.service<EmbeddedService>(EmbeddedService::class)!!, locator)
+                }, MicroService::class)
+
             }.make()
         } catch (e: Exception) {
             return onConfigurationError(Locator.current)
@@ -69,10 +71,8 @@ abstract class MicroServiceBuilder {
         val service = locator?.service(MicroService::class) ?: onConfigurationError(locator)
         if (service is BaseMicroService) {
             service.name = titleHolder.get(locator!!)!!
-            service.beforeStart.addAll(beforeStart.list)
             service.afterStart.addAll(afterStart.list)
             service.beforeStop.addAll(beforeStop.list)
-            service.afterStop.addAll(afterStop.list)
             service.onError.addAll(onError.list)
         }
         return service
@@ -162,10 +162,8 @@ class ServiceHolder {
     fun build(locator: Locator): EmbeddedService? {
         val service = holder.get<EmbeddedService>(locator)
         if (service is BaseService) {
-            service.beforeStart.addAll(beforeStart.list)
             service.afterStart.addAll(afterStart.list)
             service.beforeStop.addAll(beforeStop.list)
-            service.afterStop.addAll(afterStop.list)
         }
         return service
     }

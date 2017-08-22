@@ -9,9 +9,7 @@ import kotlin.reflect.full.isSubclassOf
 
 abstract class BaseService(val locator: Locator) {
 
-    var beforeStart: MutableList<KFunction<Any>> = ArrayList()
     var afterStart: MutableList<KFunction<Any>> = ArrayList()
-    var afterStop: MutableList<KFunction<Any>> = ArrayList()
     var beforeStop: MutableList<KFunction<Any>> = ArrayList()
     var onError: MutableList<KFunction<Any>> = ArrayList()
 
@@ -79,17 +77,15 @@ abstract class BaseService(val locator: Locator) {
         abstract fun restart(service: BaseService)
 
         protected fun shutdown(service: BaseService) = check(service, {
-            shutdown()
             beforeStop.forEach { call(it, service) }
+            shutdown()
             state = STOPPED
-            afterStop.forEach { call(it, service) }
         })
 
         protected fun launch(service: BaseService) = check(service, {
-            beforeStart.forEach { call(it, service) }
             launch()
-            afterStart.forEach { call(it, service) }
             state = STARTED
+            afterStart.forEach { call(it, service) }
         })
 
         protected fun relaunch(service: BaseService) = check(service, {
