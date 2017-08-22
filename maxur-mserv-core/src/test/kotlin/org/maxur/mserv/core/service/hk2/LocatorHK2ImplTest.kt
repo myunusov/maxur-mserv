@@ -81,6 +81,7 @@ class LocatorHK2ImplTest {
         Locator.current = locator
         locator.shutdown()
         assertThat(serviceLocator.state).isEqualTo(ServiceLocatorState.SHUTDOWN)
+        locator.shutdown()
     }
 
 }
