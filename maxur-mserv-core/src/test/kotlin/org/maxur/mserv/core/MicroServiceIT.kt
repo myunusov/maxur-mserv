@@ -10,7 +10,6 @@ import org.maxur.mserv.core.service.msbuilder.Kotlin
 import org.maxur.mserv.core.service.properties.PropertiesSource
 import java.util.function.Consumer
 
-
 class MicroServiceIT {
 
     companion object {
@@ -75,6 +74,5 @@ class MicroServiceIT {
         assertThat(config).isNotNull()
         assertThat(config!!.format).isEqualToIgnoringCase("Hocon")
     }
-
 
 }
