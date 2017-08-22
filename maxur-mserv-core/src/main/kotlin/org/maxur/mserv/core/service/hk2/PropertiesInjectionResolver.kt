@@ -29,51 +29,38 @@ class PropertiesInjectionResolver @Inject constructor(val locator: Locator) : In
 
     val service: Properties = locator.service(Properties::class) ?: NullProperties
 
-    override fun resolve(injectee: Injectee, root: ServiceHandle<*>?): Any {
-        val annotation = annotation(injectee)
-        val name = annotation.key
-        val result = resolveByKey(name, injectee.requiredType)
-        when (result) {
-            null -> throw IllegalStateException("Property '$name' is not found")
-            else -> return result
-        }
-    }
+    override fun resolve(injectee: Injectee, root: ServiceHandle<*>?) =
+            resolveByKey(annotation(injectee).key, injectee.requiredType) ?:
+                    throw IllegalStateException("Property '${annotation(injectee).key}' is not found")
 
     private fun annotation(injectee: Injectee): Value {
         val element = injectee.parent
-
-        val isConstructor = element is Constructor<*>
-        val isMethod = element is Method
-
-        // if injectee is method or constructor, check its parameters
-        if (isConstructor || isMethod) {
-            val annotations: Array<Annotation>
-            if (isMethod) {
-                annotations = (element as Method).parameterAnnotations[injectee.position]
-            } else {
-                annotations = (element as Constructor<*>).parameterAnnotations[injectee.position]
+        return when {
+            element is Method -> element.parameterAnnotations[injectee.position]
+                    .filterIsInstance<Value>()
+                    .first()
+            element is Constructor<*> -> element.parameterAnnotations[injectee.position]
+                    .filterIsInstance<Value>()
+                    .first()
+            else -> {
+                if (element.isAnnotationPresent(Value::class.java)) {
+                    element.getAnnotation(Value::class.java)
+                } else {
+                    injectee.injecteeClass.getAnnotation(Value::class.java)
+                }
             }
-            annotations.filterIsInstance<Value>().forEach { return it }
         }
-
-        // check injectee itself (method, constructor or field)
-        if (element.isAnnotationPresent(Value::class.java)) {
-            return element.getAnnotation(Value::class.java)
-        }
-
-        // check class which contains injectee
-        val clazz = injectee.injecteeClass
-        return clazz.getAnnotation(Value::class.java)
     }
 
-    private fun resolveByKey(name: String, type: Type): Any? {
-        if (type !is Class<*>) {
-            val msg = "Unsupported property type '${type.typeName}'"
-            log.error(msg)
-            throw IllegalStateException(msg)
-        }
-        return service.read(name, type)
-    }
+    private fun resolveByKey(name: String, type: Type) =
+            when (type) {
+                is Class<*> -> service.read(name, type)
+                else -> "Unsupported property type '${type.typeName}'"
+                        .also {
+                            log.error(it)
+                            throw IllegalStateException(it)
+                        }
+            }
 
     override fun isConstructorParameterIndicator(): Boolean {
         return true

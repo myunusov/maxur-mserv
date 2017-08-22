@@ -7,9 +7,11 @@ import org.glassfish.hk2.utilities.ServiceLocatorUtilities
 import org.glassfish.hk2.utilities.binding.AbstractBinder
 import org.junit.After
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.maxur.mserv.core.Locator
+import org.maxur.mserv.core.TestLocatorHolder
 import org.maxur.mserv.core.service.properties.Properties
 import org.mockito.Mock
 import org.mockito.Mockito
@@ -17,6 +19,14 @@ import org.mockito.junit.MockitoJUnitRunner
 
 @RunWith(MockitoJUnitRunner::class)
 class LocatorHK2ImplTest {
+
+    companion object {
+        @JvmStatic
+        @BeforeClass
+        fun beforeClass() {
+            Locator.holder = TestLocatorHolder
+        }
+    }
 
     @Mock
     private lateinit var properties: Properties
