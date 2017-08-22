@@ -11,7 +11,7 @@ import javax.inject.Inject
  * <p>
  * @param locator The HK2 ServiceLocator.
  */
-class LocatorHK2Impl @Inject constructor(val locator: ServiceLocator) : Locator(locator.name) {
+class LocatorHK2Impl @Inject constructor(private val locator: ServiceLocator) : Locator(locator.name) {
 
     /** {@inheritDoc} */
     @Suppress("UNCHECKED_CAST")

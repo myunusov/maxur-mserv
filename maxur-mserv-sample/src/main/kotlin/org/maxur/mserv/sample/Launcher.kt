@@ -1,5 +1,6 @@
 package org.maxur.mserv.sample
 
+import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.embedded.WebServer
 import org.maxur.mserv.core.service.msbuilder.Kotlin
 import org.maxur.mserv.core.service.properties.PropertiesSource
@@ -29,16 +30,16 @@ object Launcher {
             packages = "org.maxur.mserv.sample"
             properties { format = "hocon" }
             services += rest { afterStart += this@Launcher::afterWebServiceStart }
-            beforeStart += this@Launcher::beforeStart
-            afterStart += { service ->  log().info("${service.name} is started") }
-            afterStop += { _ ->  log().info("Microservice is stopped") }
+            afterStart += this@Launcher::afterStart
+            beforeStop += { _ ->  log().info("Microservice is stopped") }
             onError += { exception ->  log().error(exception.message, exception) }
         }.start()
     }
 
-    fun beforeStart(configParams: ConfigParams, config: PropertiesSource) {
+    fun afterStart(configParams: ConfigParams, config: PropertiesSource, service: BaseService) {
         log().info("Properties Source is '${config.format}'\n")
         configParams.log()
+        log().info("${service.name} is started")
     }
 
     fun afterWebServiceStart(service: WebServer) {

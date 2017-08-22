@@ -1253,6 +1253,7 @@
                 <configuration>
                     <includes>
                         <include>**/*Spec.*</include>
+                        <include>**/*Test.*</include>
                     </includes>
                     <!--suppress MavenModelInspection -->
                     <argLine>${surefireArgLine} -Xmx512m</argLine>
