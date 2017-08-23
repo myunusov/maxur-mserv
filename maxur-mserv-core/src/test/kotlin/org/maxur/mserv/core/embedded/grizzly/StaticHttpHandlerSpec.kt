@@ -76,7 +76,7 @@ class StaticHttpHandlerSpec : Spek({
         }
 
         context("Create StaticHttpHandler on file system folder by absolute path and send request") {
-            val handler = StaticHttpHandler("web", "${webFolder.path}/")
+            val handler = StaticHttpHandler("web", "$webFolder/")
 
             it("should return status 200 on request file") {
                 val (response, request) = RequestUtil.resreq("/index.html")
