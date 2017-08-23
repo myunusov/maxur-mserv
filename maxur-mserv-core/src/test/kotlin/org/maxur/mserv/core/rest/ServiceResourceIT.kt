@@ -5,6 +5,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.glassfish.hk2.utilities.binding.AbstractBinder
 import org.junit.Test
 import org.junit.runner.RunWith
+
 import org.maxur.mserv.core.MicroService
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
