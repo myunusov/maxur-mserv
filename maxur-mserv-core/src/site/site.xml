@@ -33,7 +33,6 @@
         <breadcrumbs><item name="Home" href="/" /></breadcrumbs>
         <menu name="Documentation" ref="reports" inherit="bottom" />
         <menu name="API" inherit="top">
-            <item name="Java" href="apidocs/index.html" />
             <item name="Kotlin" href="kdoc/index.html" />
         </menu>
         <menu name="Reports" inherit="top"><item name="Release Notes" href="release-notes.html" /></menu>
