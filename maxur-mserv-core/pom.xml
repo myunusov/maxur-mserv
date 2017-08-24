@@ -69,7 +69,6 @@
         <grizzly.version>2.4.1</grizzly.version>
 
         <hocon.config.version>1.3.1</hocon.config.version>
-
         <spek.version>1.1.4</spek.version>
         <mockito-kotlin.version>1.5.0</mockito-kotlin.version>
         <mockito.version>2.8.47</mockito.version>

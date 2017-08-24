@@ -20,8 +20,6 @@ interface IJBuilder {
     fun withoutProperties(): JBuilder
     fun service(type: String, properties: String): JBuilder
     fun rest(): JBuilder
-    fun beforeStart(func: Consumer<in BaseService>): JBuilder
-    fun afterStop(func: Consumer<in BaseService>): JBuilder
     fun beforeStop(func: Consumer<in BaseService>): JBuilder
     fun afterStart(func: Consumer<in BaseService>): JBuilder
     fun onError(func: Consumer<Exception>): JBuilder
@@ -71,16 +69,6 @@ class JBuilder : MicroServiceBuilder(), IJBuilder {
         return this
     }
 
-    override fun beforeStart(func: Consumer<in BaseService>): JBuilder {
-        beforeStart.plusAssign(unitFunc(func))
-        return this
-    }
-
-    override fun afterStop(func: Consumer<in BaseService>): JBuilder {
-        afterStop.plusAssign(unitFunc(func))
-        return this
-    }
-
     override fun beforeStop(func: Consumer<in BaseService>): JBuilder {
         beforeStop.plusAssign(unitFunc(func))
         return this
@@ -113,7 +101,7 @@ class JBuilder : MicroServiceBuilder(), IJBuilder {
 }
 
 class JPropertiesBuilder(
-        val parent: JBuilder,
+        private val parent: JBuilder,
         val holder: PropertiesHolder.BasePropertiesHolder
 ) : IJBuilder by parent {
 

@@ -31,13 +31,13 @@ public final class Launcher {
             .packages("org.maxur.mserv.sample")
             .properties("hocon")
             .rest()
-            .beforeStart(Launcher::beforeStart)
-            .afterStop(service -> log.info("Service is stopped"))
+            .afterStart(Launcher::afterStart)
+            .beforeStop(service -> log.info("Service is stopped"))
             .onError(exception -> log.error(exception.getMessage(), exception) )
             .start();
     }
     
-    private static void beforeStart(final BaseService service) {
+    private static void afterStart(final BaseService service) {
         final Locator locator = service.getLocator();
         final PropertiesSource config = locator.service(PropertiesSource.class);
         if (config != null) {

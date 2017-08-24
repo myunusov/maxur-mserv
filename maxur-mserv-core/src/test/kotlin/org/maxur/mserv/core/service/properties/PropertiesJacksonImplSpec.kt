@@ -44,7 +44,7 @@ class PropertiesJacksonImplSpec : Spek({
                 assertThat(sut.uri.toString()).endsWith("application.yaml")
             }
             it("should return opened source with url by default") {
-                val uri = URL(PropertiesHoconImplSpec::class.java.getResource("/application.yaml").path).toURI()
+                val uri = URL(PropertiesJacksonImplSpec::class.java.getResource("/application.yaml").path).toURI()
                 val sut = PropertiesSourceJacksonImpl(YAMLFactory(), "yaml", yaml(uri))
                 assertThat(sut).isNotNull()
                 assertThat(sut.format).isEqualTo("Yaml")

@@ -25,8 +25,8 @@ public class MicroServiceJavaClientIT {
             .packages("org.maxur.mserv.sample") // <2>
             .properties("hocon") // <3>
             .rest() // <4>
-            .beforeStart(this::beforeStart) // <5>
-            .afterStop(this::afterStop)
+            .afterStart(this::afterStart) // <5>
+            .beforeStop(this::beforeStop)
             .start(); // <6>
         // end::launcher[]
         if (service1 != null) {
@@ -35,11 +35,11 @@ public class MicroServiceJavaClientIT {
         Locator.Companion.shutdown();
     }
 
-    private void afterStop(final BaseService service) {
+    private void beforeStop(final BaseService service) {
         assertThat(service).isNotNull();
     }
 
-    private void beforeStart(final BaseService service) {
+    private void afterStart(final BaseService service) {
         service1 = service;
         assertThat(service).isNotNull();
         final Locator locator = service.getLocator();
