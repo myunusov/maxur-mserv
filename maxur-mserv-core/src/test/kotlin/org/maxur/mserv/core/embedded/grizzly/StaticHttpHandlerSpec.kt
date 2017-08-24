@@ -11,7 +11,7 @@ import org.jetbrains.spek.api.dsl.it
 import org.junit.platform.runner.JUnitPlatform
 import org.junit.runner.RunWith
 import org.maxur.mserv.core.embedded.properties.WebAppProperties
-import java.io.File
+import org.maxur.mserv.core.relativePath
 
 @RunWith(JUnitPlatform::class)
 class StaticHttpHandlerSpec : Spek({
@@ -30,7 +30,6 @@ class StaticHttpHandlerSpec : Spek({
                 val handler = StaticHttpHandler("web", "src/test/resources/web/")
                 assertThat(handler).isNotNull()
             }
-
         }
 
         context("Create StaticHttpHandler on jar and send request") {
@@ -86,11 +85,9 @@ class StaticHttpHandlerSpec : Spek({
         }
 
         context("Create StaticHttpHandler on file system folder and send request") {
-            val base = System.getProperty("user.dir").replace('\\', '/');
-            val relativePath = File(base).toURI().relativize(webFolder.toURI()).getPath()
 
-            val handler = StaticHttpHandler("web", relativePath)
-            
+            val handler = StaticHttpHandler("web", webFolder.relativePath())
+
             it("should return status 200 on request folder (root)") {
                 val (response, request) = RequestUtil.resreq("/")
                 handler.service(request, response)

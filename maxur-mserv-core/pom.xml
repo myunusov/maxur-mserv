@@ -1119,7 +1119,8 @@
                 <artifactId>hk2-inhabitant-generator</artifactId>
                 <version>${hk2.version}</version>
                 <configuration>
-                    <verbose>true</verbose>
+                    <verbose>false</verbose>
+                    <noswap>true</noswap>
                     <targetDirectory>target/classes</targetDirectory>
                 </configuration>
                 <executions>

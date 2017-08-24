@@ -19,21 +19,21 @@ class LocatorHK2Impl @Inject constructor(private val locator: ServiceLocator) : 
 
     /** {@inheritDoc} */
     override fun names(contractOrImpl: Class<*>): List<String> =
-            locator.getAllServiceHandles(contractOrImpl).map { it.activeDescriptor.name }
+        locator.getAllServiceHandles(contractOrImpl).map { it.activeDescriptor.name }
 
     /** {@inheritDoc} */
     override fun <T> property(key: String, clazz: Class<T>): T? =
-            locator.getService(Properties::class.java).read(key, clazz)
+        locator.getService(Properties::class.java).read(key, clazz)
 
     /** {@inheritDoc} */
     override fun <T> service(contractOrImpl: Class<T>, name: String?): T? =
-            when (name) {
-                null -> locator.getService<T>(contractOrImpl)
-                else -> locator.getAllServiceHandles(contractOrImpl)
-                        .filter { it.activeDescriptor.name.equals(name, true) }
-                        .map { it.service }
-                        .firstOrNull()
-            }
+        when (name) {
+            null -> locator.getService<T>(contractOrImpl)
+            else -> locator.getAllServiceHandles(contractOrImpl)
+                .filter { it.activeDescriptor.name.equals(name, true) }
+                .map { it.service }
+                .firstOrNull()
+        }
 
     /** {@inheritDoc} */
     override fun <T> services(contractOrImpl: Class<T>): List<T> = locator.getAllServices(contractOrImpl).map { it as T }
