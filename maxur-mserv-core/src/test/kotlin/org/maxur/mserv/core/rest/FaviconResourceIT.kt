@@ -29,7 +29,7 @@ class FaviconResourceIT : AbstractResourceAT() {
     @Throws(IOException::class)
     fun testInvalidFaviconGet() {
         val baseTarget = target("/invalid.ico")
-        val response= baseTarget.request()
+        val response = baseTarget.request()
                 .accept("image/x-icon")
                 .get()
         Assertions.assertThat(response.status).isEqualTo(404)

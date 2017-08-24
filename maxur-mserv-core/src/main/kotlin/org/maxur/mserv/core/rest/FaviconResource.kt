@@ -28,12 +28,11 @@ open class FaviconResource {
     @GET
     @Path("/{fileName: .*ico}")
     @Produces("image/x-icon")
-    fun favicon(@PathParam("fileName") fileName: String) =
+    fun favicon(@PathParam("fileName") fileName: String) = (
             loadImage(fileName)
-                    ?.let {
-                        Response.ok(ByteArrayInputStream(it)).build()
-                    } ?: Response.status(Response.Status.NOT_FOUND).build()
-
+                    ?.let { Response.ok(ByteArrayInputStream(it)) }
+                    ?: Response.status(Response.Status.NOT_FOUND)
+            ).build()
 
     private fun loadImage(fileName: String) =
             FaviconResource::class.java.getResource("/$fileName")?.let {
