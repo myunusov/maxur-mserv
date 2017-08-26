@@ -27,14 +27,8 @@ class LocatorHK2ImplBuilder : LocatorBuilder() {
         add(PropertiesInjectionResolverBinder())
     }
 
+    /** {@inheritDoc} */
     override fun buildLocator(): Locator {
-        val serviceLocator = makeLocator()
-        val locator = serviceLocator.getService(Locator::class.java)
-        ServiceLocatorUtilities.bind(serviceLocator, *binders.toTypedArray())
-        return locator
-    }
-
-    fun make(): Locator {
         val serviceLocator = makeLocator()
         val locator = serviceLocator.getService(Locator::class.java)
         ServiceLocatorUtilities.bind(serviceLocator, *binders.toTypedArray())
@@ -60,6 +54,7 @@ class LocatorHK2ImplBuilder : LocatorBuilder() {
     }
 
     private class ServiceBinder(val func: (Locator) -> Any, vararg val classes: KClass<out Any>) : AbstractBinder() {
+        /** {@inheritDoc} */
         override fun configure() {
             val provider = ServiceProvider(func)
             classes.forEach {
@@ -71,11 +66,15 @@ class LocatorHK2ImplBuilder : LocatorBuilder() {
     private class ServiceProvider<T>(val func: (Locator) -> T) : Factory<T> {
         val locator: Locator by lazy { Locator.current }
         val result: T by lazy { func.invoke(locator) }
+        /** {@inheritDoc} */
         override fun dispose(instance: T) = Unit
+
+        /** {@inheritDoc} */
         override fun provide(): T = result
     }
 
     private class PropertiesInjectionResolverBinder : AbstractBinder() {
+        /** {@inheritDoc} */
         override fun configure() {
             bind(PropertiesInjectionResolver::class.java)
                 .to(object : TypeLiteral<InjectionResolver<Value>>() {})
@@ -84,6 +83,7 @@ class LocatorHK2ImplBuilder : LocatorBuilder() {
     }
 
     private class ObjectMapperBinder : AbstractBinder() {
+        /** {@inheritDoc} */
         override fun configure() {
             bindFactory(ObjectMapperProvider::class.java)
                 .to(ObjectMapper::class.java)
@@ -92,7 +92,7 @@ class LocatorHK2ImplBuilder : LocatorBuilder() {
     }
 
     class LocatorBinder : AbstractBinder() {
-
+        /** {@inheritDoc} */
         override fun configure() {
             bind(LocatorHK2Impl::class.java)
                 .to(Locator::class.java)
