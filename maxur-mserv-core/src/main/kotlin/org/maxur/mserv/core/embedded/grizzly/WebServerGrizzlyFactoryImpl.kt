@@ -11,7 +11,6 @@ import org.glassfish.jersey.process.JerseyProcessingUncaughtExceptionHandler
 import org.glassfish.jersey.server.ResourceConfig
 import org.glassfish.jersey.server.spi.Container
 import org.jvnet.hk2.annotations.Service
-import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.domain.Holder
 import org.maxur.mserv.core.domain.Path
@@ -21,6 +20,7 @@ import org.maxur.mserv.core.embedded.WebAppConfig
 import org.maxur.mserv.core.embedded.WebEntries
 import org.maxur.mserv.core.embedded.WebServer
 import org.maxur.mserv.core.embedded.properties.WebAppProperties
+import org.maxur.mserv.core.kotlin.Locator
 import org.maxur.mserv.core.rest.RestResourceConfig
 import org.slf4j.bridge.SLF4JBridgeHandler
 import java.net.URI
@@ -75,10 +75,7 @@ class WebServerGrizzlyFactoryImpl @Inject constructor(val locator: Locator) : Em
 
 }
 
-open class WebServerGrizzlyImpl(
-        private val config: WebAppConfig,
-        locator: Locator
-) : BaseService(locator), WebServer {
+open class WebServerGrizzlyImpl(private val config: WebAppConfig, locator: Locator) : BaseService(locator), WebServer {
 
     private fun ServerConfiguration.title(): String = "$name '$httpServerName-$httpServerVersion'"
 

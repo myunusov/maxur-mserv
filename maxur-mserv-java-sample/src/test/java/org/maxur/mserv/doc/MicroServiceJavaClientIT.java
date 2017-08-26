@@ -1,8 +1,8 @@
 package org.maxur.mserv.doc;
 
 import org.junit.Test;
-import org.maxur.mserv.core.Locator;
 import org.maxur.mserv.core.domain.BaseService;
+import org.maxur.mserv.core.java.Locator;
 import org.maxur.mserv.core.service.msbuilder.Java;
 import org.maxur.mserv.core.service.properties.PropertiesSource;
 
@@ -32,7 +32,7 @@ public class MicroServiceJavaClientIT {
         if (service1 != null) {
             service1.stop();
         }
-        Locator.Companion.shutdown();
+        Locator.stop();
     }
 
     private void beforeStop(final BaseService service) {
@@ -42,7 +42,7 @@ public class MicroServiceJavaClientIT {
     private void afterStart(final BaseService service) {
         service1 = service;
         assertThat(service).isNotNull();
-        final Locator locator = service.getLocator();
+        final Locator locator = Locator.getInstance();
         final PropertiesSource config = locator.service(PropertiesSource.class);
         assertThat(config).isNotNull();
         assertThat(config.getFormat()).isEqualToIgnoringCase("Hocon");

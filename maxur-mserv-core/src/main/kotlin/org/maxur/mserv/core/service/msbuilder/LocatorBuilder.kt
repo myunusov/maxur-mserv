@@ -1,7 +1,7 @@
 package org.maxur.mserv.core.service.msbuilder
 
-import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.core.checkError
+import org.maxur.mserv.core.kotlin.Locator
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.reflect.KClass
 

@@ -1,6 +1,6 @@
 package org.maxur.mserv.core.service.msbuilder
 
-import org.maxur.mserv.core.Locator
+import org.maxur.mserv.core.kotlin.Locator
 
 /**
  * Composite Builder

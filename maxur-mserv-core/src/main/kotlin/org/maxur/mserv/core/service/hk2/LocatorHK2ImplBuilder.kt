@@ -8,8 +8,9 @@ import org.glassfish.hk2.api.TypeLiteral
 import org.glassfish.hk2.utilities.Binder
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities
 import org.glassfish.hk2.utilities.binding.AbstractBinder
-import org.maxur.mserv.core.Locator
+import org.maxur.mserv.core.LocatorImpl
 import org.maxur.mserv.core.annotation.Value
+import org.maxur.mserv.core.kotlin.Locator
 import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
 import org.maxur.mserv.core.service.msbuilder.LocatorBuilder
 import javax.inject.Singleton
@@ -30,7 +31,9 @@ class LocatorHK2ImplBuilder : LocatorBuilder() {
     /** {@inheritDoc} */
     override fun buildLocator(): Locator {
         val serviceLocator = makeLocator()
-        val locator = serviceLocator.getService(Locator::class.java)
+        val locator = serviceLocator.getService(Locator::class.java) ?:
+            throw IllegalStateException(serviceLocator.getService(ErrorHandler::class.java)?.latestError)
+        LocatorImpl.holder.put(locator.impl)
         ServiceLocatorUtilities.bind(serviceLocator, *binders.toTypedArray())
         return locator
     }
@@ -91,12 +94,14 @@ class LocatorHK2ImplBuilder : LocatorBuilder() {
         }
     }
 
+    // TODO pull up it
     class LocatorBinder : AbstractBinder() {
         /** {@inheritDoc} */
         override fun configure() {
-            bind(LocatorHK2Impl::class.java)
-                .to(Locator::class.java)
-                .`in`(Singleton::class.java)
+            bind(LocatorHK2Impl::class.java).to(LocatorImpl::class.java).`in`(Singleton::class.java)
+            bind(Locator::class.java).to(Locator::class.java).`in`(Singleton::class.java)
+            bind(org.maxur.mserv.core.java.Locator::class.java)
+                .to(org.maxur.mserv.core.java.Locator::class.java).`in`(Singleton::class.java)
         }
 
     }

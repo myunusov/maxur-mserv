@@ -5,6 +5,7 @@ import org.junit.BeforeClass
 import org.junit.Test
 import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.embedded.EmbeddedService
+import org.maxur.mserv.core.kotlin.Locator
 import org.maxur.mserv.core.sample.SampleService
 import org.maxur.mserv.core.service.msbuilder.Java
 import org.maxur.mserv.core.service.msbuilder.Kotlin
@@ -17,7 +18,7 @@ class MicroServiceIT {
         @JvmStatic
         @BeforeClass
         fun beforeClass() {
-            Locator.holder = TestLocatorHolder
+            LocatorImpl.holder = TestLocatorHolder
         }
     }
 
@@ -36,7 +37,7 @@ class MicroServiceIT {
             onError += { ex -> throw ex }
         }.start()
         serviceToKotlin?.stop()
-        Locator.shutdown()
+        Locator.stop()
     }
 
     fun beforeStopKt(service: BaseService, embeddedService: EmbeddedService) {
@@ -49,7 +50,7 @@ class MicroServiceIT {
         assertThat(service).isNotNull()
         assertThat(config).isNotNull()
         assertThat(config.format).isEqualToIgnoringCase("Hocon")
-        val sampleService = Locator.service(SampleService::class)
+        val sampleService = Locator.bean(SampleService::class)
         assertThat(sampleService).isNotNull()
         assertThat(sampleService!!.name).isEqualToIgnoringWhitespace("μService")
     }
@@ -66,7 +67,7 @@ class MicroServiceIT {
                 .onError (Consumer { ex -> throw ex })
                 .start()
         serviceToJava?.stop()
-        Locator.shutdown()
+        Locator.stop()
     }
 
     private fun beforeStopJava(service: BaseService) {
@@ -80,7 +81,7 @@ class MicroServiceIT {
         val config = locator.service(PropertiesSource::class.java)
         assertThat(config).isNotNull()
         assertThat(config!!.format).isEqualToIgnoringCase("Hocon")
-        val sampleService = Locator.service(SampleService::class)
+        val sampleService = Locator.bean(SampleService::class)
         assertThat(sampleService).isNotNull()
         assertThat(sampleService!!.name).isEqualToIgnoringWhitespace("μService")
 

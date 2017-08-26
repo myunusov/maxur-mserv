@@ -10,7 +10,7 @@ import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.maxur.mserv.core.Locator
+import org.maxur.mserv.core.LocatorImpl
 import org.maxur.mserv.core.TestLocatorHolder
 import org.maxur.mserv.core.service.properties.Properties
 import org.mockito.Mock
@@ -24,7 +24,7 @@ class LocatorHK2ImplTest {
         @JvmStatic
         @BeforeClass
         fun beforeClass() {
-            Locator.holder = TestLocatorHolder
+            LocatorImpl.holder = TestLocatorHolder
         }
     }
 
@@ -63,32 +63,32 @@ class LocatorHK2ImplTest {
     @Test
     fun names() {
         val locator = LocatorHK2Impl(serviceLocator)
-        assertThat(locator.names(String::class)).isEqualTo(listOf("A", "B"))
+        assertThat(locator.names(String::class.java)).isEqualTo(listOf("A", "B"))
     }
 
     @Test
     fun property() {
             val locator = LocatorHK2Impl(serviceLocator)
             Mockito.`when`(properties.read("A", String::class.java)).thenReturn("A")
-            assertThat(locator.property("A", String::class)).isEqualTo("A")
+            assertThat(locator.property("A", String::class.java)).isEqualTo("A")
     }
 
     @Test
     fun service() {
         val locator = LocatorHK2Impl(serviceLocator)
-        assertThat(locator.service(String::class, "A")).isEqualTo("A")
+        assertThat(locator.service(String::class.java, "A")).isEqualTo("A")
     }
 
     @Test
     fun services() {
         val locator = LocatorHK2Impl(serviceLocator)
-        assertThat(locator.services(String::class)).isEqualTo(listOf("A", "B"))
+        assertThat(locator.services(String::class.java)).isEqualTo(listOf("A", "B"))
     }
 
     @Test
     fun close() {
         val locator = LocatorHK2Impl(serviceLocator)
-        Locator.current = locator
+        LocatorImpl.holder.put(locator)
         locator.shutdown()
         assertThat(serviceLocator.state).isEqualTo(ServiceLocatorState.SHUTDOWN)
         locator.shutdown()

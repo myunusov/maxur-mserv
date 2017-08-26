@@ -1,10 +1,10 @@
 package org.maxur.mserv.core.service.msbuilder
 
 import org.maxur.mserv.core.BaseMicroService
-import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.MicroService
 import org.maxur.mserv.core.domain.Holder
 import org.maxur.mserv.core.embedded.EmbeddedService
+import org.maxur.mserv.core.kotlin.Locator
 import org.maxur.mserv.core.service.hk2.LocatorHK2ImplBuilder
 import org.maxur.mserv.core.service.properties.Properties
 import org.maxur.mserv.core.service.properties.PropertiesSource

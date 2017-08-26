@@ -3,8 +3,8 @@ package org.maxur.mserv.core.service.hk2
 import org.glassfish.hk2.api.Injectee
 import org.glassfish.hk2.api.InjectionResolver
 import org.glassfish.hk2.api.ServiceHandle
-import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.annotation.Value
+import org.maxur.mserv.core.kotlin.Locator
 import org.maxur.mserv.core.service.properties.NullProperties
 import org.maxur.mserv.core.service.properties.Properties
 import org.slf4j.Logger

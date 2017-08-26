@@ -2,8 +2,8 @@
 
 package org.maxur.mserv.core.service.properties
 
-import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.core.fold
+import org.maxur.mserv.core.kotlin.Locator
 import java.net.URI
 
 /**
@@ -28,13 +28,12 @@ abstract class PropertiesSource(
          * @param uri the uri of properties source
          */
         fun open(format: String, uri: URI? = null, rootKey: String? = null): Properties =
-                Locator
-                        .service(PropertiesFactory::class, format)!!
+                Locator.bean(PropertiesFactory::class, format)!!
                         .make(object : PropertiesSource(format, uri, rootKey) {})
                         .fold({ throw it }, { it })
 
         fun default(): Properties {
-            Locator.services(PropertiesFactory::class).map {
+            Locator.beans(PropertiesFactory::class).map {
                 it.make(object : PropertiesSource() {})
                         .fold({ }, { return it })
             }

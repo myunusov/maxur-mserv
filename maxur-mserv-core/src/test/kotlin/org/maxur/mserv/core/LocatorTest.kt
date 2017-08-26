@@ -3,6 +3,7 @@ package org.maxur.mserv.core
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.BeforeClass
 import org.junit.Test
+import org.maxur.mserv.core.kotlin.Locator
 import kotlin.concurrent.thread
 import kotlin.reflect.KParameter
 import kotlin.reflect.KType
@@ -15,7 +16,7 @@ class LocatorTest {
         @JvmStatic
         @BeforeClass
         fun beforeClass() {
-            Locator.holder = TestLocatorHolder
+            LocatorImpl.holder = TestLocatorHolder
         }
     }
 
@@ -40,9 +41,9 @@ class LocatorTest {
     }
 
     @Volatile
-    private var locator1: Locator? = null
+    private var locator1: LocatorImpl? = null
     @Volatile
-    private var locator2: Locator? = null
+    private var locator2: LocatorImpl? = null
 
     @Test
     fun testParallel() {
@@ -90,7 +91,7 @@ class LocatorTest {
 
     @Test
     fun testNullLocator() {
-        val locator = Locator.NullLocator
+        val locator = NullLocator
         assertThat(locator).isNotNull()
         assertThat(locator.name).isEqualToIgnoringCase("null-locator")
         assertFailsWith<IllegalStateException> {
@@ -126,7 +127,7 @@ class LocatorTest {
     fun testHolder() {
         val locator = FakeLocator()
         val holder = locator.holder
-        assertThat(holder.get() is Locator.NullLocator)
+        assertThat(holder.get() is NullLocator)
         assertThat(holder.put(locator))
         assertThat(holder.get() is FakeLocator)
         assertFailsWith<IllegalStateException> {
@@ -136,77 +137,73 @@ class LocatorTest {
             holder.remove("invalid name")
         }
         holder.remove(locator.name)
-        assertThat(holder.get() is Locator.NullLocator)
+        assertThat(holder.get() is NullLocator)
     }
 
     @Test
     fun testCompanionObject() {
         synchronized(this) {
             val locator = FakeLocator()
-            assertThat(Locator.service(Locator::class)).isEqualTo(locator)
-            assertThat(Locator.service(Locator::class.java)).isEqualTo(locator)
-            assertThat(Locator.service(Locator::class, "")).isEqualTo(locator)
-            assertThat(Locator.service(Locator::class.java, "")).isEqualTo(locator)
+            assertThat(Locator.bean(BaseLocator::class)).isEqualTo(locator)
+            assertThat(org.maxur.mserv.core.java.Locator.bean(BaseLocator::class.java)).isEqualTo(locator)
+            assertThat(Locator.bean(BaseLocator::class, "")).isEqualTo(locator)
+            assertThat(org.maxur.mserv.core.java.Locator.bean(BaseLocator::class.java, "")).isEqualTo(locator)
 
-            assertThat(Locator.services(Locator::class)).isEqualTo(listOf(locator))
-            assertThat(Locator.services(Locator::class.java)).isEqualTo(listOf(locator))
+            assertThat(Locator.beans(BaseLocator::class)).isEqualTo(listOf(locator))
+            assertThat(org.maxur.mserv.core.java.Locator.beans(BaseLocator::class.java)).isEqualTo(listOf(locator))
 
-            assertThat(Locator.service<Locator>(object : KParameter {
+            assertThat(Locator.bean<BaseLocator>(object : KParameter {
                 override val annotations: List<Annotation> = emptyList()
                 override val index: Int = 0
                 override val isOptional: Boolean = false
                 override val isVararg: Boolean = false
                 override val kind: KParameter.Kind = KParameter.Kind.VALUE
                 override val name: String? = "value"
-                override val type: KType = Locator::class.createType()
+                override val type: KType = BaseLocator::class.createType()
             })).isEqualTo(locator)
-            Locator.shutdown()
+            Locator.stop()
             // Idempotent
-            Locator.shutdown()
+            Locator.stop()
         }
     }
 
     @Test
     fun testLocate() {
         val locator = FakeLocator()
-        assertThat(locator.locate(Locator::class, "")).isEqualTo(locator)
+        assertThat(locator.service(LocatorImpl::class.java, "")).isEqualTo(locator)
         assertFailsWith<IllegalStateException> {
-            assertThat(locator.locate(FakeLocator::class, ""))
+            assertThat(locator.locate(FakeLocator::class.java, ""))
         }
     }
 
     @Test
     fun testNames() {
         val locator = FakeLocator()
-        assertThat(locator.names(Locator::class)).isEqualTo(listOf(""))
-        assertThat(locator.names(FakeLocator::class)).isEqualTo(emptyList<String>())
+        assertThat(locator.names(LocatorImpl::class.java)).isEqualTo(listOf(""))
+        assertThat(locator.names(LocatorImpl::class.java)).isEqualTo(emptyList<String>())
     }
 
     @Test
     fun testProperty() {
         val locator = FakeLocator()
-        assertThat(locator.property("key")).isEqualTo("value")
-        assertThat(locator.property("invalidkey")).isNull()
-        assertThat(locator.property("key", FakeLocator::class)).isNull()
+        assertThat(locator.property("key", String::class.java)).isEqualTo("value")
+        assertThat(locator.property("invalidkey", String::class.java)).isNull()
+        assertThat(locator.property("key", FakeLocator::class.java)).isNull()
     }
 
     @Suppress("UNCHECKED_CAST")
-    class FakeLocator : Locator(name = "locator name") {
-
-        init {
-            Locator.current = this
-        }
+    class FakeLocator(override val name: String = "fake locator") : LocatorImpl {
 
         override fun configurationError() = null
 
         override fun <T> service(contractOrImpl: Class<T>, name: String?): T? =
-            if (contractOrImpl == Locator::class.java) this as T else null
+            if (contractOrImpl == BaseLocator::class.java) this as T else null
 
         override fun <T> services(contractOrImpl: Class<T>): List<T> =
-            if (contractOrImpl == Locator::class.java) listOf(this) as List<T> else emptyList()
+            if (contractOrImpl == BaseLocator::class.java) listOf(this) as List<T> else emptyList()
 
         override fun names(contractOrImpl: Class<*>): List<String> =
-            if (contractOrImpl == Locator::class.java) listOf("") else emptyList()
+            if (contractOrImpl == BaseLocator::class.java) listOf("") else emptyList()
 
         override fun <T> property(key: String, clazz: Class<T>): T? =
             if (clazz == String::class.java && key == "key") "value" as T else null

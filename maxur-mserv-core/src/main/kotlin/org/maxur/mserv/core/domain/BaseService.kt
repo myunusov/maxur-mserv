@@ -1,6 +1,6 @@
 package org.maxur.mserv.core.domain
 
-import org.maxur.mserv.core.Locator
+import org.maxur.mserv.core.kotlin.Locator
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
@@ -109,8 +109,7 @@ abstract class BaseService(val locator: Locator) {
         }
 
         private fun match(param: KParameter, vararg values: Any): Any? =
-                values.firstOrNull { isApplicable(param, it) } ?:
-                        Locator.service(param)
+                values.firstOrNull { isApplicable(param, it) } ?: Locator.bean(param)
 
         @Suppress("UNCHECKED_CAST")
         private fun isApplicable(type: KType, clazz: KClass<out Any>) =
