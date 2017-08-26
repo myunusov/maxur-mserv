@@ -3,10 +3,9 @@ package org.maxur.mserv.core.service.msbuilder
 import org.maxur.mserv.core.BaseMicroService
 import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.MicroService
-import org.maxur.mserv.core.core.checkError
 import org.maxur.mserv.core.domain.Holder
 import org.maxur.mserv.core.embedded.EmbeddedService
-import org.maxur.mserv.core.service.hk2.LocatorFactoryHK2Impl
+import org.maxur.mserv.core.service.hk2.LocatorHK2ImplBuilder
 import org.maxur.mserv.core.service.properties.Properties
 import org.maxur.mserv.core.service.properties.PropertiesSource
 
@@ -39,12 +38,17 @@ abstract class MicroServiceBuilder {
      */
     val onError = Hooks.onError()
 
-     /**
+    /**
      * List of project service packages for service locator lookup.
      */
-    var packages: StringsHolder = StringsHolder()
+    var packages = StringsHolder()
 
-    protected var titleHolder: Holder<String> = Holder.string("Anonymous")
+    /**
+     * Builder of Service Locator instance.
+     */
+    var locatorBuilder: LocatorBuilder = LocatorHK2ImplBuilder()
+
+    protected var titleHolder = Holder.string("Anonymous")
 
     protected var propertiesHolder: PropertiesHolder = PropertiesHolder.DefaultPropertiesHolder
 
@@ -53,21 +57,16 @@ abstract class MicroServiceBuilder {
      * @return new instance of Microservice
      */
     open fun build(): MicroService = build(
-        checkError(
-            { buildLocator() },
-            { e -> onConfigurationError(Locator.current, e) }
-        )
+        locatorBuilder.apply {
+            packages = this@MicroServiceBuilder.packages.strings
+            bind(propertiesHolder::build, Properties::class, PropertiesSource::class)
+            bind(services::build, EmbeddedService::class)
+            bind({ locator -> BaseMicroService(locator) }, MicroService::class)
+        }.build()
     )
 
-    private fun buildLocator(): Locator = LocatorFactoryHK2Impl {
-        this.packages = this@MicroServiceBuilder.packages.strings
-        bind(propertiesHolder::build, Properties::class, PropertiesSource::class)
-        bind(services::build, EmbeddedService::class)
-        bind({ locator -> BaseMicroService(locator) }, MicroService::class)
-    }.make()
-
     private fun build(locator: Locator): MicroService {
-        val service = locator.service(MicroService::class) ?: onConfigurationError(locator)
+        val service = locator.service(MicroService::class) ?: locator.onConfigurationError()
         if (service is BaseMicroService) {
             service.name = titleHolder.get(locator)!!
             service.afterStart.addAll(afterStart.list)
@@ -76,14 +75,4 @@ abstract class MicroServiceBuilder {
         }
         return service
     }
-
-    private fun <T> onConfigurationError(locator: Locator?, error: Exception? = null): T {
-        val errorMessage =
-            locator?.configurationError()?.message
-                ?: error?.message
-                ?: "Unknown error"
-        locator?.shutdown()
-        throw IllegalStateException("A MicroService is not created. $errorMessage")
-    }
 }
-

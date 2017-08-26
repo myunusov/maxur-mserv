@@ -354,7 +354,20 @@ abstract class Locator(val name: String) {
      *  Returns last configuration error.
      *  @return last configuration error as Exception
      */
-    abstract fun configurationError(): Exception?
+    protected abstract fun configurationError(): Exception?
+
+    /**
+     * Calls on configuration error.
+     * @param error The cause of error (optional).
+     */
+    fun <T> onConfigurationError(error: Exception? = null): T {
+        val errorMessage =
+            configurationError()?.message
+                ?: error?.message
+                ?: "Unknown error"
+        shutdown()
+        throw IllegalStateException("A MicroService is not created. $errorMessage")
+    }
 
     /**
      * This method will shutdown every service associated with this Locator.

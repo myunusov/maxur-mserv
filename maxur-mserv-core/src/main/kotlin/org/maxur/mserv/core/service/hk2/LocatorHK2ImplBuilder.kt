@@ -11,7 +11,7 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder
 import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.annotation.Value
 import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
-import java.util.concurrent.atomic.AtomicInteger
+import org.maxur.mserv.core.service.msbuilder.LocatorBuilder
 import javax.inject.Singleton
 import kotlin.reflect.KClass
 
@@ -20,24 +20,18 @@ import kotlin.reflect.KClass
  * @version 1.0
  * @since <pre>24.06.2017</pre>
  */
-class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
-
-    companion object {
-        private var nameCount = AtomicInteger()
-    }
-
-    private val newName get() = "locator ${nameCount.andIncrement}"
-
-    var packages: List<String> = emptyList()
+class LocatorHK2ImplBuilder : LocatorBuilder() {
 
     private val binders = ArrayList<Binder>().apply {
         add(ObjectMapperBinder())
         add(PropertiesInjectionResolverBinder())
     }
 
-    init {
-        @Suppress("UNUSED_EXPRESSION")
-        init()
+    override fun buildLocator(): Locator {
+        val serviceLocator = makeLocator()
+        val locator = serviceLocator.getService(Locator::class.java)
+        ServiceLocatorUtilities.bind(serviceLocator, *binders.toTypedArray())
+        return locator
     }
 
     fun make(): Locator {
@@ -49,19 +43,20 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
 
     private fun makeLocator() = if (packages.isNotEmpty()) {
         HK2RuntimeInitializer.init(
-                newName,
-                true,
-                *packages.toTypedArray(), "org.maxur.mserv.core"
+            name,
+            true,
+            *packages.toTypedArray(), "org.maxur.mserv.core"
         )
     } else {
-        ServiceLocatorUtilities.createAndPopulateServiceLocator(newName)
+        ServiceLocatorUtilities.createAndPopulateServiceLocator(name)
     }.also {
         ServiceLocatorUtilities.enableImmediateScope(it)
         ServiceLocatorUtilities.bind(it, LocatorBinder())
     }
 
-    fun bind(func: (Locator) -> Any, vararg classes: KClass<out Any>) {
-        binders.add(ServiceBinder(func, *classes))
+    /** {@inheritDoc} */
+    override fun bind(function: (Locator) -> Any, vararg classes: KClass<out Any>) {
+        binders.add(ServiceBinder(function, *classes))
     }
 
     private class ServiceBinder(val func: (Locator) -> Any, vararg val classes: KClass<out Any>) : AbstractBinder() {
@@ -83,16 +78,16 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
     private class PropertiesInjectionResolverBinder : AbstractBinder() {
         override fun configure() {
             bind(PropertiesInjectionResolver::class.java)
-                    .to(object : TypeLiteral<InjectionResolver<Value>>() {})
-                    .`in`(Singleton::class.java)
+                .to(object : TypeLiteral<InjectionResolver<Value>>() {})
+                .`in`(Singleton::class.java)
         }
     }
 
     private class ObjectMapperBinder : AbstractBinder() {
         override fun configure() {
             bindFactory(ObjectMapperProvider::class.java)
-                    .to(ObjectMapper::class.java)
-                    .`in`(Singleton::class.java)
+                .to(ObjectMapper::class.java)
+                .`in`(Singleton::class.java)
         }
     }
 
@@ -100,10 +95,9 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
 
         override fun configure() {
             bind(LocatorHK2Impl::class.java)
-                    .to(Locator::class.java)
-                    .`in`(Singleton::class.java)
+                .to(Locator::class.java)
+                .`in`(Singleton::class.java)
         }
 
     }
-
 }

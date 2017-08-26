@@ -9,7 +9,7 @@ package org.maxur.mserv.core.service.msbuilder
  *
  * @property strings the Strings List
  */
-class StringsHolder (val strings: MutableList<String> = ArrayList())  {
+class StringsHolder(val strings: MutableList<String> = ArrayList()) {
 
     /**
      * Add string to strings list.
@@ -20,6 +20,6 @@ class StringsHolder (val strings: MutableList<String> = ArrayList())  {
     }
 
     /** {@inheritDoc} */
-    override fun toString(): String = strings.joinToString ( "," )
+    override fun toString(): String = strings.joinToString(",")
 
 }

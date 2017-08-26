@@ -14,8 +14,6 @@ class KBuilder() : MicroServiceBuilder() {
             titleHolder = Holder.string(value)
         }
 
-
-
     constructor(init: KBuilder.() -> Unit) : this() {
         init()
     }
