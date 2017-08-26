@@ -33,9 +33,9 @@ class KBuilder() : MicroServiceBuilder() {
         holder.apply { init() }
     }
 
-    fun service(init: ServiceHolder.() -> Unit) = ServiceHolder().apply { init() }
+    fun service(init: ServiceBuilder.() -> Unit) = ServiceBuilder().apply { init() }
 
-    fun rest(init: ServiceHolder.() -> Unit) = ServiceHolder().apply {
+    fun rest(init: ServiceBuilder.() -> Unit) = ServiceBuilder().apply {
         type = "Grizzly"
         properties = ":webapp"
         init()

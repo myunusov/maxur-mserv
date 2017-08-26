@@ -8,9 +8,9 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import org.jvnet.hk2.annotations.Service
+import org.maxur.mserv.core.core.Result
+import org.maxur.mserv.core.core.either
 import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
-import org.maxur.mserv.core.utils.Either
-import org.maxur.mserv.core.utils.either
 import java.io.File
 import java.io.InputStream
 import java.net.URI
@@ -18,13 +18,13 @@ import java.nio.file.Paths
 
 @Service(name = "Json")
 class PropertiesFactoryJsonImpl : PropertiesFactory() {
-    override fun make(source: PropertiesSource): Either<Exception, Properties> =
+    override fun make(source: PropertiesSource): Result<Exception, Properties> =
             either { PropertiesSourceJacksonImpl(JsonFactory(), "json", source) }
 }
 
 @Service(name = "Yaml")
 class PropertiesFactoryYamlImpl : PropertiesFactory() {
-    override fun make(source: PropertiesSource): Either<Exception, Properties> =
+    override fun make(source: PropertiesSource): Result<Exception, Properties> =
             either { PropertiesSourceJacksonImpl(YAMLFactory(), "yaml", source) }
 }
 

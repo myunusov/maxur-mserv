@@ -3,7 +3,7 @@
 package org.maxur.mserv.core.service.properties
 
 import org.jvnet.hk2.annotations.Contract
-import org.maxur.mserv.core.utils.Either
+import org.maxur.mserv.core.core.Result
 
 /**
  * @author myunusov
@@ -12,5 +12,5 @@ import org.maxur.mserv.core.utils.Either
  */
 @Contract
 abstract class PropertiesFactory {
-    abstract fun make(source: PropertiesSource): Either<Exception, Properties>
+    abstract fun make(source: PropertiesSource): Result<Exception, Properties>
 }

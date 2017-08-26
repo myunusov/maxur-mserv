@@ -36,7 +36,7 @@ private object ClassLoaderHolder {
      * Return Resource by it's name
      * @param name name of the desired resource
      *
-     * @return      A  {@link java.net.URL} object or {@code null} if no
+     * @return A {@link java.net.URL} object or {@code null} if no
      *              resource with this name is found
      */
     fun resource(name: String): URL? {

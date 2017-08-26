@@ -57,7 +57,7 @@ class JBuilder : MicroServiceBuilder(), IJBuilder {
     }
 
     override fun service(type: String, properties: String): JBuilder {
-        val holder = ServiceHolder()
+        val holder = ServiceBuilder()
         holder.type = type
         holder.properties = properties
         services.add(holder)
@@ -102,7 +102,7 @@ class JBuilder : MicroServiceBuilder(), IJBuilder {
 
 class JPropertiesBuilder(
         private val parent: JBuilder,
-        val holder: PropertiesHolder.BasePropertiesHolder
+        private val holder: PropertiesHolder.BasePropertiesHolder
 ) : IJBuilder by parent {
 
     fun url(value: String): JPropertiesBuilder {

@@ -3,7 +3,7 @@
 package org.maxur.mserv.core.service.properties
 
 import org.maxur.mserv.core.Locator
-import org.maxur.mserv.core.utils.fold
+import org.maxur.mserv.core.core.fold
 import java.net.URI
 
 /**

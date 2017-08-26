@@ -109,7 +109,7 @@ abstract class BaseService(val locator: Locator) {
         }
 
         private fun match(param: KParameter, vararg values: Any): Any? =
-                values.filter { isApplicable(param, it) }.firstOrNull() ?:
+                values.firstOrNull { isApplicable(param, it) } ?:
                         Locator.service(param)
 
         @Suppress("UNCHECKED_CAST")
