@@ -281,8 +281,7 @@ class MicroServiceBuilderSpec : Spek({
 
         context("Build micro-service with default properties") {
             it("should return new micro-service") {
-                val service = Kotlin.service {
-                }
+                val service = Kotlin.service { }
                 assertThat(service).isNotNull()
                 val source = Locator.bean(PropertiesSource::class)
                 assertThat(source).isNotNull()

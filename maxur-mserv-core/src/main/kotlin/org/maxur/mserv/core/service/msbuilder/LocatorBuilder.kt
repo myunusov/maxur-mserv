@@ -29,9 +29,13 @@ abstract class LocatorBuilder {
      * Build service locator.
      */
     fun build(): Locator = checkError(
-        { buildLocator() },
-        { e -> Locator.current.onConfigurationError(e) }
-    )
+        {
+            make().also {
+                it.registerAsSingleton()
+                bind(it)
+            }
+        },
+        { e -> Locator.current.onConfigurationError(e) })
 
     /**
      * Bind service creation function to contract or implementations.
@@ -40,6 +44,8 @@ abstract class LocatorBuilder {
      */
     abstract fun bind(function: (Locator) -> Any, vararg classes: KClass<out Any>)
 
-    protected abstract fun buildLocator(): Locator
+    protected abstract fun bind(locator: Locator)
+
+    protected abstract fun make(): Locator
 
 }

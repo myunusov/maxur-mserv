@@ -14,7 +14,7 @@ import javax.inject.Inject
 class LocatorHK2Impl @Inject constructor(private val locator: ServiceLocator) : LocatorImpl {
 
     override val name: String = locator.name
-    
+
     /** {@inheritDoc} */
     @Suppress("UNCHECKED_CAST")
     override fun <T> implementation(): T = locator as T

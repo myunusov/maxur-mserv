@@ -10,7 +10,7 @@ import kotlin.reflect.KParameter
  * @version 1.0
  * @since <pre>26.08.2017</pre>
  */
-class Locator @Inject constructor(impl: LocatorImpl) : org.maxur.mserv.core.BaseLocator(impl) {
+class Locator @Inject constructor(impl: LocatorImpl) : LocatorImpl by impl {
 
     companion object {
 
@@ -74,15 +74,15 @@ class Locator @Inject constructor(impl: LocatorImpl) : org.maxur.mserv.core.Base
      */
     fun <T : Any> locate(contractOrImpl: KClass<T>, name: String): T = locate(contractOrImpl.java, name)
 
+    /**
+     * Gets the best service from this locator that satisfied to function's parameter.
+     * <p>
+     * @param parameter The function's parameter
+     * @return An instance of the contract or impl.  May return
+     * null if there is no provider that provides the given
+     * implementation or contract
+     */
     @Suppress("UNCHECKED_CAST")
-        /**
-         * Gets the best service from this locator that satisfied to function's parameter.
-         * <p>
-         * @param parameter The function's parameter
-         * @return An instance of the contract or impl.  May return
-         * null if there is no provider that provides the given
-         * implementation or contract
-         */
     fun <T : Any> service(parameter: KParameter): T? = service(parameter.type.classifier as KClass<T>)
 
     /**
@@ -136,5 +136,11 @@ class Locator @Inject constructor(impl: LocatorImpl) : org.maxur.mserv.core.Base
      * @return The property value of required type or nul
      */
     fun <T : Any> property(key: String, clazz: KClass<T>): T? = property(key, clazz.java)
+
+    /** {@inheritDoc} */
+    override fun toString(): String = name
+
+    /** {@inheritDoc} */
+    override fun equals(other: Any?): Boolean = other is Locator && other.name.equals(name)
 
 }

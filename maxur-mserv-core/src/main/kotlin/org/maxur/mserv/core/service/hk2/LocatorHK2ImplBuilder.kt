@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import gov.va.oia.HK2Utilities.HK2RuntimeInitializer
 import org.glassfish.hk2.api.Factory
 import org.glassfish.hk2.api.InjectionResolver
+import org.glassfish.hk2.api.ServiceLocator
 import org.glassfish.hk2.api.TypeLiteral
 import org.glassfish.hk2.utilities.Binder
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities
@@ -28,17 +29,15 @@ class LocatorHK2ImplBuilder : LocatorBuilder() {
         add(PropertiesInjectionResolverBinder())
     }
 
-    /** {@inheritDoc} */
-    override fun buildLocator(): Locator {
-        val serviceLocator = makeLocator()
-        val locator = serviceLocator.getService(Locator::class.java) ?:
-            throw IllegalStateException(serviceLocator.getService(ErrorHandler::class.java)?.latestError)
-        LocatorImpl.holder.put(locator.impl)
-        ServiceLocatorUtilities.bind(serviceLocator, *binders.toTypedArray())
-        return locator
+    override fun bind(locator: Locator) {
+        ServiceLocatorUtilities.bind(locator.implementation<ServiceLocator>(), *binders.toTypedArray())
     }
 
-    private fun makeLocator() = if (packages.isNotEmpty()) {
+    override fun make(): Locator =
+        makeServiceLocator().getService(Locator::class.java) ?:
+        throw IllegalStateException(makeServiceLocator().getService(ErrorHandler::class.java)?.latestError)
+
+    private fun makeServiceLocator() = if (packages.isNotEmpty()) {
         HK2RuntimeInitializer.init(
             name,
             true,

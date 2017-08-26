@@ -38,7 +38,7 @@ internal class SingleHolder : LocatorHolder {
 
     override fun remove(name: String) {
         locator = if (locator.name == name)
-            object : BaseLocator() {}
+            NullLocator
         else
             throw IllegalArgumentException("Locator '$name' is not found")
     }

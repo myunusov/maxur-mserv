@@ -118,4 +118,9 @@ interface LocatorImpl {
      */
     fun close()
 
+    /**
+     * Register Locator Implementation as Singleton.
+     */
+    fun registerAsSingleton() = holder.put(this)
+
 }

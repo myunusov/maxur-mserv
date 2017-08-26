@@ -8,7 +8,7 @@ import javax.inject.Inject
  * @version 1.0
  * @since <pre>26.08.2017</pre>
  */
-class Locator @Inject constructor(impl: LocatorImpl) : org.maxur.mserv.core.BaseLocator(impl) {
+class Locator @Inject constructor(impl: LocatorImpl) : LocatorImpl by impl {
 
     companion object {
 
@@ -86,4 +86,10 @@ class Locator @Inject constructor(impl: LocatorImpl) : org.maxur.mserv.core.Base
      */
     fun property(key: String): String? = property(key, String::class.java)
 
+    /** {@inheritDoc} */
+    override fun toString(): String = name
+
+    /** {@inheritDoc} */
+    override fun equals(other: Any?): Boolean = other is org.maxur.mserv.core.kotlin.Locator && other.name.equals(name)
+    
 }
