@@ -49,8 +49,8 @@ interface MicroService {
  * @param locator Service Locator
  */
 class BaseMicroService constructor(
-        val embeddedService: EmbeddedService,
-        locator: Locator
+        locator: Locator,
+        val embeddedService: EmbeddedService = locator.service(EmbeddedService::class)!!
 ) : BaseService(locator), MicroService {
 
     init {

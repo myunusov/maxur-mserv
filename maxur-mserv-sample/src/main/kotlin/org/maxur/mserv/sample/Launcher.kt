@@ -29,7 +29,9 @@ object Launcher {
             name = ":name"
             packages = "org.maxur.mserv.sample"
             properties { format = "hocon" }
-            services += rest { afterStart += this@Launcher::afterWebServiceStart }
+            services += rest {
+                afterStart += this@Launcher::afterWebServiceStart
+            }
             afterStart += this@Launcher::afterStart
             beforeStop += { _ ->  log().info("Microservice is stopped") }
             onError += { exception ->  log().error(exception.message, exception) }

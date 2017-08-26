@@ -51,11 +51,8 @@ abstract class MicroServiceBuilder {
                 this.packages = packagesHolder
                 bind(*bindersHolder.toTypedArray())
                 bind(propertiesHolder::build, Properties::class, PropertiesSource::class)
-                bind({ locator -> services.build(locator) }, EmbeddedService::class)
-                bind({ locator ->
-                    BaseMicroService(locator.service<EmbeddedService>(EmbeddedService::class)!!, locator)
-                }, MicroService::class)
-
+                bind(services::build, EmbeddedService::class)
+                bind({ locator -> BaseMicroService(locator) }, MicroService::class)
             }.make()
         } catch (e: Exception) {
             return onConfigurationError(Locator.current)

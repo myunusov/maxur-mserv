@@ -12,10 +12,11 @@ import org.maxur.mserv.core.embedded.EmbeddedServiceFactory
  */
 class ServiceBuilder : Builder<EmbeddedService?> {
 
+    val afterStart = HookHolder.onService()
+    val beforeStop = HookHolder.onService()
+
     private var holder: Holder<EmbeddedService> = Holder.none()
     private var propertiesHolder: Holder<Any> = Holder.wrap(null)
-    private val afterStart = HookHolder.onService()
-    private var beforeStop = HookHolder.onService()
 
     var ref: EmbeddedService? = null
         set(value) {
