@@ -28,7 +28,7 @@ class MicroServiceIT {
     fun kotlinMain() {
         Kotlin.service {
             name = ":name"
-            packages = "org.maxur.mserv.core.sample"
+            packages += "org.maxur.mserv.core.sample"
             properties { format = "hocon" }
             services += rest { }
             afterStart += this@MicroServiceIT::afterStartKt

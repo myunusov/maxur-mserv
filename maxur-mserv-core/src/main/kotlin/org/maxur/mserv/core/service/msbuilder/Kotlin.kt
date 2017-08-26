@@ -14,10 +14,7 @@ class KBuilder() : MicroServiceBuilder() {
             titleHolder = Holder.string(value)
         }
 
-    var packages: String = ""
-        set(value) {
-            packagesHolder.addAll(value.split("\\s*,\\s*"))
-        }
+
 
     constructor(init: KBuilder.() -> Unit) : this() {
         init()

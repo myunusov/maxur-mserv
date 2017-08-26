@@ -39,6 +39,9 @@ class LocatorHK2Impl @Inject constructor(private val locator: ServiceLocator) : 
     override fun <T> services(contractOrImpl: Class<T>): List<T> = locator.getAllServices(contractOrImpl).map { it as T }
 
     /** {@inheritDoc} */
+    override fun configurationError() = service(ErrorHandler::class)?.latestError
+
+    /** {@inheritDoc} */
     override fun close() {
         if (locator.state == ServiceLocatorState.RUNNING)
             locator.shutdown()

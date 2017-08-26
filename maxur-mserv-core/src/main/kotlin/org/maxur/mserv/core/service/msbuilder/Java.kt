@@ -35,7 +35,7 @@ class JBuilder : MicroServiceBuilder(), IJBuilder {
     }
 
     override fun packages(value: String): JBuilder {
-        packagesHolder.addAll(value.split("\\s*,\\s*"))
+        packages += value
         return this
     }
 

@@ -60,11 +60,6 @@ class LocatorFactoryHK2Impl(init: LocatorFactoryHK2Impl.() -> Unit) {
         ServiceLocatorUtilities.bind(it, LocatorBinder())
     }
 
-    fun bind(vararg binders: Binder): LocatorFactoryHK2Impl {
-        this.binders.addAll(binders)
-        return this
-    }
-
     fun bind(func: (Locator) -> Any, vararg classes: KClass<out Any>) {
         binders.add(ServiceBinder(func, *classes))
     }

@@ -17,6 +17,10 @@ abstract class Locator(val name: String) {
      * Throw IllegalStateException on any call.
      */
     object NullLocator : Locator("null-locator") {
+
+        /** {@inheritDoc} */
+        override fun configurationError() = null
+
         /** {@inheritDoc} */
         override fun <T> service(contractOrImpl: Class<T>, name: String?): T? = error()
 
@@ -345,6 +349,12 @@ abstract class Locator(val name: String) {
      * @return The platforms implementation of Locator.
      */
     abstract fun <T> implementation(): T
+
+    /**
+     *  Returns last configuration error.
+     *  @return last configuration error as Exception
+     */
+    abstract fun configurationError(): Exception?
 
     /**
      * This method will shutdown every service associated with this Locator.

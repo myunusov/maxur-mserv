@@ -9,8 +9,12 @@ import kotlin.reflect.KFunction
  * @param T the type of hook function argument
  * @property list the list of hooks.
  * @constructor Creates an empty holder.
+ *
+ * @author Maxim Yunusov
+ * @version 1.0
+ * @since <pre>11/25/13</pre>
  */
-abstract class HookHolder<out T : Any>(val list: MutableList<KFunction<Any>> = ArrayList()) {
+abstract class Hooks<out T : Any>(val list: MutableList<KFunction<Any>> = ArrayList()) {
 
     /**
      * companion object.
@@ -19,21 +23,21 @@ abstract class HookHolder<out T : Any>(val list: MutableList<KFunction<Any>> = A
         /**
          * Create hook holder with Base Service as argument
          */
-        fun onService(): HookHolder<BaseService> = BaseHookHolder()
+        fun onService(): Hooks<BaseService> = HooksOnLifecycle()
 
         /**
          * Create hook holder with Exception as argument
          */
-        fun onError(): HookHolder<Exception> = ErrorHookHolder()
+        fun onError(): Hooks<Exception> = HooksOnError()
     }
 
     /**
-     * Add function as KFunction.
+     * Add function to hooks list.
      * For example (kotlin)
      * <code>
      *     afterStart += this@MicroServiceIT::afterStartKt
      * </code>
-     * @param function The hook function.
+     * @param function The hook function as KFunction
      *
      */
     operator fun plusAssign(function: KFunction<Any>) {
@@ -41,7 +45,7 @@ abstract class HookHolder<out T : Any>(val list: MutableList<KFunction<Any>> = A
     }
 
     /**
-     * Add function as lambda.
+     * Add function to hooks list.
      * For example (kotlin)
      * <code>
      *     beforeStop += { _ ->  log().info("Microservice is stopped") }
@@ -50,15 +54,16 @@ abstract class HookHolder<out T : Any>(val list: MutableList<KFunction<Any>> = A
      * <code>
      *     beforeStop.plusAssign(unitFunc(func))
      * </code>
-     * @param lambda The hook lambda.
+     * @param lambda The hook function as lambda.
      */
     abstract operator fun plusAssign(lambda: (T) -> Unit)
 }
 
 /**
  * This class is holder of hooks functions.
+ * It should be fire on lifecycle events and pass observed service as argument.
  */
-private class BaseHookHolder : HookHolder<BaseService>() {
+private class HooksOnLifecycle : Hooks<BaseService>() {
 
     /** {@inheritDoc} */
     override operator fun plusAssign(lambda: (BaseService) -> Unit) {
@@ -75,8 +80,9 @@ private class BaseHookHolder : HookHolder<BaseService>() {
 
 /**
  * This class is holder of hooks functions.
+ * It should be fire on error and pass exception service as argument.
  */
-private class ErrorHookHolder : HookHolder<Exception>() {
+private class HooksOnError : Hooks<Exception>() {
 
     /** {@inheritDoc} */
     override operator fun plusAssign(lambda: (Exception) -> Unit) {

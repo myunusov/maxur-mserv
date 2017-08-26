@@ -197,6 +197,8 @@ class LocatorTest {
             Locator.current = this
         }
 
+        override fun configurationError() = null
+
         override fun <T> service(contractOrImpl: Class<T>, name: String?): T? =
             if (contractOrImpl == Locator::class.java) this as T else null
 

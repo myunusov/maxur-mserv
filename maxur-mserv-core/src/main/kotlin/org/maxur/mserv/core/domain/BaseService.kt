@@ -95,7 +95,7 @@ abstract class BaseService(val locator: Locator) {
             state = STARTED
         })
 
-        private fun check(service: BaseService, function: BaseService.() -> Unit) {
+        inline private fun check(service: BaseService, function: BaseService.() -> Unit) {
             try {
                 service.apply(function)
             } catch (e: Exception) {
