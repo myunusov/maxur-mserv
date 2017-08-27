@@ -76,7 +76,7 @@ class Locator @Inject constructor(impl: LocatorImpl) : LocatorImpl by impl {
      * null if there is no provider that provides the given
      * implementation or contract
      */
-     fun <T> service(contractOrImpl: Class<T>): T? = service(contractOrImpl, null)
+    fun <T> service(contractOrImpl: Class<T>): T? = service(contractOrImpl, null)
 
     /**
      * Gets property value by key name.
@@ -91,5 +91,5 @@ class Locator @Inject constructor(impl: LocatorImpl) : LocatorImpl by impl {
 
     /** {@inheritDoc} */
     override fun equals(other: Any?): Boolean = other is org.maxur.mserv.core.kotlin.Locator && other.name.equals(name)
-    
+
 }

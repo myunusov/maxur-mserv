@@ -27,7 +27,7 @@ abstract class MicroServiceBuilder {
     /**
      * List of properties sources.
      */
-    val properties: CompositeBuilder<Properties>  = CompositePropertiesBuilder()
+    val properties: CompositeBuilder<Properties> = CompositePropertiesBuilder()
     /**
      * List of hooks on after start.
      */

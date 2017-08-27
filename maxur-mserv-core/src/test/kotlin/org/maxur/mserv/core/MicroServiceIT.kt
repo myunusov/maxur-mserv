@@ -60,7 +60,7 @@ class MicroServiceIT {
         Java.service()
                 .name(":name")
                 .packages("org.maxur.mserv.core.sample")
-                .properties("hocon")
+                .properties("yaml")
                 .rest()
                 .afterStart(Consumer { this.afterStartJava(it) })
                 .beforeStop(Consumer { this.beforeStopJava(it) })
@@ -80,7 +80,7 @@ class MicroServiceIT {
         val locator = service.locator
         val config = locator.service(Properties::class.java)
         assertThat(config).isNotNull()
-        assertThat(config?.sources?.get(0)?.format).isEqualToIgnoringCase("Hocon")
+        assertThat(config?.sources?.get(0)?.format).isEqualToIgnoringCase("Yaml")
         val sampleService = Locator.bean(SampleService::class)
         assertThat(sampleService).isNotNull()
         assertThat(sampleService!!.name).isEqualToIgnoringWhitespace("μService")

@@ -12,7 +12,7 @@ abstract class CompositeBuilder<T : Any> : Builder<T>, Composite<Builder<T?>>() 
         .map { it.build(locator) }
         .filterNotNull()
 
-    protected fun buildListWith(locator: Locator, predicate: (Builder<T?>) -> Boolean): List<T> =  list
+    protected fun buildListWith(locator: Locator, predicate: (Builder<T?>) -> Boolean): List<T> = list
         .filter(predicate)
         .map { it.build(locator) }
         .filterNotNull()

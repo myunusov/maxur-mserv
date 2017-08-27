@@ -7,7 +7,7 @@ import java.net.URI
  * @version 1.0
  * @since <pre>27.08.2017</pre>
  */
-class CompositeProperties(val properties: List<Properties> = emptyList()) : Properties  {
+class CompositeProperties(val properties: List<Properties> = emptyList()) : Properties {
 
     override val sources = properties.flatMap { it.sources }
 

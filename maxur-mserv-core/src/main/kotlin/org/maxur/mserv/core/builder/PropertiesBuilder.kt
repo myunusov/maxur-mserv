@@ -51,14 +51,14 @@ class CompositePropertiesBuilder : CompositeBuilder<Properties>() {
     /** {@inheritDoc} */
     override fun build(locator: Locator) = when {
         list.isEmpty() -> PropertiesSource.default()
-        list.all { it is PropertiesBuilder.NullPropertiesBuilder }  ->
+        list.all { it is PropertiesBuilder.NullPropertiesBuilder } ->
             PropertiesSource.nothing()
         else -> {
             val sources = buildListWith(locator, { item -> item is PropertiesBuilder.BasePropertiesBuilder })
             if (sources.isEmpty())
                 PropertiesSource.nothing()
             else
-                CompositeProperties (sources)
+                CompositeProperties(sources)
         }
     }
 }
