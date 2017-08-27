@@ -4,7 +4,7 @@ import org.junit.Test;
 import org.maxur.mserv.core.builder.Java;
 import org.maxur.mserv.core.domain.BaseService;
 import org.maxur.mserv.core.java.Locator;
-import org.maxur.mserv.core.service.properties.PropertiesSource;
+import org.maxur.mserv.core.service.properties.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -43,9 +43,9 @@ public class MicroServiceJavaClientIT {
         service1 = service;
         assertThat(service).isNotNull();
         final Locator locator = Locator.getInstance();
-        final PropertiesSource config = locator.service(PropertiesSource.class);
+        final Properties config = locator.service(Properties.class);
         assertThat(config).isNotNull();
-        assertThat(config.getFormat()).isEqualToIgnoringCase("Hocon");
+        assertThat(config.getSources().get(0).getFormat()).isEqualToIgnoringCase("Hocon");
     }
 
 
