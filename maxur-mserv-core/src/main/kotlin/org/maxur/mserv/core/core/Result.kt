@@ -33,12 +33,11 @@ fun <E : Throwable> error(value: E): Result<E, Nothing> = ErrorResult(value)
  * @param action The action
  * @return the Result
  */
-fun <E : Throwable, V> either(action: () -> V): Result<E, V> =
+fun <V> result(action: () -> V): Result<Exception, V> =
     try {
         value(action())
-    } catch (e: Throwable) {
-        @Suppress("UNCHECKED_CAST")
-        error(e as E)
+    } catch (e: Exception) {
+        error(e)
     }
 
 /**

@@ -2,8 +2,7 @@ package org.maxur.mserv.core.annotation
 
 /**
  * Configuration Property Value annotation
- *
- * @param key the key of property
+ * @property key The key of properties
  *
  * @author myunusov
  * @version 1.0

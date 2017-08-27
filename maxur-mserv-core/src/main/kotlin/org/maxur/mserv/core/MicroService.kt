@@ -2,6 +2,7 @@ package org.maxur.mserv.core
 
 import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.embedded.EmbeddedService
+import org.maxur.mserv.core.kotlin.Locator
 import java.util.concurrent.Executors
 
 /**
@@ -55,6 +56,7 @@ class BaseMicroService constructor(
 
     init {
         Runtime.getRuntime().addShutdownHook(object : Thread() {
+            /** {@inheritDoc} */
             override fun run() {
                 this@BaseMicroService.stop()
             }

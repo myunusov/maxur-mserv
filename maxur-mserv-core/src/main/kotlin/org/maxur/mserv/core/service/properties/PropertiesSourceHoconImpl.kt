@@ -9,7 +9,7 @@ import com.typesafe.config.ConfigException
 import com.typesafe.config.ConfigFactory
 import org.jvnet.hk2.annotations.Service
 import org.maxur.mserv.core.core.Result
-import org.maxur.mserv.core.core.either
+import org.maxur.mserv.core.core.result
 import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
 import java.io.File
 import java.io.IOException
@@ -20,8 +20,8 @@ import java.time.Duration
 @Service(name = "Hocon")
 class PropertiesFactoryHoconImpl : PropertiesFactory() {
 
-    override fun make(source: PropertiesSource): Result<RuntimeException, Properties> =
-            either { PropertiesSourceHoconImpl(source) }
+    override fun make(source: PropertiesSource): Result<Exception, Properties> =
+            result { PropertiesSourceHoconImpl(source) }
 }
 
 internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource)

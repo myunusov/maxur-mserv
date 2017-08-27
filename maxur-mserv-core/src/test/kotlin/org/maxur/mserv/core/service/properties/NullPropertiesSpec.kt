@@ -6,7 +6,7 @@ import org.jetbrains.spek.api.dsl.describe
 import org.jetbrains.spek.api.dsl.it
 import org.junit.platform.runner.JUnitPlatform
 import org.junit.runner.RunWith
-import org.maxur.mserv.core.Locator
+import org.maxur.mserv.core.LocatorImpl
 import org.maxur.mserv.core.TestLocatorHolder
 import java.net.URI
 import kotlin.test.assertFailsWith
@@ -17,7 +17,7 @@ class NullPropertiesSpec : Spek({
     describe("a unknown Properties Source") {
 
         beforeEachTest {
-            Locator.holder = TestLocatorHolder
+            LocatorImpl.holder = TestLocatorHolder
         }
 
         context("create new properties source") {

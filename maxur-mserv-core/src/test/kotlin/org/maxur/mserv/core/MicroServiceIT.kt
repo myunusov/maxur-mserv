@@ -3,12 +3,13 @@ package org.maxur.mserv.core
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.BeforeClass
 import org.junit.Test
+import org.maxur.mserv.core.builder.Java
+import org.maxur.mserv.core.builder.Kotlin
 import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.embedded.EmbeddedService
+import org.maxur.mserv.core.kotlin.Locator
 import org.maxur.mserv.core.sample.SampleService
-import org.maxur.mserv.core.service.msbuilder.Java
-import org.maxur.mserv.core.service.msbuilder.Kotlin
-import org.maxur.mserv.core.service.properties.PropertiesSource
+import org.maxur.mserv.core.service.properties.Properties
 import java.util.function.Consumer
 
 class MicroServiceIT {
@@ -17,7 +18,7 @@ class MicroServiceIT {
         @JvmStatic
         @BeforeClass
         fun beforeClass() {
-            Locator.holder = TestLocatorHolder
+            LocatorImpl.holder = TestLocatorHolder
         }
     }
 
@@ -28,7 +29,7 @@ class MicroServiceIT {
     fun kotlinMain() {
         Kotlin.service {
             name = ":name"
-            packages = "org.maxur.mserv.core.sample"
+            packages += "org.maxur.mserv.core.sample"
             properties { format = "hocon" }
             services += rest { }
             afterStart += this@MicroServiceIT::afterStartKt
@@ -36,7 +37,7 @@ class MicroServiceIT {
             onError += { ex -> throw ex }
         }.start()
         serviceToKotlin?.stop()
-        Locator.shutdown()
+        Locator.stop()
     }
 
     fun beforeStopKt(service: BaseService, embeddedService: EmbeddedService) {
@@ -44,12 +45,12 @@ class MicroServiceIT {
         assertThat(embeddedService).isNotNull()
     }
 
-    fun afterStartKt(service: BaseService, config: PropertiesSource) {
+    fun afterStartKt(service: BaseService, config: Properties) {
         serviceToKotlin = service
         assertThat(service).isNotNull()
         assertThat(config).isNotNull()
-        assertThat(config.format).isEqualToIgnoringCase("Hocon")
-        val sampleService = Locator.service(SampleService::class)
+        assertThat(config.sources.get(0) .format).isEqualToIgnoringCase("Hocon")
+        val sampleService = Locator.bean(SampleService::class)
         assertThat(sampleService).isNotNull()
         assertThat(sampleService!!.name).isEqualToIgnoringWhitespace("μService")
     }
@@ -59,14 +60,14 @@ class MicroServiceIT {
         Java.service()
                 .name(":name")
                 .packages("org.maxur.mserv.core.sample")
-                .properties("hocon")
+                .properties("yaml")
                 .rest()
                 .afterStart(Consumer { this.afterStartJava(it) })
                 .beforeStop(Consumer { this.beforeStopJava(it) })
                 .onError (Consumer { ex -> throw ex })
                 .start()
         serviceToJava?.stop()
-        Locator.shutdown()
+        Locator.stop()
     }
 
     private fun beforeStopJava(service: BaseService) {
@@ -77,10 +78,10 @@ class MicroServiceIT {
         serviceToJava = service
         assertThat(service).isNotNull()
         val locator = service.locator
-        val config = locator.service(PropertiesSource::class.java)
+        val config = locator.service(Properties::class.java)
         assertThat(config).isNotNull()
-        assertThat(config!!.format).isEqualToIgnoringCase("Hocon")
-        val sampleService = Locator.service(SampleService::class)
+        assertThat(config?.sources?.get(0)?.format).isEqualToIgnoringCase("Yaml")
+        val sampleService = Locator.bean(SampleService::class)
         assertThat(sampleService).isNotNull()
         assertThat(sampleService!!.name).isEqualToIgnoringWhitespace("μService")
 

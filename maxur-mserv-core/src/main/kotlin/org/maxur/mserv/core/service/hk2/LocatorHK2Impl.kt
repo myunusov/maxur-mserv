@@ -2,7 +2,7 @@ package org.maxur.mserv.core.service.hk2
 
 import org.glassfish.hk2.api.ServiceLocator
 import org.glassfish.hk2.api.ServiceLocatorState
-import org.maxur.mserv.core.Locator
+import org.maxur.mserv.core.LocatorImpl
 import org.maxur.mserv.core.service.properties.Properties
 import javax.inject.Inject
 
@@ -11,7 +11,9 @@ import javax.inject.Inject
  * <p>
  * @param locator The HK2 ServiceLocator.
  */
-class LocatorHK2Impl @Inject constructor(private val locator: ServiceLocator) : Locator(locator.name) {
+class LocatorHK2Impl @Inject constructor(private val locator: ServiceLocator) : LocatorImpl {
+
+    override val name: String = locator.name
 
     /** {@inheritDoc} */
     @Suppress("UNCHECKED_CAST")
@@ -36,7 +38,11 @@ class LocatorHK2Impl @Inject constructor(private val locator: ServiceLocator) : 
         }
 
     /** {@inheritDoc} */
-    override fun <T> services(contractOrImpl: Class<T>): List<T> = locator.getAllServices(contractOrImpl).map { it as T }
+    override fun <T> services(contractOrImpl: Class<T>): List<T> =
+        locator.getAllServices(contractOrImpl).map { it as T }
+
+    /** {@inheritDoc} */
+    override fun configurationError() = service(ErrorHandler::class.java)?.latestError
 
     /** {@inheritDoc} */
     override fun close() {

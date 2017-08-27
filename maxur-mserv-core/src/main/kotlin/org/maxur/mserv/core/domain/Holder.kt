@@ -1,6 +1,6 @@
 package org.maxur.mserv.core.domain
 
-import org.maxur.mserv.core.Locator
+import org.maxur.mserv.core.kotlin.Locator
 import kotlin.reflect.KClass
 
 abstract class Holder<Type : Any> {

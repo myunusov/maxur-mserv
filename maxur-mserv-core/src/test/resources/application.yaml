@@ -4,3 +4,8 @@ id: 1
 time: "PT1S"
 USER:
   - title: ""
+
+webapp:
+  with-swagger-ui: false
+  with-hal-browser: false
+  url: "http://localhost:8082"

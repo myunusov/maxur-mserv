@@ -6,6 +6,10 @@ import kotlin.reflect.KClass
 
 @Contract
 interface Properties {
+
+    /** the List of properties sources. */
+    val sources: List<PropertiesSource>
+
     /**
      * return properties by key
 
@@ -51,7 +55,7 @@ interface Properties {
      * *
      * @return properties by key
      */
-    fun <P: Any> read(key: String, clazz: KClass<P>): P? = read(key, clazz.java)
+    fun <P : Any> read(key: String, clazz: KClass<P>): P? = read(key, clazz.java)
 
     /**
      * return properties by key
@@ -65,9 +69,9 @@ interface Properties {
     fun <P> read(key: String, clazz: Class<P>): P?
 
     fun URI.withoutScheme() =
-            if (scheme.isNullOrEmpty())
-                toString()
-            else
-                toString().substring(scheme.length + 1).trimStart('/')
+        if (scheme.isNullOrEmpty())
+            toString()
+        else
+            toString().substring(scheme.length + 1).trimStart('/')
 
 }

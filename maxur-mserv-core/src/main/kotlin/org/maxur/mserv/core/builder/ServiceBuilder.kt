@@ -1,19 +1,19 @@
-package org.maxur.mserv.core.service.msbuilder
+package org.maxur.mserv.core.builder
 
-import org.maxur.mserv.core.Locator
 import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.domain.Holder
 import org.maxur.mserv.core.embedded.CompositeService
 import org.maxur.mserv.core.embedded.EmbeddedService
 import org.maxur.mserv.core.embedded.EmbeddedServiceFactory
+import org.maxur.mserv.core.kotlin.Locator
 
 /**
  * The Service Builder.
  */
 class ServiceBuilder : Builder<EmbeddedService?> {
 
-    val afterStart = HookHolder.onService()
-    val beforeStop = HookHolder.onService()
+    val afterStart = Hooks.onService()
+    val beforeStop = Hooks.onService()
 
     private var holder: Holder<EmbeddedService> = Holder.none()
     private var propertiesHolder: Holder<Any> = Holder.wrap(null)
