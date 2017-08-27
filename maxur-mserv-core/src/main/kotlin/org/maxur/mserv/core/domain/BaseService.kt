@@ -99,7 +99,10 @@ abstract class BaseService(val locator: Locator) {
             try {
                 service.apply(function)
             } catch (e: Exception) {
-                service.onError.forEach { call(it, service, e) }
+                if (service.onError.isEmpty())
+                    throw e
+                else
+                    service.onError.forEach { call(it, service, e) }
             }
         }
 

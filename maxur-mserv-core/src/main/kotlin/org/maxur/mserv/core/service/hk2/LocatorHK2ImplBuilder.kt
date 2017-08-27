@@ -11,12 +11,13 @@ import org.glassfish.hk2.utilities.ServiceLocatorUtilities
 import org.glassfish.hk2.utilities.binding.AbstractBinder
 import org.maxur.mserv.core.LocatorImpl
 import org.maxur.mserv.core.annotation.Value
+import org.maxur.mserv.core.builder.LocatorBuilder
 import org.maxur.mserv.core.kotlin.Locator
 import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
-import org.maxur.mserv.core.service.msbuilder.LocatorBuilder
 import javax.inject.Singleton
 import kotlin.reflect.KClass
 
+// TODO pull bind logic to Abstract class without org.glassfish.hk2.utilities.Binder
 /**
  * @author myunusov
  * @version 1.0

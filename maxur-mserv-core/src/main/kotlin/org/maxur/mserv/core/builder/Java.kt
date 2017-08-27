@@ -1,4 +1,4 @@
-package org.maxur.mserv.core.service.msbuilder
+package org.maxur.mserv.core.builder
 
 import org.maxur.mserv.core.MicroService
 import org.maxur.mserv.core.domain.BaseService
@@ -30,7 +30,7 @@ interface IJBuilder {
 class JBuilder : MicroServiceBuilder(), IJBuilder {
 
     override fun name(value: String): JBuilder {
-        titleHolder = Holder.string(value)
+        nameHolder = Holder.string(value)
         return this
     }
 
@@ -40,19 +40,19 @@ class JBuilder : MicroServiceBuilder(), IJBuilder {
     }
 
     override fun properties(format: String): JPropertiesBuilder {
-        val holder = PropertiesHolder.BasePropertiesHolder()
-        propertiesHolder = holder
+        val holder = PropertiesBuilder.BasePropertiesBuilder()
+        properties += holder
         holder.format = format
         return JPropertiesBuilder(this, holder)
     }
 
     override fun properties(): JBuilder {
-        propertiesHolder = PropertiesHolder.BasePropertiesHolder()
+        properties += PropertiesBuilder.BasePropertiesBuilder()
         return this
     }
 
     override fun withoutProperties(): JBuilder {
-        propertiesHolder = PropertiesHolder.NullPropertiesHolder
+        properties += PropertiesBuilder.NullPropertiesBuilder
         return this
     }
 
@@ -102,16 +102,16 @@ class JBuilder : MicroServiceBuilder(), IJBuilder {
 
 class JPropertiesBuilder(
         private val parent: JBuilder,
-        private val holder: PropertiesHolder.BasePropertiesHolder
+        private val builder: PropertiesBuilder.BasePropertiesBuilder
 ) : IJBuilder by parent {
 
     fun url(value: String): JPropertiesBuilder {
-        holder.url = value
+        builder.url = value
         return this
     }
 
     fun rootKey(value: String): JPropertiesBuilder {
-        holder.rootKey = value
+        builder.rootKey = value
         return this
     }
 

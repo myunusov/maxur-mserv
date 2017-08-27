@@ -1,4 +1,4 @@
-package org.maxur.mserv.core.service.msbuilder
+package org.maxur.mserv.core.builder
 
 import org.maxur.mserv.core.core.checkError
 import org.maxur.mserv.core.kotlin.Locator

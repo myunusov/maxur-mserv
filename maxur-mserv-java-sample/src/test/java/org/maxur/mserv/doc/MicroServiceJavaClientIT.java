@@ -1,9 +1,9 @@
 package org.maxur.mserv.doc;
 
 import org.junit.Test;
+import org.maxur.mserv.core.builder.Java;
 import org.maxur.mserv.core.domain.BaseService;
 import org.maxur.mserv.core.java.Locator;
-import org.maxur.mserv.core.service.msbuilder.Java;
 import org.maxur.mserv.core.service.properties.PropertiesSource;
 
 import static org.assertj.core.api.Assertions.assertThat;

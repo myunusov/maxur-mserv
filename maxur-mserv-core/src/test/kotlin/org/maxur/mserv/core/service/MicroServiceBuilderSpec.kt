@@ -10,14 +10,16 @@ import org.junit.platform.runner.JUnitPlatform
 import org.junit.runner.RunWith
 import org.maxur.mserv.core.LocatorImpl
 import org.maxur.mserv.core.TestLocatorHolder
+import org.maxur.mserv.core.builder.Java
+import org.maxur.mserv.core.builder.Kotlin
 import org.maxur.mserv.core.kotlin.Locator
 import org.maxur.mserv.core.relativePathByResourceName
-import org.maxur.mserv.core.service.msbuilder.Java
-import org.maxur.mserv.core.service.msbuilder.Kotlin
 import org.maxur.mserv.core.service.properties.Properties
 import org.maxur.mserv.core.service.properties.PropertiesSource
 import java.util.function.Predicate
 import kotlin.test.assertFailsWith
+
+val source: PropertiesSource? get() = Locator.bean(Properties::class)?.sources?.firstOrNull()
 
 @RunWith(JUnitPlatform::class)
 class MicroServiceBuilderSpec : Spek({
@@ -38,7 +40,7 @@ class MicroServiceBuilderSpec : Spek({
                     withoutProperties()
                 }
                 assertThat(service).isNotNull()
-                val source = Locator.bean(Properties::class)
+                val source = source
                 assertThat(source).isNotNull()
             }
             it("should return new micro-service for java client") {
@@ -49,7 +51,7 @@ class MicroServiceBuilderSpec : Spek({
                         .build()
                 // end::withoutproperties[]
                 assertThat(service).isNotNull()
-                val source = Locator.bean(Properties::class)
+                val source = source
                 assertThat(source).isNotNull()
             }
         }
@@ -71,7 +73,7 @@ class MicroServiceBuilderSpec : Spek({
                                 }
                             }
                             assertThat(service).isNotNull()
-                            val source = Locator.bean(PropertiesSource::class)
+                            val source = source
                             assertThat(source).isNotNull()
                             source!!.apply {
                                 assertThat(format).isEqualTo(name)
@@ -86,7 +88,7 @@ class MicroServiceBuilderSpec : Spek({
                                 .properties(name)
                                 .build()
                             assertThat(service).isNotNull()
-                            val source = Locator.bean(PropertiesSource::class)
+                            val source = source
                             assertThat(source).isNotNull()
                             source!!.apply {
                                 assertThat(format).isEqualTo(name)
@@ -122,7 +124,7 @@ class MicroServiceBuilderSpec : Spek({
                                 }
                             }
                             assertThat(service).isNotNull()
-                            val source = Locator.bean(PropertiesSource::class)
+                            val source = source
                             assertThat(source).isNotNull()
                             source!!.apply {
                                 assertThat(format).isEqualTo(name)
@@ -138,7 +140,7 @@ class MicroServiceBuilderSpec : Spek({
                                 .url(propertyFile)
                                 .build()
                             assertThat(service).isNotNull()
-                            val source = Locator.bean(PropertiesSource::class)
+                            val source = source
                             assertThat(source).isNotNull()
                             source!!.apply {
                                 assertThat(format).isEqualTo(name)
@@ -169,7 +171,7 @@ class MicroServiceBuilderSpec : Spek({
                                 }
                             }
                             assertThat(service).isNotNull()
-                            val source = Locator.bean(PropertiesSource::class)
+                            val source = source
                             assertThat(source).isNotNull()
                             source!!.apply {
                                 assertThat(format).isEqualTo(name)
@@ -185,7 +187,7 @@ class MicroServiceBuilderSpec : Spek({
                                 .rootKey("USER")
                                 .build()
                             assertThat(service).isNotNull()
-                            val source = Locator.bean(PropertiesSource::class)
+                            val source = source
                             assertThat(source).isNotNull()
                             source!!.apply {
                                 assertThat(format).isEqualTo(name)
@@ -283,7 +285,7 @@ class MicroServiceBuilderSpec : Spek({
             it("should return new micro-service") {
                 val service = Kotlin.service { }
                 assertThat(service).isNotNull()
-                val source = Locator.bean(PropertiesSource::class)
+                val source = source
                 assertThat(source).isNotNull()
                 assertThat(source!!.format).isNotNull()
                 assertThat(source.format).`is`(supportedFormat)

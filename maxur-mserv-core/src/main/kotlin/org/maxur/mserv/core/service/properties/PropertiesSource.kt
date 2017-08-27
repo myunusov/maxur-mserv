@@ -19,6 +19,8 @@ abstract class PropertiesSource(
         open val rootKey: String? = null
 ) {
 
+    val sources: List<PropertiesSource> = listOf(this)
+
     companion object {
         /**
          * Open properties resource.

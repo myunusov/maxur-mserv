@@ -1,9 +1,9 @@
 package org.maxur.mserv.sample
 
+import org.maxur.mserv.core.builder.Kotlin
 import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.embedded.WebServer
-import org.maxur.mserv.core.service.msbuilder.Kotlin
-import org.maxur.mserv.core.service.properties.PropertiesSource
+import org.maxur.mserv.core.service.properties.Properties
 import org.maxur.mserv.sample.params.ConfigParams
 import org.slf4j.LoggerFactory
 
@@ -38,8 +38,8 @@ object Launcher {
         }.start()
     }
 
-    fun afterStart(configParams: ConfigParams, config: PropertiesSource, service: BaseService) {
-        log().info("Properties Source is '${config.format}'\n")
+    fun afterStart(configParams: ConfigParams, config: Properties, service: BaseService) {
+        log().info("Properties Source is '${config.sources.get(0).format}'\n")
         configParams.log()
         log().info("${service.name} is started")
     }

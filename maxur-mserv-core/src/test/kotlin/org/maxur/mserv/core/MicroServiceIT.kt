@@ -3,13 +3,13 @@ package org.maxur.mserv.core
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.BeforeClass
 import org.junit.Test
+import org.maxur.mserv.core.builder.Java
+import org.maxur.mserv.core.builder.Kotlin
 import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.embedded.EmbeddedService
 import org.maxur.mserv.core.kotlin.Locator
 import org.maxur.mserv.core.sample.SampleService
-import org.maxur.mserv.core.service.msbuilder.Java
-import org.maxur.mserv.core.service.msbuilder.Kotlin
-import org.maxur.mserv.core.service.properties.PropertiesSource
+import org.maxur.mserv.core.service.properties.Properties
 import java.util.function.Consumer
 
 class MicroServiceIT {
@@ -45,11 +45,11 @@ class MicroServiceIT {
         assertThat(embeddedService).isNotNull()
     }
 
-    fun afterStartKt(service: BaseService, config: PropertiesSource) {
+    fun afterStartKt(service: BaseService, config: Properties) {
         serviceToKotlin = service
         assertThat(service).isNotNull()
         assertThat(config).isNotNull()
-        assertThat(config.format).isEqualToIgnoringCase("Hocon")
+        assertThat(config.sources.get(0) .format).isEqualToIgnoringCase("Hocon")
         val sampleService = Locator.bean(SampleService::class)
         assertThat(sampleService).isNotNull()
         assertThat(sampleService!!.name).isEqualToIgnoringWhitespace("μService")
@@ -78,9 +78,9 @@ class MicroServiceIT {
         serviceToJava = service
         assertThat(service).isNotNull()
         val locator = service.locator
-        val config = locator.service(PropertiesSource::class.java)
+        val config = locator.service(Properties::class.java)
         assertThat(config).isNotNull()
-        assertThat(config!!.format).isEqualToIgnoringCase("Hocon")
+        assertThat(config?.sources?.get(0)?.format).isEqualToIgnoringCase("Hocon")
         val sampleService = Locator.bean(SampleService::class)
         assertThat(sampleService).isNotNull()
         assertThat(sampleService!!.name).isEqualToIgnoringWhitespace("μService")

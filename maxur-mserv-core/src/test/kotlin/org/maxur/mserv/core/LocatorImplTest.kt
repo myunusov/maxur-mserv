@@ -3,8 +3,8 @@ package org.maxur.mserv.core
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.BeforeClass
 import org.junit.Test
+import org.maxur.mserv.core.builder.LocatorBuilder
 import org.maxur.mserv.core.kotlin.Locator
-import org.maxur.mserv.core.service.msbuilder.LocatorBuilder
 import kotlin.concurrent.thread
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter

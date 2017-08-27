@@ -1,4 +1,4 @@
-package org.maxur.mserv.core.service.msbuilder
+package org.maxur.mserv.core.builder
 
 import org.maxur.mserv.core.MicroService
 import org.maxur.mserv.core.domain.Holder
@@ -11,7 +11,7 @@ class KBuilder() : MicroServiceBuilder() {
 
     var name: String = "Anonymous"
         set(value) {
-            titleHolder = Holder.string(value)
+            nameHolder = Holder.string(value)
         }
 
     constructor(init: KBuilder.() -> Unit) : this() {
@@ -19,12 +19,12 @@ class KBuilder() : MicroServiceBuilder() {
     }
 
     fun withoutProperties() {
-        propertiesHolder = PropertiesHolder.NullPropertiesHolder
+        properties += PropertiesBuilder.NullPropertiesBuilder
     }
 
-    fun properties(init: PropertiesHolder.BasePropertiesHolder.() -> Unit) {
-        val holder = PropertiesHolder.BasePropertiesHolder()
-        propertiesHolder = holder
+    fun properties(init: PropertiesBuilder.BasePropertiesBuilder.() -> Unit) {
+        val holder = PropertiesBuilder.BasePropertiesBuilder()
+        properties += holder
         holder.apply { init() }
     }
 
