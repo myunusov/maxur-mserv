@@ -3,6 +3,8 @@ package org.maxur.mserv.core.service.hk2
 import org.glassfish.hk2.api.ServiceLocator
 import org.glassfish.hk2.api.ServiceLocatorState
 import org.maxur.mserv.core.LocatorImpl
+import org.maxur.mserv.core.core.result
+import org.maxur.mserv.core.core.tryTo
 import org.maxur.mserv.core.service.properties.Properties
 import javax.inject.Inject
 
@@ -28,14 +30,15 @@ class LocatorHK2Impl @Inject constructor(private val locator: ServiceLocator) : 
         locator.getService(Properties::class.java).read(key, clazz)
 
     /** {@inheritDoc} */
-    override fun <T> service(contractOrImpl: Class<T>, name: String?): T? =
-        when (name) {
-            null -> locator.getService<T>(contractOrImpl)
-            else -> locator.getAllServiceHandles(contractOrImpl)
-                .filter { it.activeDescriptor.name.equals(name, true) }
-                .map { it.service }
-                .firstOrNull()
-        }
+    override fun <T> service(contractOrImpl: Class<T>, name: String?): T? = tryTo {
+                when (name) {
+                    null -> locator.getService<T>(contractOrImpl)
+                    else -> locator.getAllServiceHandles(contractOrImpl)
+                            .filter { it.activeDescriptor.name.equals(name, true) }
+                            .map { it.service }
+                            .firstOrNull()
+                }
+            }.result()
 
     /** {@inheritDoc} */
     override fun <T> services(contractOrImpl: Class<T>): List<T> =

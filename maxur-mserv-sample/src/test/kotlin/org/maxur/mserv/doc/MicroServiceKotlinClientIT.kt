@@ -4,9 +4,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.maxur.mserv.core.builder.Kotlin
 import org.maxur.mserv.core.domain.BaseService
-import org.maxur.mserv.core.embedded.WebServer
+import org.maxur.mserv.core.embedded.EmbeddedService
 import org.maxur.mserv.core.kotlin.Locator
-import org.maxur.mserv.core.service.properties.PropertiesSource
+import org.maxur.mserv.core.service.properties.Properties
 
 class MicroServiceKotlinClientIT {
 
@@ -28,15 +28,15 @@ class MicroServiceKotlinClientIT {
         Locator.stop()
     }
 
-    private fun beforeStop(service: WebServer) {
+    fun beforeStop(service: EmbeddedService) {
         assertThat(service).isNotNull()
     }
 
-    private fun afterStart(service: BaseService, config: PropertiesSource) {
+    fun afterStart(service: BaseService, config: Properties) {
         service1 = service
         assertThat(service).isNotNull()
         assertThat(config).isNotNull()
-        assertThat(config.format).isEqualToIgnoringCase("Hocon")
+        assertThat(config.sources.get(0).format).isEqualToIgnoringCase("Hocon")
     }
 
 }
