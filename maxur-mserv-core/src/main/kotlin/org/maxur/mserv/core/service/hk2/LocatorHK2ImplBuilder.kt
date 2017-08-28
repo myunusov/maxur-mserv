@@ -33,8 +33,6 @@ class LocatorHK2ImplBuilder(init: LocatorBuilder.Config.() -> Unit) : LocatorBui
 
     class Config(init: LocatorBuilder.Config.() -> Unit) : LocatorBuilder.Config(init) {
 
-        private val descriptors: MutableList<Descriptor> = mutableListOf()
-
         /** {@inheritDoc} */
         override fun bind(impl: KClass<out Any>, typeLiteral: TypeLiteral<out Any>) {
             descriptors.add(Descriptor.Literal(impl, typeLiteral))

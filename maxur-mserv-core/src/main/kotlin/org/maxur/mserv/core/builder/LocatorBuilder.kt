@@ -62,6 +62,8 @@ abstract class LocatorBuilder(val init: Config.() -> Unit) {
 
     abstract class Config(init: Config.() -> Unit) {
 
+        protected val descriptors = mutableListOf<Descriptor>()
+
         init {
             init()
         }
