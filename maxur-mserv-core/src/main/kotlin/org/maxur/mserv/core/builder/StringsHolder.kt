@@ -9,7 +9,7 @@ package org.maxur.mserv.core.builder
  *
  * @property strings the Strings List
  */
-class StringsHolder(val strings: MutableList<String> = ArrayList()) {
+class StringsHolder(val strings: MutableSet<String> = mutableSetOf()) {
 
     /**
      * Add string to strings list.

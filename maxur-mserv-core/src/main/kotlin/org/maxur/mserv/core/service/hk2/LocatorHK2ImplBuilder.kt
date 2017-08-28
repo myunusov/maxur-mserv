@@ -39,11 +39,7 @@ class LocatorHK2ImplBuilder : LocatorBuilder() {
         throw IllegalStateException(makeServiceLocator().getService(ErrorHandler::class.java)?.latestError)
 
     private fun makeServiceLocator() = if (packages.isNotEmpty()) {
-        HK2RuntimeInitializer.init(
-            name,
-            true,
-            *packages.toTypedArray(), "org.maxur.mserv.core"
-        )
+        HK2RuntimeInitializer.init(name,true, *packages.toTypedArray())
     } else {
         ServiceLocatorUtilities.createAndPopulateServiceLocator(name)
     }.also {
