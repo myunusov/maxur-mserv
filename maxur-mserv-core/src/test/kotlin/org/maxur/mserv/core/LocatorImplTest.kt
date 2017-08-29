@@ -1,13 +1,11 @@
 package org.maxur.mserv.core
 
 import org.assertj.core.api.Assertions.assertThat
-import org.glassfish.hk2.api.TypeLiteral
 import org.junit.BeforeClass
 import org.junit.Test
 import org.maxur.mserv.core.builder.LocatorBuilder
 import org.maxur.mserv.core.kotlin.Locator
 import kotlin.concurrent.thread
-import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.KType
 import kotlin.reflect.full.createType
@@ -52,26 +50,26 @@ class LocatorImplTest {
     fun testParallel() {
 
         val t1 = thread(
-            start = false,
-            block = {
-                locator1 = FakeBuilder.build()
-                assertThat(Locator.current).isEqualTo(locator1)
-                while (locator2 == null) {
-                }
-                assertThat(locator1).isNotEqualTo(locator2)
-                assertThat(Locator.current).isNotEqualTo(locator2)
-            })
+                start = false,
+                block = {
+                    locator1 = FakeBuilder.build()
+                    assertThat(Locator.current).isEqualTo(locator1)
+                    while (locator2 == null) {
+                    }
+                    assertThat(locator1).isNotEqualTo(locator2)
+                    assertThat(Locator.current).isNotEqualTo(locator2)
+                })
 
         val t2 = thread(
-            start = false,
-            block = {
-                locator2 = FakeBuilder.build()
-                assertThat(Locator.current).isEqualTo(locator2)
-                while (locator1 == null) {
-                }
-                assertThat(locator2).isNotEqualTo(locator1)
-                assertThat(Locator.current).isNotEqualTo(locator1)
-            })
+                start = false,
+                block = {
+                    locator2 = FakeBuilder.build()
+                    assertThat(Locator.current).isEqualTo(locator2)
+                    while (locator1 == null) {
+                    }
+                    assertThat(locator2).isNotEqualTo(locator1)
+                    assertThat(Locator.current).isNotEqualTo(locator1)
+                })
 
         var error: Throwable? = null
 
@@ -194,32 +192,32 @@ class LocatorImplTest {
 
     object FakeBuilder : LocatorBuilder({}) {
 
-        override fun makeConfig(init: Config.() -> Unit): Config = object : Config(init) {
-            override fun bind(impl: Any, vararg contracts: KClass<out Any>) = Unit
-            override fun bind(impl: KClass<out Any>, typeLiteral: TypeLiteral<out Any>) = Unit
-            override fun bind(impl: KClass<out Any>, vararg contracts: KClass<out Any>) = Unit
-            override fun bind(function: (Locator) -> Any, vararg contracts: KClass<out Any>) = Unit
-            override fun bindTo(locator: Locator) = Unit
-        }
-
         override fun make(): Locator = Locator(FakeLocator(name))
+
+        override fun config(function: LocatorConfig.() -> Unit): LocatorConfig = object : LocatorConfig() {
+            override fun bindTo(locator: LocatorImpl) = Unit
+        }
 
         @Suppress("UNCHECKED_CAST")
         class FakeLocator(val str: String, override val name: String = "fake $str") : LocatorImpl {
 
+            override fun config(): LocatorConfig = object : LocatorConfig() {
+                override fun bindTo(locator: LocatorImpl) = Unit
+            }
+
             override fun configurationError() = null
 
             override fun <T> service(contractOrImpl: Class<T>, name: String?): T? =
-                if (contractOrImpl == Locator::class.java) Locator(this) as T else null
+                    if (contractOrImpl == Locator::class.java) Locator(this) as T else null
 
             override fun <T> services(contractOrImpl: Class<T>): List<T> =
-                if (contractOrImpl == Locator::class.java) listOf(Locator(this)) as List<T> else emptyList()
+                    if (contractOrImpl == Locator::class.java) listOf(Locator(this)) as List<T> else emptyList()
 
             override fun names(contractOrImpl: Class<*>): List<String> =
-                if (contractOrImpl == Locator::class.java) listOf("") else emptyList()
+                    if (contractOrImpl == Locator::class.java) listOf("") else emptyList()
 
             override fun <T> property(key: String, clazz: Class<T>): T? =
-                if (clazz == String::class.java && key == "key") "value" as T else null
+                    if (clazz == String::class.java && key == "key") "value" as T else null
 
             override fun <T> implementation(): T = Object() as T
 

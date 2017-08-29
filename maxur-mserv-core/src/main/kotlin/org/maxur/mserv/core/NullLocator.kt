@@ -10,6 +10,9 @@ object NullLocator : LocatorImpl {
     override val name: String = "null-locator"
 
     /** {@inheritDoc} */
+    override fun config(): LocatorConfig = error()
+
+    /** {@inheritDoc} */
     override fun configurationError() = null
 
     /** {@inheritDoc} */

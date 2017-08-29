@@ -143,4 +143,9 @@ class Locator @Inject constructor(val impl: LocatorImpl) : LocatorImpl by impl {
     /** {@inheritDoc} */
     override fun equals(other: Any?): Boolean = other is Locator && other.name.equals(name)
 
+    /** {@inheritDoc} */
+    override fun hashCode(): Int {
+        return name.hashCode()
+    }
+
 }
