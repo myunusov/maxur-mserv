@@ -18,7 +18,7 @@ class LocatorHK2ImplBuilder(init: LocatorConfig.() -> Unit) : LocatorBuilder(ini
 
     override fun config(function: LocatorConfig.() -> Unit) =
             Locator.current.configure {
-                        bind(PropertiesInjectionResolver::class, object : TypeLiteral<InjectionResolver<Value>>() {})
-                        function()                 
-                    }
+                bind(PropertiesInjectionResolver::class).to(object : TypeLiteral<InjectionResolver<Value>>() {})
+                function()
+            }
 }

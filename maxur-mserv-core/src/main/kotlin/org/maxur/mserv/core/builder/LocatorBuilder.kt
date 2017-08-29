@@ -45,7 +45,7 @@ abstract class LocatorBuilder(val init: LocatorConfig.() -> Unit) {
         locator.registerAsSingleton()
         config {
             init()
-            bind(ObjectMapperProvider::class, ObjectMapper::class)
+            bind(ObjectMapperProvider::class).to(ObjectMapper::class)
         }
         org.maxur.mserv.core.kotlin.Locator(locator)
     }, { e -> Locator.current.onConfigurationError(e) })

@@ -6,9 +6,15 @@ import org.glassfish.hk2.api.ServiceLocator
 import org.glassfish.hk2.api.ServiceLocatorState
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities
 import org.glassfish.hk2.utilities.binding.AbstractBinder
+import org.glassfish.hk2.utilities.binding.ScopedBindingBuilder
+import org.glassfish.hk2.utilities.binding.ServiceBindingBuilder
 import org.maxur.mserv.core.LocatorConfig
 import org.maxur.mserv.core.LocatorImpl
+import org.maxur.mserv.core.core.Either
+import org.maxur.mserv.core.core.fold
+import org.maxur.mserv.core.core.left
 import org.maxur.mserv.core.core.result
+import org.maxur.mserv.core.core.right
 import org.maxur.mserv.core.core.tryTo
 import org.maxur.mserv.core.kotlin.Locator
 import org.maxur.mserv.core.service.properties.Properties
@@ -85,26 +91,45 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
         }
 
         private fun AbstractBinder.makeBinders(descriptor: Descriptor) {
-            descriptor.contracts.forEach {
-                when (descriptor) {
-                    is Descriptor.Function -> bindFactory(ServiceProvider(descriptor.func)).to(it.java)
-                    is Descriptor.Literal -> {
-                        bind(descriptor.impl.java).to(descriptor.literal).`in`(Singleton::class.java)
-                    }
-                    is Descriptor.Object -> {
-                        bind(descriptor.impl).to(it.java)
-                    }
-                    is Descriptor.Singleton -> {
-                        if (descriptor.impl.isSubclassOf(Factory::class)) {
-                            @Suppress("UNCHECKED_CAST")
-                            val factoryClass: KClass<Factory<Any>> = descriptor.impl as KClass<Factory<Any>>
-                            bindFactory(factoryClass.java).to(it.java).`in`(Singleton::class.java)
-                        } else
-                            bind(descriptor.impl.java).to(it.java).`in`(Singleton::class.java)
-                    }
+            val contract = descriptor.contract
+            builder(descriptor).fold({
+                val builder = it
+                when (contract) {
+                    is Contract.Set -> contract.contracts.forEach { builder.to(it.java) }
+                    is Contract.Self -> builder.to(contract.contract.java)
+                    is Contract.TypeLiteral -> builder.to(contract.literal)
+                    is Contract.None -> throw IllegalStateException("Contract must be")
                 }
+                descriptor.name ?.let { builder.named(it) }
+                builder.`in`(Singleton::class.java)
+            }, {
+                val builder = it
+                when (contract) {
+                    is Contract.Set -> contract.contracts.forEach { builder.to(it.java) }
+                    is Contract.Self -> builder.to(contract.contract.java)
+                    is Contract.TypeLiteral -> builder.to(contract.literal)
+                    is Contract.None -> throw IllegalStateException("Contract must be")
+                }
+                descriptor.name ?.let { builder.named(it) }
+            })
+        }
+
+        private fun AbstractBinder.builder(descriptor: Descriptor)
+                : Either<ServiceBindingBuilder<out Any>, ScopedBindingBuilder<out Any>> = when (descriptor) {
+            is Descriptor.Function -> left(bindFactory(ServiceProvider(descriptor.func)))
+            is Descriptor.Object -> {
+                right(bind(descriptor.impl))
+            }
+            is Descriptor.Singleton -> {
+                if (descriptor.impl.isSubclassOf(Factory::class)) {
+                    @Suppress("UNCHECKED_CAST")
+                    val factoryClass: KClass<Factory<Any>> = descriptor.impl as KClass<Factory<Any>>
+                    left(bindFactory(factoryClass.java))
+                } else
+                    left(bind(descriptor.impl.java))
             }
         }
+
 
         private class ServiceProvider<T>(val func: (Locator) -> T) : Factory<T> {
             val locator: Locator by lazy { Locator.current }

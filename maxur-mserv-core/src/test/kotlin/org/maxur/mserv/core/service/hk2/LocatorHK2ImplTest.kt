@@ -34,9 +34,9 @@ class LocatorHK2ImplTest {
     fun setUp() {
         locator = LocatorHK2Impl("locator-name")
         locator.configure {
-            bind("A")
-            bind("B")
-            bind(this@LocatorHK2ImplTest.properties, Properties::class)
+            bind("A").named("a")
+            bind("B").named("b")
+            bind(this@LocatorHK2ImplTest.properties).to(Properties::class)
         }
     }
 
@@ -53,7 +53,7 @@ class LocatorHK2ImplTest {
 
     @Test
     fun names() {
-        assertThat(locator.names(String::class.java)).isEqualTo(listOf("A", "B"))
+        assertThat(locator.names(String::class.java)).isEqualTo(listOf("a", "b"))
     }
 
     @Test
