@@ -2,9 +2,6 @@ package org.maxur.mserv.core.service.hk2
 
 import org.assertj.core.api.Assertions.assertThat
 import org.glassfish.hk2.api.ServiceLocator
-import org.glassfish.hk2.api.ServiceLocatorState
-import org.glassfish.hk2.utilities.ServiceLocatorUtilities
-import org.glassfish.hk2.utilities.binding.AbstractBinder
 import org.junit.After
 import org.junit.Before
 import org.junit.BeforeClass
@@ -31,66 +28,55 @@ class LocatorHK2ImplTest {
     @Mock
     private lateinit var properties: Properties
 
-    private lateinit var serviceLocator: ServiceLocator
+    private lateinit var locator: LocatorImpl
 
     @Before
     fun setUp() {
-        serviceLocator = ServiceLocatorUtilities.createAndPopulateServiceLocator("locator-name").also {
-            ServiceLocatorUtilities.enableImmediateScope(it)
-            ServiceLocatorUtilities.bind(it, Binder())
-        }
-    }
-
-    inner class Binder : AbstractBinder() {
-        override fun configure() {
-            bind("A").to(String::class.java).named("A")
-            bind("B").to(String::class.java).named("B")
-            bind(this@LocatorHK2ImplTest.properties).to(Properties::class.java)
+        locator = LocatorHK2Impl("locator-name")
+        locator.configure {
+            bind("A").named("a")
+            bind("B").named("b")
+            bind(this@LocatorHK2ImplTest.properties).to(Properties::class)
         }
     }
 
     @After
     fun tearDown() {
-        serviceLocator.shutdown()
+        locator.shutdown()
     }
 
     @Test
     fun implementation() {
-        val locator = LocatorHK2Impl(serviceLocator)
-        assertThat(locator.implementation<ServiceLocator>()).isEqualTo(serviceLocator)
+        val locator = LocatorHK2Impl("locator-name")
+        assertThat(locator.implementation<ServiceLocator>()).isNotNull()
     }
 
     @Test
     fun names() {
-        val locator = LocatorHK2Impl(serviceLocator)
-        assertThat(locator.names(String::class.java)).isEqualTo(listOf("A", "B"))
+        assertThat(locator.names(String::class.java)).isEqualTo(listOf("a", "b"))
     }
 
     @Test
     fun property() {
-            val locator = LocatorHK2Impl(serviceLocator)
             Mockito.`when`(properties.read("A", String::class.java)).thenReturn("A")
             assertThat(locator.property("A", String::class.java)).isEqualTo("A")
     }
 
     @Test
     fun service() {
-        val locator = LocatorHK2Impl(serviceLocator)
         assertThat(locator.service(String::class.java, "A")).isEqualTo("A")
     }
 
     @Test
     fun services() {
-        val locator = LocatorHK2Impl(serviceLocator)
         assertThat(locator.services(String::class.java)).isEqualTo(listOf("A", "B"))
     }
 
     @Test
     fun close() {
-        val locator = LocatorHK2Impl(serviceLocator)
         LocatorImpl.holder.put(locator)
         locator.shutdown()
-        assertThat(serviceLocator.state).isEqualTo(ServiceLocatorState.SHUTDOWN)
+        // idempotent
         locator.shutdown()
     }
 

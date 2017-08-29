@@ -9,7 +9,7 @@ import com.typesafe.config.ConfigException
 import com.typesafe.config.ConfigFactory
 import org.jvnet.hk2.annotations.Service
 import org.maxur.mserv.core.core.Result
-import org.maxur.mserv.core.core.result
+import org.maxur.mserv.core.core.tryTo
 import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
 import java.io.File
 import java.io.IOException
@@ -21,7 +21,7 @@ import java.time.Duration
 class PropertiesFactoryHoconImpl : PropertiesFactory() {
 
     override fun make(source: PropertiesSource): Result<Exception, Properties> =
-            result { PropertiesSourceHoconImpl(source) }
+            tryTo { PropertiesSourceHoconImpl(source) }
 }
 
 internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource)
@@ -30,7 +30,7 @@ internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource
     private var root: Config = try {
         rootNode().getConfig(rootKey)
     } catch (e: ConfigException.Missing) {
-        throw IllegalStateException("The properties source '$uri' not found. " +
+        throw IllegalStateException("The properties source '${rawSource.uri ?: "<default>"}' not found. " +
                 "You need create one with '${rootKey ?: "/"}' section")
     }
 

@@ -215,6 +215,7 @@ class MicroServiceBuilderSpec : Spek({
                                     url = "file:///file.cfg"
                                 }
                             }
+                            Locator.bean(Properties::class)
                         }
                     }
                     it("should throw error on unknown url scheme") {
@@ -225,6 +226,7 @@ class MicroServiceBuilderSpec : Spek({
                                     url = "error:///file.cfg"
                                 }
                             }
+                            Locator.bean(Properties::class)
                         }
                     }
                     it("should throw error on unknown url scheme for java client") {
@@ -233,6 +235,7 @@ class MicroServiceBuilderSpec : Spek({
                                 .properties(name)
                                 .url("error:///file.cfg")
                                 .build()
+                            Locator.bean(Properties::class)
                         }
                     }
                     it("should throw error on unknown file") {
@@ -243,6 +246,7 @@ class MicroServiceBuilderSpec : Spek({
                                     url = "file:///error.cfg"
                                 }
                             }
+                            Locator.bean(Properties::class)
                         }
                     }
                     it("should throw error on unknown file for java client") {
@@ -251,6 +255,7 @@ class MicroServiceBuilderSpec : Spek({
                                 .properties(name)
                                 .url("file:///error.cfg")
                                 .build()
+                            Locator.bean(Properties::class)
                         }
                     }
                     it("should throw error on unknown root key") {
@@ -261,6 +266,7 @@ class MicroServiceBuilderSpec : Spek({
                                     rootKey = "ERROR"
                                 }
                             }
+                            Locator.bean(Properties::class)
                         }
                     }
                     it("should throw error on unknown root key for java client") {
@@ -269,6 +275,7 @@ class MicroServiceBuilderSpec : Spek({
                                 .properties(name)
                                 .rootKey("ERROR")
                                 .build()
+                            Locator.bean(Properties::class)
                         }
                     }
 

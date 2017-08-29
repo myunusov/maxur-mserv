@@ -1,5 +1,7 @@
 package org.maxur.mserv.core
 
+import org.maxur.mserv.core.kotlin.Locator
+
 /**
  * @author Maxim Yunusov
  * @version 1.0
@@ -122,5 +124,15 @@ interface LocatorImpl {
      * Register Locator Implementation as Singleton.
      */
     fun registerAsSingleton() = holder.put(this)
+
+    fun configure(function: LocatorConfig.() -> Unit) =
+            Locator.current.let {
+                config().apply {
+                    function()
+                    bindTo(this@LocatorImpl)
+                }
+            }
+
+    fun config(): LocatorConfig
 
 }

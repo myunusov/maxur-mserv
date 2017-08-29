@@ -51,7 +51,11 @@ abstract class MicroServiceBuilder {
      * Builder of Service Locator instance.
      * XXX Remove implementation by DIP
      */
-    var locatorBuilder: LocatorBuilder = LocatorHK2ImplBuilder()
+    var locatorBuilder: LocatorBuilder = LocatorHK2ImplBuilder {
+        bind(properties::build).to(Properties::class)
+        bind(services::build).to(EmbeddedService::class)
+        bind({ locator -> BaseMicroService(locator) }).to(MicroService::class)
+    }
 
     protected var nameHolder = Holder.string("Anonymous")
 
@@ -60,12 +64,9 @@ abstract class MicroServiceBuilder {
      * @return new instance of Microservice
      */
     open fun build(): MicroService = build(
-        locatorBuilder.apply {
-            packages = this@MicroServiceBuilder.packages.strings
-            bind(properties::build, Properties::class)
-            bind(services::build, EmbeddedService::class)
-            bind({ locator -> BaseMicroService(locator) }, MicroService::class)
-        }.build()
+            locatorBuilder.apply {
+                packages = this@MicroServiceBuilder.packages.strings
+            }.build()
     )
 
     private fun build(locator: Locator): MicroService {

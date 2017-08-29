@@ -1,5 +1,7 @@
 package org.maxur.mserv.core.core
 
+import org.glassfish.hk2.api.MultiException
+
 /**
  * Represents a result of one of two possible types (a disjoint union.)
  * Instances of Result are either an instance of Value or Error (Throwable).
@@ -33,12 +35,12 @@ fun <E : Throwable> error(value: E): Result<E, Nothing> = ErrorResult(value)
  * @param action The action
  * @return the Result
  */
-fun <V> result(action: () -> V): Result<Exception, V> =
-    try {
-        value(action())
-    } catch (e: Exception) {
-        error(e)
-    }
+fun <V> tryTo(action: () -> V): Result<Exception, V> =
+        try {
+            value(action())
+        } catch (e: Exception) {
+            error(e)
+        }
 
 /**
  * Map correct result by function
@@ -46,7 +48,7 @@ fun <V> result(action: () -> V): Result<Exception, V> =
  * @return new result
  */
 inline infix fun <E : Throwable, V, V2> Result<E, V>.map(function: (V) -> V2): Result<E, V2>
-    = when (this) {
+        = when (this) {
     is ErrorResult -> this
     is Value -> Value(function(this.value))
 }
@@ -57,7 +59,7 @@ inline infix fun <E : Throwable, V, V2> Result<E, V>.map(function: (V) -> V2): R
  * @return new result
  */
 inline infix fun <E : Throwable, E2 : Throwable, V> Result<E, V>.mapError(f: (E) -> E2): Result<E2, V>
-    = when (this) {
+        = when (this) {
     is ErrorResult -> ErrorResult(f(error))
     is Value -> this
 }
@@ -68,7 +70,7 @@ inline infix fun <E : Throwable, E2 : Throwable, V> Result<E, V>.mapError(f: (E)
  * @return new result
  */
 inline infix fun <E : Throwable, V, V2> Result<E, V>.flatMap(function: (V) -> Result<E, V2>): Result<E, V2>
-    = when (this) {
+        = when (this) {
     is ErrorResult -> this
     is Value -> function(value)
 }
@@ -80,9 +82,28 @@ inline infix fun <E : Throwable, V, V2> Result<E, V>.flatMap(function: (V) -> Re
  * @return new result
  */
 inline fun <E : Throwable, V, A> Result<E, V>.fold(errorFunction: (E) -> A, valueFunction: (V) -> A): A
-    = when (this) {
+        = when (this) {
     is ErrorResult -> errorFunction(this.error)
     is Value -> valueFunction(this.value)
+}
+
+/**
+ * Return result or throws IllegalStateException
+ * @return result
+ */
+fun <E : Throwable, V> Result<E, V>.result(): V = when (this) {
+    is Value -> value
+    is ErrorResult -> throw convertError(error)
+}
+
+private fun convertError(error: Throwable): IllegalStateException = when (error) {
+    is IllegalStateException -> error
+    is MultiException ->
+        if (error.errors.size == 1)
+            convertError(error.errors[0])
+        else
+            IllegalStateException(error)
+    else -> IllegalStateException(error)
 }
 
 /**
