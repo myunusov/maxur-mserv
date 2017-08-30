@@ -81,6 +81,10 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
 
     class Config : LocatorConfig() {
 
+        override fun bind(impl: Any): Descriptor {
+            return super.bind(impl)
+        }
+
         override fun bindTo(locator: LocatorImpl) {
             val binder = object : AbstractBinder() {
                 override fun configure() {
@@ -95,20 +99,20 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
             builder(descriptor).fold({
                 val builder = it
                 when (contract) {
-                    is Contract.Set -> contract.contracts.forEach { builder.to(it.java) }
-                    is Contract.Self -> builder.to(contract.contract.java)
-                    is Contract.TypeLiteral -> builder.to(contract.literal)
-                    is Contract.None -> throw IllegalStateException("Contract must be")
+                    is ContractSet -> contract.contracts.forEach { builder.to(it.java) }
+                    is ContractSelf -> builder.to(contract.contract.java)
+                    is ContractTypeLiteral -> builder.to(contract.literal)
+                    is ContractNone -> throw IllegalStateException("Contract must be")
                 }
                 descriptor.name ?.let { builder.named(it) }
                 builder.`in`(Singleton::class.java)
             }, {
                 val builder = it
                 when (contract) {
-                    is Contract.Set -> contract.contracts.forEach { builder.to(it.java) }
-                    is Contract.Self -> builder.to(contract.contract.java)
-                    is Contract.TypeLiteral -> builder.to(contract.literal)
-                    is Contract.None -> throw IllegalStateException("Contract must be")
+                    is ContractSet -> contract.contracts.forEach { builder.to(it.java) }
+                    is ContractSelf -> builder.to(contract.contract.java)
+                    is ContractTypeLiteral -> builder.to(contract.literal)
+                    is ContractNone -> throw IllegalStateException("Contract must be")
                 }
                 descriptor.name ?.let { builder.named(it) }
             })
@@ -116,11 +120,11 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
 
         private fun AbstractBinder.builder(descriptor: Descriptor)
                 : Either<ServiceBindingBuilder<out Any>, ScopedBindingBuilder<out Any>> = when (descriptor) {
-            is Descriptor.Function -> left(bindFactory(ServiceProvider(descriptor.func)))
-            is Descriptor.Object -> {
+            is DescriptorFunction -> left(bindFactory(ServiceProvider(descriptor.func)))
+            is DescriptorObject -> {
                 right(bind(descriptor.impl))
             }
-            is Descriptor.Singleton -> {
+            is DescriptorSingleton -> {
                 if (descriptor.impl.isSubclassOf(Factory::class)) {
                     @Suppress("UNCHECKED_CAST")
                     val factoryClass: KClass<Factory<Any>> = descriptor.impl as KClass<Factory<Any>>
@@ -128,6 +132,7 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
                 } else
                     left(bind(descriptor.impl.java))
             }
+            else -> throw IllegalStateException("Unknown description")
         }
 
 
