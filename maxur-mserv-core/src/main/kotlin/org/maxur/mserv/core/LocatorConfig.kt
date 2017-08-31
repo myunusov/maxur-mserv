@@ -6,13 +6,13 @@ import kotlin.reflect.KClass
 
 abstract class LocatorConfig(protected val locator: LocatorImpl) {
 
-    protected val descriptors = mutableListOf<Descriptor>()
+    protected val descriptors = mutableListOf<Descriptor<out Any>>()
 
     /**
      * Bind service [implementation]
      * @param implementation The Service implementation
      */
-    open fun bind(implementation: Any): Descriptor =
+    fun <T : Any> bind(implementation: T): Descriptor<T> =
             DescriptorObject(implementation).also {
                 descriptors.add(it)
             }
@@ -21,50 +21,49 @@ abstract class LocatorConfig(protected val locator: LocatorImpl) {
      * Bind service [implementation] class
      * @param implementation The Service implementation class
      */
-    fun bind(implementation: KClass<out Any>): Descriptor =
+    fun <T : Any> bind(implementation: KClass<in T>): Descriptor<T> =
             DescriptorSingleton(implementation).also {
                 descriptors.add(it)
             }
 
     /**
-     * Bind service creation [function] 
+     * Bind factory by [function]
      * @param function The Service creation function
      */
-    fun bind(function: (Locator) -> Any): Descriptor =
+    fun <T : Any> bindFactory(function: (Locator) -> T): Descriptor<T> =
             DescriptorFunction(function).also {
                 descriptors.add(it)
             }
 
     abstract fun apply()
 
-    abstract class Descriptor(var contract: Contract, var name: String? = null) {
+    abstract class Descriptor<T : Any>(var contract: Contract<T>, var name: String? = null) {
 
-        fun to(vararg contracts: KClass<out Any>): Descriptor = this.apply {
-            kotlin.synchronized(contract) {
-                when (contract) {
-                    is ContractSet -> (contract as ContractSet).contracts.addAll(contracts.toMutableSet())
-                    else -> contract = ContractSet(contracts.toMutableSet())
-                }
+        fun to(vararg contracts: KClass<in T>): Descriptor<T> = this.apply {
+            when (contract) {
+                is ContractSet -> (contract as ContractSet).contracts.addAll(contracts.toMutableSet())
+                else -> contract = ContractSet(contracts.toMutableSet())
             }
         }
 
-        fun to(literal: TypeLiteral<out Any>): LocatorConfig.Descriptor = this.apply {
+        fun to(literal: TypeLiteral<in T>) = this.apply {
             contract = LocatorConfig.ContractTypeLiteral(literal)
         }
 
-        fun named(name: String): Descriptor = this.apply {
+        fun named(name: String): Descriptor<T> = this.apply {
             this.name = name
         }
 
     }
-    class DescriptorFunction(val func: (Locator) -> Any) : Descriptor(ContractNone())
-    class DescriptorSingleton(val impl: KClass<out Any>) : Descriptor(ContractSelf(impl))
-    class DescriptorObject(val impl: Any) : Descriptor(ContractSelf(impl::class))
 
-    abstract class Contract
-    class ContractNone : Contract()
-    class ContractSelf(val contract: KClass<out Any>) : Contract()
-    class ContractSet(val contracts: MutableSet<KClass<out Any>>) : Contract()
-    class ContractTypeLiteral(val literal: org.glassfish.hk2.api.TypeLiteral<out Any>) : Contract()
+    class DescriptorFunction<T : Any>(val func: (Locator) -> T) : Descriptor<T>(ContractNone<T>())
+    class DescriptorSingleton<T : Any>(val impl: KClass<in T>) : Descriptor<T>(ContractSelf<T>(impl))
+    class DescriptorObject<T : Any>(val impl: T) : Descriptor<T>(ContractSelf<T>(impl::class as KClass<in T>))
+
+    abstract class Contract<T : Any>
+    class ContractNone<T : Any> : Contract<T>()
+    class ContractSelf<T : Any>(val contract: KClass<in T>) : Contract<T>()
+    class ContractSet<T : Any>(val contracts: MutableSet<KClass<in T>>) : Contract<T>()
+    class ContractTypeLiteral<T : Any>(val literal: org.glassfish.hk2.api.TypeLiteral<in T>) : Contract<T>()
 
 }

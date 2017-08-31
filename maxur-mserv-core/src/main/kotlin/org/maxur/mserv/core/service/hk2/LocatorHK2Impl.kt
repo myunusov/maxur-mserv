@@ -75,12 +75,8 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
     }
 
     override fun config(): org.maxur.mserv.core.LocatorConfig = Config(this)
-    
-    class Config(locatorImpl: LocatorImpl) : LocatorConfig(locatorImpl) {
 
-        override fun bind(impl: Any): Descriptor {
-            return super.bind(impl)
-        }
+    class Config(locatorImpl: LocatorImpl) : LocatorConfig(locatorImpl) {
 
         override fun apply() {
             val binder = object : AbstractBinder() {
@@ -91,7 +87,7 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
             ServiceLocatorUtilities.bind(locator.implementation<ServiceLocator>(), binder)
         }
 
-        private fun AbstractBinder.makeBinders(descriptor: Descriptor) {
+        private fun AbstractBinder.makeBinders(descriptor: Descriptor<out Any>) {
             val contract = descriptor.contract
             builder(descriptor).fold({
                 val builder = it
@@ -101,7 +97,7 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
                     is ContractTypeLiteral -> builder.to(contract.literal)
                     is ContractNone -> throw IllegalStateException("Contract must be")
                 }
-                descriptor.name ?.let { builder.named(it) }
+                descriptor.name?.let { builder.named(it) }
                 builder.`in`(Singleton::class.java)
             }, {
                 val builder = it
@@ -111,20 +107,20 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
                     is ContractTypeLiteral -> builder.to(contract.literal)
                     is ContractNone -> throw IllegalStateException("Contract must be")
                 }
-                descriptor.name ?.let { builder.named(it) }
+                descriptor.name?.let { builder.named(it) }
             })
         }
 
-        private fun AbstractBinder.builder(descriptor: Descriptor)
-                : Either<ServiceBindingBuilder<out Any>, ScopedBindingBuilder<out Any>> = when (descriptor) {
+        private fun <T : Any> AbstractBinder.builder(descriptor: Descriptor<T>)
+                : Either<ServiceBindingBuilder<in T>, ScopedBindingBuilder<in T>> = when (descriptor) {
             is DescriptorFunction -> left(bindFactory(ServiceProvider(locator, descriptor.func)))
             is DescriptorObject -> {
                 right(bind(descriptor.impl))
             }
-            is DescriptorSingleton -> {
+            is DescriptorSingleton<T> -> {
                 if (descriptor.impl.isSubclassOf(Factory::class)) {
                     @Suppress("UNCHECKED_CAST")
-                    val factoryClass: KClass<Factory<Any>> = descriptor.impl as KClass<Factory<Any>>
+                    val factoryClass: KClass<Factory<T>> = descriptor.impl as KClass<Factory<T>>
                     left(bindFactory(factoryClass.java))
                 } else
                     left(bind(descriptor.impl.java))
