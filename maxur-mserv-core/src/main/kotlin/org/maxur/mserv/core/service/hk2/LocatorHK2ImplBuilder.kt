@@ -3,9 +3,9 @@ package org.maxur.mserv.core.service.hk2
 import org.glassfish.hk2.api.InjectionResolver
 import org.glassfish.hk2.api.TypeLiteral
 import org.maxur.mserv.core.LocatorConfig
+import org.maxur.mserv.core.LocatorImpl
 import org.maxur.mserv.core.annotation.Value
 import org.maxur.mserv.core.builder.LocatorBuilder
-import org.maxur.mserv.core.kotlin.Locator
 
 /**
  * @author myunusov
@@ -16,8 +16,8 @@ class LocatorHK2ImplBuilder(init: LocatorConfig.() -> Unit) : LocatorBuilder(ini
 
     override fun make() = LocatorHK2Impl(name, packages)
 
-    override fun config(function: LocatorConfig.() -> Unit) =
-            Locator.current.configure {
+    override fun configure(locator: LocatorImpl, function: LocatorConfig.() -> Unit) =
+            locator.configure {
                 bind(PropertiesInjectionResolver::class).to(object : TypeLiteral<InjectionResolver<Value>>() {})
                 function()
             }

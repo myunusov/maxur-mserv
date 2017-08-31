@@ -38,7 +38,7 @@ abstract class LocatorBuilder(val init: LocatorConfig.() -> Unit) {
             bind(org.maxur.mserv.core.java.Locator(locator))
         }
         locator.registerAsSingleton()
-        config {
+        configure(locator) {
             init()
             bind(ObjectMapperProvider::class).to(ObjectMapper::class)
         }
@@ -47,6 +47,6 @@ abstract class LocatorBuilder(val init: LocatorConfig.() -> Unit) {
 
     protected abstract fun make(): LocatorImpl
 
-    protected abstract fun config(function: LocatorConfig.() -> Unit): LocatorConfig
+    protected abstract fun configure(locator: LocatorImpl, function: LocatorConfig.() -> Unit): LocatorConfig
     
 }

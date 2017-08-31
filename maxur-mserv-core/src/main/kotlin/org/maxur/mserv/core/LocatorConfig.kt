@@ -4,30 +4,30 @@ import org.glassfish.hk2.api.TypeLiteral
 import org.maxur.mserv.core.kotlin.Locator
 import kotlin.reflect.KClass
 
-abstract class LocatorConfig {
+abstract class LocatorConfig(protected val locator: LocatorImpl) {
 
     protected val descriptors = mutableListOf<Descriptor>()
 
     /**
-     * Bind service [impl]ementation class to [contracts] or implementations.
-     * @param impl The Service implementation
+     * Bind service [implementation]
+     * @param implementation The Service implementation
      */
-    open fun bind(impl: Any): Descriptor =
-            DescriptorObject(impl).also {
+    open fun bind(implementation: Any): Descriptor =
+            DescriptorObject(implementation).also {
                 descriptors.add(it)
             }
 
     /**
-     * Bind service [impl]ementation class to [contracts] or implementations.
-     * @param impl The Service implementation class
+     * Bind service [implementation] class
+     * @param implementation The Service implementation class
      */
-    fun bind(impl: KClass<out Any>): Descriptor =
-            DescriptorSingleton(impl).also {
+    fun bind(implementation: KClass<out Any>): Descriptor =
+            DescriptorSingleton(implementation).also {
                 descriptors.add(it)
             }
 
     /**
-     * Bind service creation [function] to [contracts] or implementations.
+     * Bind service creation [function] 
      * @param function The Service creation function
      */
     fun bind(function: (Locator) -> Any): Descriptor =
@@ -35,7 +35,7 @@ abstract class LocatorConfig {
                 descriptors.add(it)
             }
 
-    abstract fun bindTo(locator: LocatorImpl)
+    abstract fun apply()
 
     abstract class Descriptor(var contract: Contract, var name: String? = null) {
 
@@ -48,13 +48,14 @@ abstract class LocatorConfig {
             }
         }
 
+        fun to(literal: TypeLiteral<out Any>): LocatorConfig.Descriptor = this.apply {
+            contract = LocatorConfig.ContractTypeLiteral(literal)
+        }
+
         fun named(name: String): Descriptor = this.apply {
             this.name = name
         }
 
-        fun to(literal: TypeLiteral<out Any>): Descriptor = this.apply {
-            contract = ContractTypeLiteral(literal)
-        }
     }
     class DescriptorFunction(val func: (Locator) -> Any) : Descriptor(ContractNone())
     class DescriptorSingleton(val impl: KClass<out Any>) : Descriptor(ContractSelf(impl))

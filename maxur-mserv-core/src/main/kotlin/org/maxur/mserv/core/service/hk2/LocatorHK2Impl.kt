@@ -74,15 +74,15 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
             locator.shutdown()
     }
 
-    override fun config(): org.maxur.mserv.core.LocatorConfig = Config()
-
-    class Config : LocatorConfig() {
+    override fun config(): org.maxur.mserv.core.LocatorConfig = Config(this)
+    
+    class Config(locatorImpl: LocatorImpl) : LocatorConfig(locatorImpl) {
 
         override fun bind(impl: Any): Descriptor {
             return super.bind(impl)
         }
 
-        override fun bindTo(locator: LocatorImpl) {
+        override fun apply() {
             val binder = object : AbstractBinder() {
                 override fun configure() {
                     descriptors.forEach { makeBinders(it) }
@@ -117,7 +117,7 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
 
         private fun AbstractBinder.builder(descriptor: Descriptor)
                 : Either<ServiceBindingBuilder<out Any>, ScopedBindingBuilder<out Any>> = when (descriptor) {
-            is DescriptorFunction -> left(bindFactory(ServiceProvider(descriptor.func)))
+            is DescriptorFunction -> left(bindFactory(ServiceProvider(locator, descriptor.func)))
             is DescriptorObject -> {
                 right(bind(descriptor.impl))
             }
@@ -133,9 +133,8 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
         }
 
 
-        private class ServiceProvider<T>(val func: (Locator) -> T) : Factory<T> {
-            val locator: Locator by lazy { Locator.current }
-            val result: T by lazy { func.invoke(locator) }
+        private class ServiceProvider<T>(val locator: LocatorImpl, val func: (Locator) -> T) : Factory<T> {
+            val result: T by lazy { func.invoke(Locator(locator)) }
             /** {@inheritDoc} */
             override fun dispose(instance: T) = Unit
 

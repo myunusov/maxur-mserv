@@ -194,15 +194,16 @@ class LocatorImplTest {
 
         override fun make(): Locator = Locator(FakeLocator(name))
 
-        override fun config(function: LocatorConfig.() -> Unit): LocatorConfig = object : LocatorConfig() {
-            override fun bindTo(locator: LocatorImpl) = Unit
-        }
+        override fun configure(locator: LocatorImpl, function: LocatorConfig.() -> Unit) =
+                object : LocatorConfig(locator) {
+                    override fun apply() = Unit
+                }
 
         @Suppress("UNCHECKED_CAST")
         class FakeLocator(val str: String, override val name: String = "fake $str") : LocatorImpl {
 
-            override fun config(): LocatorConfig = object : LocatorConfig() {
-                override fun bindTo(locator: LocatorImpl) = Unit
+            override fun config(): LocatorConfig = object : LocatorConfig(this) {
+                override fun apply() = Unit
             }
 
             override fun configurationError() = null

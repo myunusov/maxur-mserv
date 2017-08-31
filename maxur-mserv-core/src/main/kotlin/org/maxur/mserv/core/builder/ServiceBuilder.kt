@@ -67,7 +67,6 @@ class ServiceBuilder : Builder<EmbeddedService?> {
         }
         return service
     }
-
 }
 
 /**
