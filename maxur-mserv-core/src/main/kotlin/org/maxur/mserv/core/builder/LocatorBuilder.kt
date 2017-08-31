@@ -27,11 +27,6 @@ abstract class LocatorBuilder(val init: LocatorConfig.() -> Unit) {
      * List of project service packages for service locator lookup.
      */
     var packages: Set<String> = setOf()
-        get() = if (field.isEmpty()) {
-            emptySet()
-        } else {
-            field.union(listOf("org.maxur.mserv.core"))
-        }
 
     /**
      * Build service locator.

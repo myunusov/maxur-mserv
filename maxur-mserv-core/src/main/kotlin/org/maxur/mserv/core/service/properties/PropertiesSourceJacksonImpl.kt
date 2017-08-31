@@ -16,13 +16,13 @@ import java.io.InputStream
 import java.net.URI
 import java.nio.file.Paths
 
-@Service(name = "Json")
+@Service(name = "json")
 class PropertiesFactoryJsonImpl : PropertiesFactory() {
     override fun make(source: PropertiesSource): Result<Exception, Properties> =
             tryTo { PropertiesSourceJacksonImpl(JsonFactory(), "json", source) }
 }
 
-@Service(name = "Yaml")
+@Service(name = "yaml")
 class PropertiesFactoryYamlImpl : PropertiesFactory() {
     override fun make(source: PropertiesSource): Result<Exception, Properties> =
             tryTo { PropertiesSourceJacksonImpl(YAMLFactory(), "yaml", source) }

@@ -57,10 +57,7 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
     override fun <T> service(contractOrImpl: Class<T>, name: String?): T? = tryTo {
         when (name) {
             null -> locator.getService<T>(contractOrImpl)
-            else -> locator.getAllServiceHandles(contractOrImpl)
-                    .filter { it.activeDescriptor.name.equals(name, true) }
-                    .map { it.service }
-                    .firstOrNull()
+            else -> locator.getService(contractOrImpl, name)
         }
     }.result()
 

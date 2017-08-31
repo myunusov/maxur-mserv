@@ -17,7 +17,7 @@ import java.net.URI
 import java.nio.file.Paths
 import java.time.Duration
 
-@Service(name = "Hocon")
+@Service(name = "hocon")
 class PropertiesFactoryHoconImpl : PropertiesFactory() {
 
     override fun make(source: PropertiesSource): Result<Exception, Properties> =
