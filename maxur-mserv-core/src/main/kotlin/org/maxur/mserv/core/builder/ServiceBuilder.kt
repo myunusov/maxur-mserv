@@ -45,9 +45,9 @@ class ServiceBuilder : Builder<EmbeddedService?> {
     private fun makeServiceHolder(): Holder<EmbeddedService> {
         return Holder.get { locator ->
             locator
-                .locate(EmbeddedServiceFactory::class, typeHolder?.toLowerCase() ?: "unknown")
-                .make(propertiesHolder) ?:
-                throw IllegalStateException("Service '$typeHolder' is not configured\n")
+                    .locate(EmbeddedServiceFactory::class, typeHolder?.toLowerCase() ?: "unknown")
+                    .make(propertiesHolder) ?:
+                    throw IllegalStateException("Service '$typeHolder' is not configured\n")
         }
     }
 
@@ -84,7 +84,7 @@ internal class CompositeServiceBuilder : CompositeBuilder<EmbeddedService>() {
 
     /** {@inheritDoc} */
     override fun build(locator: Locator): EmbeddedService = buildListWith(locator).let {
-        when(it.size) {
+        when (it.size) {
             1 -> it[0]
             else -> CompositeService(it)
         }
