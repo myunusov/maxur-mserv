@@ -4,6 +4,7 @@ import gov.va.oia.HK2Utilities.HK2RuntimeInitializer
 import org.glassfish.hk2.api.Factory
 import org.glassfish.hk2.api.ServiceLocator
 import org.glassfish.hk2.api.ServiceLocatorState
+import org.glassfish.hk2.api.TypeLiteral
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities
 import org.glassfish.hk2.utilities.binding.AbstractBinder
 import org.glassfish.hk2.utilities.binding.ScopedBindingBuilder
@@ -78,6 +79,15 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
 
     class Config(locatorImpl: LocatorImpl) : LocatorConfig(locatorImpl) {
 
+        override fun <T : Any> makeDescriptor(bean: Bean<T>, contract: Contract<T>): Descriptor<T> =
+                object : Descriptor<T>(bean, contract) {
+                    @Suppress("UNCHECKED_CAST")
+                    override fun toSpecificContract(contract: Any) {
+                        if (contract is TypeLiteral<*>)
+                            this.contract = ContractTypeLiteral(contract as TypeLiteral<in T>)
+                    }
+                }
+
         override fun apply() {
             val binder = object : AbstractBinder() {
                 override fun configure() {
@@ -140,6 +150,8 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
             /** {@inheritDoc} */
             override fun provide(): T = result
         }
+
+        class ContractTypeLiteral<T : Any>(val literal: org.glassfish.hk2.api.TypeLiteral<in T>) : Contract<T>()
     }
 
 }

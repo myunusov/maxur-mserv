@@ -196,6 +196,10 @@ class LocatorImplTest {
 
         override fun configure(locator: LocatorImpl, function: LocatorConfig.() -> Unit) =
                 object : LocatorConfig(locator) {
+                    override fun <T : Any> makeDescriptor(bean: Bean<T>, contract: Contract<T>): Descriptor<T> =
+                            object : Descriptor<T>(bean, contract) {
+                                override fun toSpecificContract(contract: Any) {}
+                            }
                     override fun apply() = Unit
                 }
 
@@ -203,6 +207,10 @@ class LocatorImplTest {
         class FakeLocator(val str: String, override val name: String = "fake $str") : LocatorImpl {
 
             override fun config(): LocatorConfig = object : LocatorConfig(this) {
+                override fun <T : Any> makeDescriptor(bean: Bean<T>, contract: Contract<T>): Descriptor<T> =
+                        object : Descriptor<T>(bean, contract) {
+                            override fun toSpecificContract(contract: Any) {}
+                        }
                 override fun apply() = Unit
             }
 
