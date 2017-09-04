@@ -112,21 +112,24 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
         }
 
         private fun <T : Any> AbstractBinder.builder(descriptor: Descriptor<T>)
-                : Either<ServiceBindingBuilder<in T>, ScopedBindingBuilder<in T>> = when (descriptor) {
-            is DescriptorFunction -> left(bindFactory(ServiceProvider(locator, descriptor.func)))
-            is DescriptorObject -> {
-                right(bind(descriptor.impl))
+                : Either<ServiceBindingBuilder<in T>, ScopedBindingBuilder<in T>> {
+            val bean = descriptor.bean
+            return when (bean) {
+                is BeanFunction -> left(bindFactory(ServiceProvider(locator, bean.func)))
+                is BeanObject -> {
+                    right(bind(bean.impl))
+                }
+                is BeanSingleton<T> -> {
+                    if (bean.impl.isSubclassOf(Factory::class)) {
+                        @Suppress("UNCHECKED_CAST")
+                        val factoryClass: KClass<Factory<T>> = bean.impl as KClass<Factory<T>>
+                        left(bindFactory(factoryClass.java))
+                    } else
+                        left(bind(bean.impl.java))
+                }
+                else -> throw IllegalStateException("Unknown description")
             }
-            is DescriptorSingleton<T> -> {
-                if (descriptor.impl.isSubclassOf(Factory::class)) {
-                    @Suppress("UNCHECKED_CAST")
-                    val factoryClass: KClass<Factory<T>> = descriptor.impl as KClass<Factory<T>>
-                    left(bindFactory(factoryClass.java))
-                } else
-                    left(bind(descriptor.impl.java))
-            }
-            else -> throw IllegalStateException("Unknown description")
-        }
+                }
 
 
         private class ServiceProvider<T>(val locator: LocatorImpl, val func: (Locator) -> T) : Factory<T> {
