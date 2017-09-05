@@ -18,7 +18,7 @@ class MicroServiceKotlinClientIT {
         Kotlin.service {
             name = ":name" // <1>
             packages += "org.maxur.mserv.sample"  // <2>
-            properties { format = "hocon" }      // <3>
+            properties += file { format = "hocon" }      // <3>
             services += rest { } // <4>
             afterStart += this@MicroServiceKotlinClientIT::afterStart // <5>
             beforeStop += this@MicroServiceKotlinClientIT::beforeStop

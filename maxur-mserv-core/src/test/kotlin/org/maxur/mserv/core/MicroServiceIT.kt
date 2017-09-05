@@ -30,7 +30,7 @@ class MicroServiceIT {
         Kotlin.service {
             name = ":name"
             packages += "org.maxur.mserv.core.sample"
-            properties { format = "hocon" }
+            properties += file { format = "hocon" }
             services += rest { }
             afterStart += this@MicroServiceIT::afterStartKt
             beforeStop += this@MicroServiceIT::beforeStopKt
@@ -49,7 +49,7 @@ class MicroServiceIT {
         serviceToKotlin = service
         assertThat(service).isNotNull()
         assertThat(config).isNotNull()
-        assertThat(config.sources.get(0) .format).isEqualToIgnoringCase("Hocon")
+        assertThat(config.sources.get(0).format).isEqualToIgnoringCase("Hocon")
         val sampleService = Locator.bean(SampleService::class)
         assertThat(sampleService).isNotNull()
         assertThat(sampleService!!.name).isEqualToIgnoringWhitespace("μService")
@@ -64,7 +64,7 @@ class MicroServiceIT {
                 .rest()
                 .afterStart(Consumer { this.afterStartJava(it) })
                 .beforeStop(Consumer { this.beforeStopJava(it) })
-                .onError (Consumer { ex -> throw ex })
+                .onError(Consumer { ex -> throw ex })
                 .start()
         serviceToJava?.stop()
         Locator.stop()

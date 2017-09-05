@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.maxur.mserv.core.BaseMicroService
 import org.maxur.mserv.core.LocatorConfig
 import org.maxur.mserv.core.MicroService
+import org.maxur.mserv.core.core.CompositeBuilder
 import org.maxur.mserv.core.domain.Holder
 import org.maxur.mserv.core.embedded.EmbeddedService
 import org.maxur.mserv.core.embedded.EmbeddedServiceFactory
@@ -26,7 +27,7 @@ import org.maxur.mserv.core.service.properties.PropertiesFactoryYamlImpl
  * @version 1.0
  * @since <pre>11/25/13</pre>
  */
-abstract class MicroServiceBuilder {
+abstract class MicroServiceBuilder(val init: LocatorConfig.() -> Unit = {}) {
 
     /**
      * List of embedded services.
@@ -73,6 +74,7 @@ abstract class MicroServiceBuilder {
         packages = this@MicroServiceBuilder.packages.strings
     }.build {
         bind()
+        init()
     }
 
     private fun LocatorConfig.bind() {

@@ -1,5 +1,7 @@
 package org.maxur.mserv.core.builder
 
+import org.maxur.mserv.core.core.Builder
+import org.maxur.mserv.core.core.CompositeBuilder
 import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.domain.Holder
 import org.maxur.mserv.core.embedded.CompositeService

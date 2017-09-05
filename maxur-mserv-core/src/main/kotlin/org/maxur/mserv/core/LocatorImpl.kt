@@ -67,7 +67,7 @@ interface LocatorImpl {
      * @throw IllegalStateException if there is no provider that
      * provides the given implementation or contract
      */
-    fun <T> locate(contractOrImpl: Class<T>, name: String): T = service(contractOrImpl, name) ?:
+    fun <T> locate(contractOrImpl: Class<T>, name: String?): T = service(contractOrImpl, name) ?:
         throw IllegalStateException(
             "Service '$name' is not supported. Try one from this list: ${names(contractOrImpl)}"
         )

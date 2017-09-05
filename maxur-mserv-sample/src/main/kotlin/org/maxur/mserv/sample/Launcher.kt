@@ -1,6 +1,7 @@
 package org.maxur.mserv.sample
 
 import org.maxur.mserv.core.builder.Kotlin
+import org.maxur.mserv.core.builder.hocon
 import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.embedded.WebServer
 import org.maxur.mserv.core.service.properties.Properties
@@ -24,17 +25,18 @@ object Launcher {
      *
      * @param args - arguments of command.
      */
-    @JvmStatic fun main(args: Array<String>) {
+    @JvmStatic
+    fun main(args: Array<String>) {
         Kotlin.service {
             name = ":name"
             packages += "org.maxur.mserv.sample"
-            properties { format = "hocon" }
+            properties += hocon()
             services += rest {
                 afterStart += this@Launcher::afterWebServiceStart
             }
             afterStart += this@Launcher::afterStart
-            beforeStop += { _ ->  log().info("Microservice is stopped") }
-            onError += { exception ->  log().error(exception.message, exception) }
+            beforeStop += { _ -> log().info("Microservice is stopped") }
+            onError += { exception -> log().error(exception.message, exception) }
         }.start()
     }
 
@@ -48,7 +50,6 @@ object Launcher {
         log().info("${service.name} is started on ${service.baseUri}\"")
         log().info(service.entries().toString())
     }
-
 
 }
 

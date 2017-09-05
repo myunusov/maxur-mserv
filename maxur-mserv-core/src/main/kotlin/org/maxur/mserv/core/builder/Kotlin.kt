@@ -2,6 +2,9 @@ package org.maxur.mserv.core.builder
 
 import org.maxur.mserv.core.MicroService
 import org.maxur.mserv.core.domain.Holder
+import org.maxur.mserv.core.service.properties.PropertiesFactoryHoconImpl
+import org.maxur.mserv.core.service.properties.PropertiesFactoryJsonImpl
+import org.maxur.mserv.core.service.properties.PropertiesFactoryYamlImpl
 
 object Kotlin {
     fun service(init: KBuilder.() -> Unit): MicroService = KBuilder(init).build()
@@ -22,11 +25,8 @@ class KBuilder() : MicroServiceBuilder() {
         properties += PropertiesBuilder.NullPropertiesBuilder
     }
 
-    fun properties(init: PropertiesBuilder.BasePropertiesBuilder.() -> Unit) {
-        val holder = PropertiesBuilder.BasePropertiesBuilder()
-        properties += holder
-        holder.apply { init() }
-    }
+    fun file(init: PropertiesBuilder.BasePropertiesBuilder.() -> Unit) =
+            PropertiesBuilder.BasePropertiesBuilder().apply { init() }
 
     fun service(init: ServiceBuilder.() -> Unit) = ServiceBuilder().apply { init() }
 
@@ -36,3 +36,12 @@ class KBuilder() : MicroServiceBuilder() {
         init()
     }
 }
+
+fun hocon(init: PredefinedPropertiesBuilder.() -> Unit = {})
+    = object : PredefinedPropertiesBuilder("hocon", PropertiesFactoryHoconImpl(), init) {}
+
+fun json(init: PredefinedPropertiesBuilder.() -> Unit = {})
+    = object : PredefinedPropertiesBuilder("json", PropertiesFactoryJsonImpl(), init) {}
+
+fun yaml(init: PredefinedPropertiesBuilder.() -> Unit = {})
+    = object : PredefinedPropertiesBuilder("yaml", PropertiesFactoryYamlImpl(), init) {}
