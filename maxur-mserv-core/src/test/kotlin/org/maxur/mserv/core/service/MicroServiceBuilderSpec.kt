@@ -45,10 +45,10 @@ class MicroServiceBuilderSpec : Spek({
             }
             it("should return new micro-service for java client") {
                 val service =
-                    // tag::withoutproperties[]
-                    Java.service()
-                        .withoutProperties() // <1>
-                        .build()
+                        // tag::withoutproperties[]
+                        Java.service()
+                                .withoutProperties() // <1>
+                                .build()
                 // end::withoutproperties[]
                 assertThat(service).isNotNull()
                 val source = source
@@ -59,147 +59,145 @@ class MicroServiceBuilderSpec : Spek({
         context("with properties without configuration") {
 
             listOf(
-                Triple("Hocon", "DEFAULTS", "conf"),
-                Triple("Yaml", null, "yaml"),
-                Triple("Json", null, "json")
+                    Triple("Hocon", "DEFAULTS", "conf"),
+                    Triple("Yaml", null, "yaml"),
+                    Triple("Json", null, "json")
             )
-                .forEach { (name, root, ext) ->
-                    describe("With '$name' properties") {
+                    .forEach { (name, root, ext) ->
+                        describe("With '$name' properties") {
 
-                        it("should return new micro-service with default properties source") {
-                            val service = Kotlin.service {
-                                properties {
-                                    format = name
+                            it("should return new micro-service with default properties source") {
+                                val service = Kotlin.service {
+                                    properties += file { format = name }
                                 }
+                                assertThat(service).isNotNull()
+                                val source = source
+                                assertThat(source).isNotNull()
+                                source!!.apply {
+                                    assertThat(format).isEqualTo(name)
+                                    assertThat(rootKey).isEqualTo(root)
+                                    assertThat(uri.toString()).endsWith("application.$ext")
+                                }
+                                Locator.stop()
                             }
-                            assertThat(service).isNotNull()
-                            val source = source
-                            assertThat(source).isNotNull()
-                            source!!.apply {
-                                assertThat(format).isEqualTo(name)
-                                assertThat(rootKey).isEqualTo(root)
-                                assertThat(uri.toString()).endsWith("application.$ext")
-                            }
-                            Locator.stop()
-                        }
 
-                        it("should return new micro-service with default properties source for java client") {
-                            val service = Java.service()
-                                .properties(name)
-                                .build()
-                            assertThat(service).isNotNull()
-                            val source = source
-                            assertThat(source).isNotNull()
-                            source!!.apply {
-                                assertThat(format).isEqualTo(name)
-                                assertThat(rootKey).isEqualTo(root)
-                                assertThat(uri.toString()).endsWith("application.$ext")
+                            it("should return new micro-service with default properties source for java client") {
+                                val service = Java.service()
+                                        .properties(name)
+                                        .build()
+                                assertThat(service).isNotNull()
+                                val source = source
+                                assertThat(source).isNotNull()
+                                source!!.apply {
+                                    assertThat(format).isEqualTo(name)
+                                    assertThat(rootKey).isEqualTo(root)
+                                    assertThat(uri.toString()).endsWith("application.$ext")
+                                }
+                                Locator.stop()
                             }
-                            Locator.stop()
+
                         }
 
                     }
-
-                }
         }
 
         context("with properties file by url") {
 
             listOf(
-                Triple("Hocon", "DEFAULTS", "conf"),
-                Triple("Yaml", null, "yaml"),
-                Triple("Json", null, "json")
+                    Triple("Hocon", "DEFAULTS", "conf"),
+                    Triple("Yaml", null, "yaml"),
+                    Triple("Json", null, "json")
             )
-                .forEach { (name, root, ext) ->
-                    describe("With '$name' properties") {
+                    .forEach { (name, root, ext) ->
+                        describe("With '$name' properties") {
 
-                        val propertyFile = relativePathByResourceName("/application.$ext") ?:
-                            throw IllegalStateException("file application.$ext is not found")
+                            val propertyFile = relativePathByResourceName("/application.$ext") ?:
+                                    throw IllegalStateException("file application.$ext is not found")
 
-                        it("should return new micro-service with properties") {
-                            val service = Kotlin.service {
-                                properties {
-                                    format = name
-                                    url = propertyFile
+                            it("should return new micro-service with properties") {
+                                val service = Kotlin.service {
+                                    properties += file {
+                                        format = name
+                                        url = propertyFile
+                                    }
                                 }
+                                assertThat(service).isNotNull()
+                                val source = source
+                                assertThat(source).isNotNull()
+                                source!!.apply {
+                                    assertThat(format).isEqualTo(name)
+                                    assertThat(rootKey).isEqualTo(root)
+                                    assertThat(uri.toString()).endsWith("application.$ext")
+                                }
+                                Locator.stop()
                             }
-                            assertThat(service).isNotNull()
-                            val source = source
-                            assertThat(source).isNotNull()
-                            source!!.apply {
-                                assertThat(format).isEqualTo(name)
-                                assertThat(rootKey).isEqualTo(root)
-                                assertThat(uri.toString()).endsWith("application.$ext")
-                            }
-                            Locator.stop()
-                        }
 
-                        it("should return new micro-service with properties for java client") {
-                            val service = Java.service()
-                                .properties(name)
-                                .url(propertyFile)
-                                .build()
-                            assertThat(service).isNotNull()
-                            val source = source
-                            assertThat(source).isNotNull()
-                            source!!.apply {
-                                assertThat(format).isEqualTo(name)
-                                assertThat(rootKey).isEqualTo(root)
-                                assertThat(uri.toString()).endsWith("application.$ext")
+                            it("should return new micro-service with properties for java client") {
+                                val service = Java.service()
+                                        .properties(name)
+                                        .url(propertyFile)
+                                        .build()
+                                assertThat(service).isNotNull()
+                                val source = source
+                                assertThat(source).isNotNull()
+                                source!!.apply {
+                                    assertThat(format).isEqualTo(name)
+                                    assertThat(rootKey).isEqualTo(root)
+                                    assertThat(uri.toString()).endsWith("application.$ext")
+                                }
+                                Locator.stop()
                             }
-                            Locator.stop()
                         }
                     }
-                }
         }
 
         context("with properties file with rootKey") {
 
             listOf(
-                Triple("Hocon", "USER", "conf"),
-                Triple("Yaml", "USER", "yaml"),
-                Triple("Json", "USER", "json")
+                    Triple("Hocon", "USER", "conf"),
+                    Triple("Yaml", "USER", "yaml"),
+                    Triple("Json", "USER", "json")
             )
-                .forEach { (name, root, ext) ->
-                    describe("With '$name' properties") {
+                    .forEach { (name, root, ext) ->
+                        describe("With '$name' properties") {
 
-                        it("should return new micro-service with properties") {
-                            val service = Kotlin.service {
-                                properties {
-                                    format = name
-                                    rootKey = "USER"
+                            it("should return new micro-service with properties") {
+                                val service = Kotlin.service {
+                                    properties += file {
+                                        format = name
+                                        rootKey = "USER"
+                                    }
                                 }
+                                assertThat(service).isNotNull()
+                                val source = source
+                                assertThat(source).isNotNull()
+                                source!!.apply {
+                                    assertThat(format).isEqualTo(name)
+                                    assertThat(rootKey).isEqualTo(root)
+                                    assertThat(uri.toString()).endsWith("application.$ext")
+                                }
+                                Locator.stop()
                             }
-                            assertThat(service).isNotNull()
-                            val source = source
-                            assertThat(source).isNotNull()
-                            source!!.apply {
-                                assertThat(format).isEqualTo(name)
-                                assertThat(rootKey).isEqualTo(root)
-                                assertThat(uri.toString()).endsWith("application.$ext")
-                            }
-                            Locator.stop()
-                        }
 
-                        it("should return new micro-service with properties for java client") {
-                            val service = Java.service()
-                                .properties(name)
-                                .rootKey("USER")
-                                .build()
-                            assertThat(service).isNotNull()
-                            val source = source
-                            assertThat(source).isNotNull()
-                            source!!.apply {
-                                assertThat(format).isEqualTo(name)
-                                assertThat(rootKey).isEqualTo(root)
-                                assertThat(uri.toString()).endsWith("application.$ext")
+                            it("should return new micro-service with properties for java client") {
+                                val service = Java.service()
+                                        .properties(name)
+                                        .rootKey("USER")
+                                        .build()
+                                assertThat(service).isNotNull()
+                                val source = source
+                                assertThat(source).isNotNull()
+                                source!!.apply {
+                                    assertThat(format).isEqualTo(name)
+                                    assertThat(rootKey).isEqualTo(root)
+                                    assertThat(uri.toString()).endsWith("application.$ext")
+                                }
+                                Locator.stop()
                             }
-                            Locator.stop()
+
                         }
 
                     }
-
-                }
         }
 
         context("with properties file with invalid configuration") {
@@ -210,7 +208,7 @@ class MicroServiceBuilderSpec : Spek({
                     it("should throw error on unknown format") {
                         assertFailsWith<IllegalStateException> {
                             Kotlin.service {
-                                properties {
+                                properties += file {
                                     format = "Error"
                                     url = "file:///file.cfg"
                                 }
@@ -221,7 +219,7 @@ class MicroServiceBuilderSpec : Spek({
                     it("should throw error on unknown url scheme") {
                         assertFailsWith<IllegalStateException> {
                             Kotlin.service {
-                                properties {
+                                properties += file {
                                     format = name
                                     url = "error:///file.cfg"
                                 }
@@ -232,16 +230,16 @@ class MicroServiceBuilderSpec : Spek({
                     it("should throw error on unknown url scheme for java client") {
                         assertFailsWith<IllegalStateException> {
                             Java.service()
-                                .properties(name)
-                                .url("error:///file.cfg")
-                                .build()
+                                    .properties(name)
+                                    .url("error:///file.cfg")
+                                    .build()
                             Locator.bean(Properties::class)
                         }
                     }
                     it("should throw error on unknown file") {
                         assertFailsWith<IllegalStateException> {
                             Kotlin.service {
-                                properties {
+                                properties += file {
                                     format = name
                                     url = "file:///error.cfg"
                                 }
@@ -252,16 +250,16 @@ class MicroServiceBuilderSpec : Spek({
                     it("should throw error on unknown file for java client") {
                         assertFailsWith<IllegalStateException> {
                             Java.service()
-                                .properties(name)
-                                .url("file:///error.cfg")
-                                .build()
+                                    .properties(name)
+                                    .url("file:///error.cfg")
+                                    .build()
                             Locator.bean(Properties::class)
                         }
                     }
                     it("should throw error on unknown root key") {
                         assertFailsWith<IllegalStateException> {
                             Kotlin.service {
-                                properties {
+                                properties += file {
                                     format = name
                                     rootKey = "ERROR"
                                 }
@@ -272,9 +270,9 @@ class MicroServiceBuilderSpec : Spek({
                     it("should throw error on unknown root key for java client") {
                         assertFailsWith<IllegalStateException> {
                             Java.service()
-                                .properties(name)
-                                .rootKey("ERROR")
-                                .build()
+                                    .properties(name)
+                                    .rootKey("ERROR")
+                                    .build()
                             Locator.bean(Properties::class)
                         }
                     }
@@ -285,7 +283,7 @@ class MicroServiceBuilderSpec : Spek({
         }
 
         val supportedFormat = condition(
-            { it in arrayOf("Hocon", "Yaml", "Json") }, "supported format"
+                { it in arrayOf("Hocon", "Yaml", "Json") }, "supported format"
         )
 
         context("Build micro-service with default properties") {
@@ -313,4 +311,4 @@ class MicroServiceBuilderSpec : Spek({
 })
 
 private fun condition(function: (String) -> Boolean, description: String): Condition<String>
-    = Condition(Predicate(function), description)
+        = Condition(Predicate(function), description)

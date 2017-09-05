@@ -26,7 +26,7 @@ import org.maxur.mserv.core.service.properties.PropertiesFactoryYamlImpl
  * @version 1.0
  * @since <pre>11/25/13</pre>
  */
-abstract class MicroServiceBuilder {
+abstract class MicroServiceBuilder(val init: LocatorConfig.() -> Unit = {}) {
 
     /**
      * List of embedded services.
@@ -73,6 +73,7 @@ abstract class MicroServiceBuilder {
         packages = this@MicroServiceBuilder.packages.strings
     }.build {
         bind()
+        init()
     }
 
     private fun LocatorConfig.bind() {

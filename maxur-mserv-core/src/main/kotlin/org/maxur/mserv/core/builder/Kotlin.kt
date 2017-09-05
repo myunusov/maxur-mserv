@@ -22,11 +22,8 @@ class KBuilder() : MicroServiceBuilder() {
         properties += PropertiesBuilder.NullPropertiesBuilder
     }
 
-    fun properties(init: PropertiesBuilder.BasePropertiesBuilder.() -> Unit) {
-        val holder = PropertiesBuilder.BasePropertiesBuilder()
-        properties += holder
-        holder.apply { init() }
-    }
+    fun file(init: PropertiesBuilder.BasePropertiesBuilder.() -> Unit) =
+            PropertiesBuilder.BasePropertiesBuilder().apply { init() }
 
     fun service(init: ServiceBuilder.() -> Unit) = ServiceBuilder().apply { init() }
 
