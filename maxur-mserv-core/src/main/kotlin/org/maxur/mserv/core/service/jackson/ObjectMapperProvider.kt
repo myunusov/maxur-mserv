@@ -28,14 +28,17 @@ object ObjectMapperProvider {
     /**
      * Configure [ObjectMapper] instance
      */
-    fun config(mapper: ObjectMapper): ObjectMapper = mapper
-            .setVisibility(PropertyAccessor.SETTER, JsonAutoDetect.Visibility.NONE)
-            .setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE)
-            .setVisibility(PropertyAccessor.IS_GETTER, JsonAutoDetect.Visibility.NONE)
-            .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
-            .registerModule(Jdk8Module())
-            .registerModule(ParanamerModule())
-            .registerModule(JavaTimeModule())
-            .registerModule(JacksonHALModule())
-            .registerModule(ParameterNamesModule())
+    fun config(mapper: ObjectMapper): ObjectMapper = mapper.apply { configuration() }
+
+    private fun ObjectMapper.configuration() {
+        setVisibility(PropertyAccessor.SETTER, JsonAutoDetect.Visibility.NONE)
+        setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE)
+        setVisibility(PropertyAccessor.IS_GETTER, JsonAutoDetect.Visibility.NONE)
+        setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
+        registerModule(Jdk8Module())
+        registerModule(ParanamerModule())
+        registerModule(JavaTimeModule())
+        registerModule(JacksonHALModule())
+        registerModule(ParameterNamesModule())
+    }
 }

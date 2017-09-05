@@ -2,7 +2,6 @@ package org.maxur.mserv.core.builder
 
 import org.maxur.mserv.core.LocatorConfig
 import org.maxur.mserv.core.LocatorImpl
-import org.maxur.mserv.core.core.checkError
 import org.maxur.mserv.core.kotlin.Locator
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -29,7 +28,7 @@ abstract class LocatorBuilder() {
     /**
      * Build service locator.
      */
-    fun build(init: LocatorConfig.() -> Unit): Locator = checkError({
+    fun build(init: LocatorConfig.() -> Unit): Locator = try {
         val locator = make()
         locator.configure {
             bind(org.maxur.mserv.core.kotlin.Locator(locator))
@@ -40,7 +39,9 @@ abstract class LocatorBuilder() {
             init()
         }
         org.maxur.mserv.core.kotlin.Locator(locator)
-    }, { e -> Locator.current.onConfigurationError(e) })
+    } catch (e: Exception) {
+        Locator.current.onConfigurationError(e)
+    }
 
     protected abstract fun make(): LocatorImpl
 
