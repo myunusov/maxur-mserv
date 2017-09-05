@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger
  * @version 1.0
  * @since <pre>26.08.2017</pre>
  */
-abstract class LocatorBuilder(val init: LocatorConfig.() -> Unit) {
+abstract class LocatorBuilder() {
 
     companion object {
         private var nameCount = AtomicInteger()
@@ -31,7 +31,7 @@ abstract class LocatorBuilder(val init: LocatorConfig.() -> Unit) {
     /**
      * Build service locator.
      */
-    fun build(): Locator = checkError({
+    fun build(init: LocatorConfig.() -> Unit): Locator = checkError({
         val locator = make()
         locator.configure {
             bind(org.maxur.mserv.core.kotlin.Locator(locator))

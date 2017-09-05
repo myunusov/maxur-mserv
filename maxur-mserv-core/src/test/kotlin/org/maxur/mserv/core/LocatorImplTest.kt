@@ -23,16 +23,16 @@ class LocatorImplTest {
 
     @Test
     fun testSingle() {
-        val locator = FakeBuilder.build()
+        val locator = FakeBuilder.build({})
         assertThat(locator).isNotNull()
         locator.shutdown()
     }
 
     @Test
     fun testSeq() {
-        val l1 = FakeBuilder.build()
+        val l1 = FakeBuilder.build({})
         assertThat(l1).isNotNull()
-        val l2 = FakeBuilder.build()
+        val l2 = FakeBuilder.build({})
         assertThat(l2).isNotNull()
         assertThat(l1).isNotEqualTo(l2)
         assertThat(Locator.current).isNotEqualTo(l1)
@@ -52,7 +52,7 @@ class LocatorImplTest {
         val t1 = thread(
                 start = false,
                 block = {
-                    locator1 = FakeBuilder.build()
+                    locator1 = FakeBuilder.build({})
                     assertThat(Locator.current).isEqualTo(locator1)
                     while (locator2 == null) {
                     }
@@ -63,7 +63,7 @@ class LocatorImplTest {
         val t2 = thread(
                 start = false,
                 block = {
-                    locator2 = FakeBuilder.build()
+                    locator2 = FakeBuilder.build({})
                     assertThat(Locator.current).isEqualTo(locator2)
                     while (locator1 == null) {
                     }
@@ -115,7 +115,7 @@ class LocatorImplTest {
 
     @Test
     fun testName() {
-        val locator = FakeBuilder.build()
+        val locator = FakeBuilder.build({})
         assertThat(locator).isNotNull()
         assertThat("fake locator").isSubstringOf(locator.name)
         assertThat("fake locator").isSubstringOf(locator.toString())
@@ -124,7 +124,7 @@ class LocatorImplTest {
 
     @Test
     fun testHolder() {
-        val locator = FakeBuilder.build()
+        val locator = FakeBuilder.build({})
         val holder = SingleHolder()
         assertThat(holder.get() is NullLocator)
         assertThat(holder.put(locator))
@@ -142,7 +142,7 @@ class LocatorImplTest {
     @Test
     fun testCompanionObject() {
         synchronized(this) {
-            val locator = FakeBuilder.build()
+            val locator = FakeBuilder.build({})
             assertThat(Locator.bean(Locator::class)).isEqualTo(locator)
             assertThat(org.maxur.mserv.core.java.Locator.bean(Locator::class.java)).isEqualTo(locator)
             assertThat(Locator.bean(Locator::class, "")).isEqualTo(locator)
@@ -168,7 +168,7 @@ class LocatorImplTest {
 
     @Test
     fun testLocate() {
-        val locator = FakeBuilder.build()
+        val locator = FakeBuilder.build({})
         assertThat(locator.service(Locator::class.java, "")).isEqualTo(locator)
         assertFailsWith<IllegalStateException> {
             assertThat(locator.locate(FakeBuilder.FakeLocator::class.java, ""))
@@ -177,20 +177,20 @@ class LocatorImplTest {
 
     @Test
     fun testNames() {
-        val locator = FakeBuilder.build()
+        val locator = FakeBuilder.build({})
         assertThat(locator.names(Locator::class.java)).isEqualTo(listOf(""))
         assertThat(locator.names(LocatorImpl::class.java)).isEqualTo(emptyList<String>())
     }
 
     @Test
     fun testProperty() {
-        val locator = FakeBuilder.build()
+        val locator = FakeBuilder.build({})
         assertThat(locator.property("key", String::class.java)).isEqualTo("value")
         assertThat(locator.property("invalidkey", String::class.java)).isNull()
         assertThat(locator.property("key", FakeBuilder.FakeLocator::class.java)).isNull()
     }
 
-    object FakeBuilder : LocatorBuilder({}) {
+    object FakeBuilder : LocatorBuilder() {
 
         override fun make(): Locator = Locator(FakeLocator(name))
 

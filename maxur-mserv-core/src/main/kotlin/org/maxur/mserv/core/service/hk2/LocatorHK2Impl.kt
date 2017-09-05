@@ -2,6 +2,7 @@ package org.maxur.mserv.core.service.hk2
 
 import gov.va.oia.HK2Utilities.HK2RuntimeInitializer
 import org.glassfish.hk2.api.Factory
+import org.glassfish.hk2.api.MultiException
 import org.glassfish.hk2.api.ServiceLocator
 import org.glassfish.hk2.api.ServiceLocatorState
 import org.glassfish.hk2.api.TypeLiteral
@@ -12,9 +13,11 @@ import org.glassfish.hk2.utilities.binding.ServiceBindingBuilder
 import org.maxur.mserv.core.LocatorConfig
 import org.maxur.mserv.core.LocatorImpl
 import org.maxur.mserv.core.core.Either
+import org.maxur.mserv.core.core.ErrorResult
+import org.maxur.mserv.core.core.Result
+import org.maxur.mserv.core.core.Value
 import org.maxur.mserv.core.core.fold
 import org.maxur.mserv.core.core.left
-import org.maxur.mserv.core.core.result
 import org.maxur.mserv.core.core.right
 import org.maxur.mserv.core.core.tryTo
 import org.maxur.mserv.core.kotlin.Locator
@@ -61,6 +64,25 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
             else -> locator.getService(contractOrImpl, name)
         }
     }.result()
+
+    /**
+     * Return result or throws IllegalStateException
+     * @return result
+     */
+    fun <E : Throwable, V> Result<E, V>.result(): V = when (this) {
+        is Value -> value
+        is ErrorResult -> throw convertError(error)
+    }
+
+    private fun convertError(error: Throwable): IllegalStateException = when (error) {
+        is IllegalStateException -> error
+        is MultiException ->
+            if (error.errors.size == 1)
+                convertError(error.errors[0])
+            else
+                IllegalStateException(error)
+        else -> IllegalStateException(error)
+    }
 
     /** {@inheritDoc} */
     override fun <T> services(contractOrImpl: Class<T>): List<T> =

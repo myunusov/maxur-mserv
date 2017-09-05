@@ -1,7 +1,5 @@
 package org.maxur.mserv.core.core
 
-import org.glassfish.hk2.api.MultiException
-
 /**
  * Represents a result of one of two possible types (a disjoint union.)
  * Instances of Result are either an instance of Value or Error (Throwable).
@@ -85,25 +83,6 @@ inline fun <E : Throwable, V, A> Result<E, V>.fold(errorFunction: (E) -> A, valu
         = when (this) {
     is ErrorResult -> errorFunction(this.error)
     is Value -> valueFunction(this.value)
-}
-
-/**
- * Return result or throws IllegalStateException
- * @return result
- */
-fun <E : Throwable, V> Result<E, V>.result(): V = when (this) {
-    is Value -> value
-    is ErrorResult -> throw convertError(error)
-}
-
-private fun convertError(error: Throwable): IllegalStateException = when (error) {
-    is IllegalStateException -> error
-    is MultiException ->
-        if (error.errors.size == 1)
-            convertError(error.errors[0])
-        else
-            IllegalStateException(error)
-    else -> IllegalStateException(error)
 }
 
 /**
