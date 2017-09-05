@@ -99,11 +99,11 @@ abstract class PredefinedPropertiesBuilder(
     private var uri: URI? = null
         get() = url?.let { URI.create(url) }
 
-    protected val source = object : PropertiesSource(format, uri, rootKey) {}
-
     init {
         init()
     }
+
+    protected val source = object : PropertiesSource(format, uri, rootKey) {}
 
     /** {@inheritDoc} */
     override fun build(locator: Locator): Properties? = factory.make(source).result()
