@@ -12,6 +12,7 @@ import org.maxur.mserv.core.LocatorImpl
 import org.maxur.mserv.core.TestLocatorHolder
 import org.maxur.mserv.core.builder.Java
 import org.maxur.mserv.core.builder.Kotlin
+import org.maxur.mserv.core.builder.PredefinedPropertiesBuilder
 import org.maxur.mserv.core.builder.PropertiesBuilder
 import org.maxur.mserv.core.builder.hocon
 import org.maxur.mserv.core.builder.json
@@ -62,7 +63,7 @@ class MicroServiceBuilderSpec : Spek({
 
         context("with properties without configuration") {
 
-            val function: Map<String, () -> PropertiesBuilder> = mapOf(
+            val function: Map<String, (PredefinedPropertiesBuilder.() -> Unit) -> PropertiesBuilder> = mapOf(
                     "Hocon" to ::hocon,
                     "Json" to ::json,
                     "Yaml" to ::yaml
@@ -78,7 +79,7 @@ class MicroServiceBuilderSpec : Spek({
 
                             it("should return new micro-service with named properties source") {
                                 val service = Kotlin.service {
-                                    properties += function[name]!!.invoke()
+                                    properties += function[name]!!.invoke({})
                                 }
                                 assertThat(service).isNotNull()
                                 val source = source

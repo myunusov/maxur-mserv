@@ -9,7 +9,6 @@ import org.maxur.mserv.core.kotlin.Locator
 import org.maxur.mserv.core.service.properties.CompositeProperties
 import org.maxur.mserv.core.service.properties.Properties
 import org.maxur.mserv.core.service.properties.PropertiesFactory
-import org.maxur.mserv.core.service.properties.PropertiesFactoryHoconImpl
 import org.maxur.mserv.core.service.properties.PropertiesSource
 import java.net.URI
 
@@ -43,8 +42,8 @@ abstract class PropertiesBuilder : Builder<Properties?> {
         /** {@inheritDoc} */
         override fun build(locator: Locator): Properties {
             return locator.locate(PropertiesFactory::class, format)
-                    .make(object : PropertiesSource(format, uri, rootKey) {})
-                    .result()
+                .make(object : PropertiesSource(format, uri, rootKey) {})
+                .result()
         }
     }
 
@@ -87,19 +86,11 @@ class CompositePropertiesBuilder : CompositeBuilder<Properties>() {
     }
 }
 
-fun hocon() = object : PredefinedPropertiesBuilder("hocon") {
-    override fun build(locator: Locator): Properties? = PropertiesFactoryHoconImpl().make(source).result()
-}
-
-fun json() = object : PredefinedPropertiesBuilder("json") {
-    override fun build(locator: Locator): Properties? = PropertiesFactoryHoconImpl().make(source).result()
-}
-
-fun yaml() = object : PredefinedPropertiesBuilder("yaml") {
-    override fun build(locator: Locator): Properties? = PropertiesFactoryHoconImpl().make(source).result()
-}
-
-abstract class PredefinedPropertiesBuilder(private val format: String) : PropertiesBuilder() {
+abstract class PredefinedPropertiesBuilder(
+    private val format: String,
+    private val factory: PropertiesFactory,
+    init: PredefinedPropertiesBuilder.() -> Unit
+) : PropertiesBuilder() {
     /** the property source url. It's Optional */
     var url: String? = null
     /** The root key of service property. It's Optional.*/
@@ -109,4 +100,11 @@ abstract class PredefinedPropertiesBuilder(private val format: String) : Propert
         get() = url?.let { URI.create(url) }
 
     protected val source = object : PropertiesSource(format, uri, rootKey) {}
+
+    init {
+        init()
+    }
+
+    /** {@inheritDoc} */
+    override fun build(locator: Locator): Properties? = factory.make(source).result()
 }

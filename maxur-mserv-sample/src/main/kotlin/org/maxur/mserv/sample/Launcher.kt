@@ -1,6 +1,7 @@
 package org.maxur.mserv.sample
 
 import org.maxur.mserv.core.builder.Kotlin
+import org.maxur.mserv.core.builder.hocon
 import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.embedded.WebServer
 import org.maxur.mserv.core.service.properties.Properties
@@ -29,7 +30,7 @@ object Launcher {
         Kotlin.service {
             name = ":name"
             packages += "org.maxur.mserv.sample"
-            properties += file { format = "hocon" }
+            properties += hocon()
             services += rest {
                 afterStart += this@Launcher::afterWebServiceStart
             }
