@@ -30,7 +30,7 @@ sealed class PropertiesBuilder : Builder<Properties?> {
             get() = url?.let { URI.create(url) }
 
         /** {@inheritDoc} */
-        override fun build(locator: Locator): Properties = PropertiesSource.open(format, uri, rootKey)
+        override fun build(locator: Locator): Properties = PropertiesSource.open(format.toLowerCase(), uri, rootKey)
     }
 
     /**

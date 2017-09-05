@@ -64,7 +64,7 @@ class LocatorHK2ImplTest {
 
     @Test
     fun service() {
-        assertThat(locator.service(String::class.java, "A")).isEqualTo("A")
+        assertThat(locator.service(String::class.java, "a")).isEqualTo("A")
     }
 
     @Test

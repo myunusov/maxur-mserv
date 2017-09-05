@@ -42,7 +42,7 @@ class ConfigParams @Inject constructor(
         get() = asText(this)
 
     private fun asText(any: Any): String {
-        val mapper = ObjectMapperProvider().provide()
+        val mapper = ObjectMapperProvider.objectMapper
         mapper.enable(SerializationFeature.INDENT_OUTPUT)
         return mapper.writeValueAsString(any)
     }

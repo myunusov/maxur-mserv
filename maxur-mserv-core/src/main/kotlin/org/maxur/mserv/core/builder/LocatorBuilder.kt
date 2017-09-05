@@ -1,11 +1,8 @@
 package org.maxur.mserv.core.builder
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.maxur.mserv.core.LocatorConfig
 import org.maxur.mserv.core.LocatorImpl
-import org.maxur.mserv.core.core.checkError
 import org.maxur.mserv.core.kotlin.Locator
-import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -15,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger
  * @version 1.0
  * @since <pre>26.08.2017</pre>
  */
-abstract class LocatorBuilder(val init: LocatorConfig.() -> Unit) {
+abstract class LocatorBuilder() {
 
     companion object {
         private var nameCount = AtomicInteger()
@@ -27,31 +24,27 @@ abstract class LocatorBuilder(val init: LocatorConfig.() -> Unit) {
      * List of project service packages for service locator lookup.
      */
     var packages: Set<String> = setOf()
-        get() = if (field.isEmpty()) {
-            emptySet()
-        } else {
-            field.union(listOf("org.maxur.mserv.core"))
-        }
 
     /**
      * Build service locator.
      */
-    fun build(): Locator = checkError({
+    fun build(init: LocatorConfig.() -> Unit): Locator = try {
         val locator = make()
         locator.configure {
             bind(org.maxur.mserv.core.kotlin.Locator(locator))
             bind(org.maxur.mserv.core.java.Locator(locator))
         }
         locator.registerAsSingleton()
-        config {
+        configure(locator) {
             init()
-            bind(ObjectMapperProvider::class).to(ObjectMapper::class)
         }
         org.maxur.mserv.core.kotlin.Locator(locator)
-    }, { e -> Locator.current.onConfigurationError(e) })
+    } catch (e: Exception) {
+        Locator.current.onConfigurationError(e)
+    }
 
     protected abstract fun make(): LocatorImpl
 
-    protected abstract fun config(function: LocatorConfig.() -> Unit): LocatorConfig
-    
+    protected abstract fun configure(locator: LocatorImpl, function: LocatorConfig.() -> Unit): LocatorConfig
+
 }

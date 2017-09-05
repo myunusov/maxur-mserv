@@ -129,7 +129,7 @@ interface LocatorImpl {
             Locator.current.let {
                 config().apply {
                     function()
-                    bindTo(this@LocatorImpl)
+                    apply()
                 }
             }
 

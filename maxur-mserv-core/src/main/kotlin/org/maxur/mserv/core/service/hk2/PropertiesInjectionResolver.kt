@@ -15,7 +15,7 @@ import java.lang.reflect.Type
 import javax.inject.Inject
 
 /**
- * Resolve configuration by ConfigParameter annotations.
+ * Resolve configuration by Value annotations.
  *
  * @author myunusov
  * @version 1.0

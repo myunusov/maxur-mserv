@@ -34,7 +34,7 @@ abstract class AbstractResourceAT : JerseyTest() {
         Logger.getLogger("global").setLevel(Level.FINEST)
     }
 
-    protected val mapper: ObjectMapper = ObjectMapperProvider().provide()
+    protected val mapper: ObjectMapper = ObjectMapperProvider.objectMapper
 
     override fun configure(): Application {
         enable(TestProperties.LOG_TRAFFIC)
