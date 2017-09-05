@@ -1,11 +1,9 @@
 package org.maxur.mserv.core.builder
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.maxur.mserv.core.LocatorConfig
 import org.maxur.mserv.core.LocatorImpl
 import org.maxur.mserv.core.core.checkError
 import org.maxur.mserv.core.kotlin.Locator
-import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -40,7 +38,6 @@ abstract class LocatorBuilder() {
         locator.registerAsSingleton()
         configure(locator) {
             init()
-            bind(ObjectMapperProvider::class).to(ObjectMapper::class)
         }
         org.maxur.mserv.core.kotlin.Locator(locator)
     }, { e -> Locator.current.onConfigurationError(e) })

@@ -1,12 +1,20 @@
 package org.maxur.mserv.core.builder
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.maxur.mserv.core.BaseMicroService
 import org.maxur.mserv.core.MicroService
 import org.maxur.mserv.core.domain.Holder
 import org.maxur.mserv.core.embedded.EmbeddedService
+import org.maxur.mserv.core.embedded.EmbeddedServiceFactory
+import org.maxur.mserv.core.embedded.grizzly.WebServerGrizzlyFactoryImpl
 import org.maxur.mserv.core.kotlin.Locator
 import org.maxur.mserv.core.service.hk2.LocatorHK2ImplBuilder
+import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
 import org.maxur.mserv.core.service.properties.Properties
+import org.maxur.mserv.core.service.properties.PropertiesFactory
+import org.maxur.mserv.core.service.properties.PropertiesFactoryHoconImpl
+import org.maxur.mserv.core.service.properties.PropertiesFactoryJsonImpl
+import org.maxur.mserv.core.service.properties.PropertiesFactoryYamlImpl
 
 /**
  * This class is abstract builder of MicroService.
@@ -61,12 +69,17 @@ abstract class MicroServiceBuilder {
     open fun build(): MicroService = build(locator())
 
     private fun locator(): Locator = locatorBuilder.apply {
-    packages = this@MicroServiceBuilder.packages.strings
-}.build {
-    bindFactory(properties::build).to(Properties::class)
-    bindFactory(services::build).to(EmbeddedService::class)
-    bindFactory({ locator -> BaseMicroService(locator) }).to(MicroService::class)
-}
+        packages = this@MicroServiceBuilder.packages.strings
+    }.build {
+        bindFactory(properties::build).to(Properties::class)
+        bindFactory(services::build).to(EmbeddedService::class)
+        bindFactory({ locator -> BaseMicroService(locator) }).to(MicroService::class)
+        bind(ObjectMapperProvider.objectMapper).to(ObjectMapper::class)
+        bind(WebServerGrizzlyFactoryImpl::class).to(EmbeddedServiceFactory::class).named("grizzly")
+        bind(PropertiesFactoryHoconImpl::class).to(PropertiesFactory::class).named("hocon")
+        bind(PropertiesFactoryJsonImpl::class).to(PropertiesFactory::class).named("json")
+        bind(PropertiesFactoryYamlImpl::class).to(PropertiesFactory::class).named("yaml")
+    }
 
     private fun build(locator: Locator): MicroService {
         val service = locator.service(MicroService::class) ?: locator.onConfigurationError()

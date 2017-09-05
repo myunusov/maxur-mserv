@@ -38,7 +38,6 @@ public class ConfigParams {
         this.name = name;
     }
 
-
     public void log() {
         log.info("\n--- Configuration Parameters ---\n");
         log.info(this.toString());
@@ -51,7 +50,7 @@ public class ConfigParams {
     }
 
     private String asText(final Object value) {
-        final ObjectMapper mapper = new ObjectMapperProvider().provide();
+        final ObjectMapper mapper = ObjectMapperProvider.getObjectMapper();
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         try {
             return mapper.writeValueAsString(value);

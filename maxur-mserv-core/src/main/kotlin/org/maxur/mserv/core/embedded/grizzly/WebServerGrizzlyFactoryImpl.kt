@@ -10,7 +10,6 @@ import org.glassfish.grizzly.ssl.SSLEngineConfigurator
 import org.glassfish.jersey.process.JerseyProcessingUncaughtExceptionHandler
 import org.glassfish.jersey.server.ResourceConfig
 import org.glassfish.jersey.server.spi.Container
-import org.jvnet.hk2.annotations.Service
 import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.domain.Holder
 import org.maxur.mserv.core.domain.Path
@@ -31,7 +30,6 @@ import javax.inject.Inject
  * @version 1.0
  * @since <pre>24.06.2017</pre>
  */
-@Service(name = "grizzly")
 class WebServerGrizzlyFactoryImpl @Inject constructor(val locator: Locator) : EmbeddedServiceFactory() {
 
     companion object {

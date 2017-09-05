@@ -7,7 +7,6 @@ import com.jasonclawson.jackson.dataformat.hocon.HoconFactory
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigException
 import com.typesafe.config.ConfigFactory
-import org.jvnet.hk2.annotations.Service
 import org.maxur.mserv.core.core.Result
 import org.maxur.mserv.core.core.tryTo
 import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
@@ -17,7 +16,6 @@ import java.net.URI
 import java.nio.file.Paths
 import java.time.Duration
 
-@Service(name = "hocon")
 class PropertiesFactoryHoconImpl : PropertiesFactory() {
 
     override fun make(source: PropertiesSource): Result<Exception, Properties> =

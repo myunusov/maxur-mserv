@@ -58,7 +58,7 @@ abstract class RestResourceConfig : ResourceConfig() {
 
     private fun jacksonProvider(): JacksonJaxbJsonProvider {
         val provider = JacksonJaxbJsonProvider()
-        provider.setMapper(ObjectMapperProvider().provide())
+        provider.setMapper(ObjectMapperProvider.objectMapper)
         return provider
     }
 

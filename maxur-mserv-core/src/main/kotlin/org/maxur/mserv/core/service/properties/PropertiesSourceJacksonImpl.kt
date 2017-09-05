@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import org.jvnet.hk2.annotations.Service
 import org.maxur.mserv.core.core.Result
 import org.maxur.mserv.core.core.tryTo
 import org.maxur.mserv.core.service.jackson.ObjectMapperProvider
@@ -16,13 +15,11 @@ import java.io.InputStream
 import java.net.URI
 import java.nio.file.Paths
 
-@Service(name = "json")
 class PropertiesFactoryJsonImpl : PropertiesFactory() {
     override fun make(source: PropertiesSource): Result<Exception, Properties> =
             tryTo { PropertiesSourceJacksonImpl(JsonFactory(), "json", source) }
 }
 
-@Service(name = "yaml")
 class PropertiesFactoryYamlImpl : PropertiesFactory() {
     override fun make(source: PropertiesSource): Result<Exception, Properties> =
             tryTo { PropertiesSourceJacksonImpl(YAMLFactory(), "yaml", source) }
