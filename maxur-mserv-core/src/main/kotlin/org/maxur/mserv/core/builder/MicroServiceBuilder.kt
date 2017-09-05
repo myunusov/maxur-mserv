@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.maxur.mserv.core.BaseMicroService
 import org.maxur.mserv.core.LocatorConfig
 import org.maxur.mserv.core.MicroService
+import org.maxur.mserv.core.core.CompositeBuilder
 import org.maxur.mserv.core.domain.Holder
 import org.maxur.mserv.core.embedded.EmbeddedService
 import org.maxur.mserv.core.embedded.EmbeddedServiceFactory

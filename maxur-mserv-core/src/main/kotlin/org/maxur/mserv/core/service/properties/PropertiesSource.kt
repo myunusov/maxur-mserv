@@ -2,9 +2,6 @@
 
 package org.maxur.mserv.core.service.properties
 
-import org.maxur.mserv.core.core.ErrorResult
-import org.maxur.mserv.core.core.Result
-import org.maxur.mserv.core.core.Value
 import org.maxur.mserv.core.core.fold
 import org.maxur.mserv.core.kotlin.Locator
 import java.net.URI
@@ -25,25 +22,6 @@ abstract class PropertiesSource(
     val sources: List<PropertiesSource> = listOf(this)
 
     companion object {
-        /**
-         * Open properties resource.
-         *
-         * @param format the properties format
-         * @param rootKey the root key of properties
-         * @param uri the uri of properties source
-         */
-        fun open(format: String, uri: URI? = null, rootKey: String? = null): Properties =
-                Locator.current.locate(PropertiesFactory::class, format)
-                        .make(object : PropertiesSource(format, uri, rootKey) {})
-                        .result()
-
-        private fun <E : Throwable, V> Result<E, V>.result(): V = when (this) {
-            is Value -> value
-            is ErrorResult -> throw when (error) {
-                is IllegalStateException -> error
-                else -> IllegalStateException(error)
-            }
-        }
 
         fun default(): Properties {
             Locator.beans(PropertiesFactory::class).map {

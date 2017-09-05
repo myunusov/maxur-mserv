@@ -1,4 +1,4 @@
-package org.maxur.mserv.core.builder
+package org.maxur.mserv.core.core
 
 import org.maxur.mserv.core.kotlin.Locator
 

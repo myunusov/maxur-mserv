@@ -72,7 +72,7 @@ class Locator @Inject constructor(val impl: LocatorImpl) : LocatorImpl by impl {
      * @throw IllegalStateException if there is no provider that
      * provides the given implementation or contract
      */
-    fun <T : Any> locate(contractOrImpl: KClass<T>, name: String): T = locate(contractOrImpl.java, name)
+    fun <T : Any> locate(contractOrImpl: KClass<T>, name: String?): T = locate(contractOrImpl.java, name)
 
     /**
      * Gets the best service from this locator that satisfied to function's parameter.
