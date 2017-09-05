@@ -2,6 +2,7 @@ package org.maxur.mserv.core.builder
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.maxur.mserv.core.BaseMicroService
+import org.maxur.mserv.core.LocatorConfig
 import org.maxur.mserv.core.MicroService
 import org.maxur.mserv.core.domain.Holder
 import org.maxur.mserv.core.embedded.EmbeddedService
@@ -71,6 +72,10 @@ abstract class MicroServiceBuilder {
     private fun locator(): Locator = locatorBuilder.apply {
         packages = this@MicroServiceBuilder.packages.strings
     }.build {
+        bind()
+    }
+
+    private fun LocatorConfig.bind() {
         bindFactory(properties::build).to(Properties::class)
         bindFactory(services::build).to(EmbeddedService::class)
         bindFactory({ locator -> BaseMicroService(locator) }).to(MicroService::class)

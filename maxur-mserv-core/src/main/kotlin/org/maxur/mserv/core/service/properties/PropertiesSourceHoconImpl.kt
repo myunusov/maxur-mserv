@@ -96,11 +96,9 @@ internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource
     override fun asLong(key: String): Long? = getValue(key, { it.getLong(key) })
     override fun asInteger(key: String): Int? = getValue(key, { it.getInt(key) })
 
-    private fun <T> getValue(key: String, transform: (Config) -> T?): T? =
-            try {
+    private fun <T> getValue(key: String, transform: (Config) -> T?): T? = try {
                 root.let { transform.invoke(it) }
             } catch (e: ConfigException.Missing) {
                 throw IllegalStateException("Configuration parameter '$key' is not found.", e)
             }
-
 }
