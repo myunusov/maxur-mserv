@@ -74,13 +74,13 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
         is ErrorResult -> throw convertError(error)
     }
 
-    private fun convertError(error: Throwable): IllegalStateException = when (error) {
-        is IllegalStateException -> error
+    private tailrec fun convertError(error: Throwable): IllegalStateException = when (error) {
         is MultiException ->
             if (error.errors.size == 1)
                 convertError(error.errors[0])
             else
                 IllegalStateException(error)
+        is IllegalStateException -> error
         else -> IllegalStateException(error)
     }
 

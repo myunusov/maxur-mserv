@@ -12,6 +12,10 @@ import org.maxur.mserv.core.LocatorImpl
 import org.maxur.mserv.core.TestLocatorHolder
 import org.maxur.mserv.core.builder.Java
 import org.maxur.mserv.core.builder.Kotlin
+import org.maxur.mserv.core.builder.PropertiesBuilder
+import org.maxur.mserv.core.builder.hocon
+import org.maxur.mserv.core.builder.json
+import org.maxur.mserv.core.builder.yaml
 import org.maxur.mserv.core.kotlin.Locator
 import org.maxur.mserv.core.relativePathByResourceName
 import org.maxur.mserv.core.service.properties.Properties
@@ -58,6 +62,12 @@ class MicroServiceBuilderSpec : Spek({
 
         context("with properties without configuration") {
 
+            val function: Map<String, () -> PropertiesBuilder> = mapOf(
+                    "Hocon" to ::hocon,
+                    "Json" to ::json,
+                    "Yaml" to ::yaml
+            )
+
             listOf(
                     Triple("Hocon", "DEFAULTS", "conf"),
                     Triple("Yaml", null, "yaml"),
@@ -65,6 +75,21 @@ class MicroServiceBuilderSpec : Spek({
             )
                     .forEach { (name, root, ext) ->
                         describe("With '$name' properties") {
+
+                            it("should return new micro-service with named properties source") {
+                                val service = Kotlin.service {
+                                    properties += function[name]!!.invoke()
+                                }
+                                assertThat(service).isNotNull()
+                                val source = source
+                                assertThat(source).isNotNull()
+                                source!!.apply {
+                                    assertThat(format).isEqualTo(name)
+                                    assertThat(rootKey).isEqualTo(root)
+                                    assertThat(uri.toString()).endsWith("application.$ext")
+                                }
+                                Locator.stop()
+                            }
 
                             it("should return new micro-service with default properties source") {
                                 val service = Kotlin.service {

@@ -9,6 +9,7 @@ import org.maxur.mserv.core.kotlin.Locator
 import org.maxur.mserv.core.service.properties.CompositeProperties
 import org.maxur.mserv.core.service.properties.Properties
 import org.maxur.mserv.core.service.properties.PropertiesFactory
+import org.maxur.mserv.core.service.properties.PropertiesFactoryHoconImpl
 import org.maxur.mserv.core.service.properties.PropertiesSource
 import java.net.URI
 
@@ -19,16 +20,18 @@ import java.net.URI
  * @version 1.0
  * @since <pre>11/25/13</pre>
  */
-sealed class PropertiesBuilder : Builder<Properties?> {
+abstract class PropertiesBuilder : Builder<Properties?> {
 
     /**
      * Base Properties Builder.
      */
     class BasePropertiesBuilder : PropertiesBuilder() {
         /** The property source format (Mandatory) */
-        var format: String?  = null
+        var format: String? = null
             get() = field?.toLowerCase()
-            set(value) { field = value }
+            set(value) {
+                field = value
+            }
         /** the property source url. It's Optional */
         var url: String? = null
         /** The root key of service property. It's Optional.*/
@@ -40,16 +43,8 @@ sealed class PropertiesBuilder : Builder<Properties?> {
         /** {@inheritDoc} */
         override fun build(locator: Locator): Properties {
             return locator.locate(PropertiesFactory::class, format)
-                                .make(object : PropertiesSource(format, uri, rootKey) {})
-                                .result()
-        }
-        
-        private fun <E : Throwable, V> Result<E, V>.result(): V = when (this) {
-            is Value -> value
-            is ErrorResult -> throw when (error) {
-                is IllegalStateException -> error
-                else -> IllegalStateException(error)
-            }
+                    .make(object : PropertiesSource(format, uri, rootKey) {})
+                    .result()
         }
     }
 
@@ -61,6 +56,13 @@ sealed class PropertiesBuilder : Builder<Properties?> {
         override fun build(locator: Locator): Properties = PropertiesSource.nothing()
     }
 
+    internal fun <E : Throwable, V> Result<E, V>.result(): V = when (this) {
+        is Value -> value
+        is ErrorResult -> throw when (error) {
+            is IllegalStateException -> error
+            else -> IllegalStateException(error)
+        }
+    }
 }
 
 /**
@@ -74,11 +76,37 @@ class CompositePropertiesBuilder : CompositeBuilder<Properties>() {
         list.all { it is PropertiesBuilder.NullPropertiesBuilder } ->
             PropertiesSource.nothing()
         else -> {
-            val sources = buildListWith(locator, { item -> item is PropertiesBuilder.BasePropertiesBuilder })
+            val sources = buildListWith(locator, { item ->
+                item !is PropertiesBuilder.NullPropertiesBuilder
+            })
             if (sources.isEmpty())
                 PropertiesSource.nothing()
             else
                 CompositeProperties(sources)
         }
     }
+}
+
+fun hocon() = object : PredefinedPropertiesBuilder("hocon") {
+    override fun build(locator: Locator): Properties? = PropertiesFactoryHoconImpl().make(source).result()
+}
+
+fun json() = object : PredefinedPropertiesBuilder("json") {
+    override fun build(locator: Locator): Properties? = PropertiesFactoryHoconImpl().make(source).result()
+}
+
+fun yaml() = object : PredefinedPropertiesBuilder("yaml") {
+    override fun build(locator: Locator): Properties? = PropertiesFactoryHoconImpl().make(source).result()
+}
+
+abstract class PredefinedPropertiesBuilder(private val format: String) : PropertiesBuilder() {
+    /** the property source url. It's Optional */
+    var url: String? = null
+    /** The root key of service property. It's Optional.*/
+    var rootKey: String? = null
+
+    private var uri: URI? = null
+        get() = url?.let { URI.create(url) }
+
+    protected val source = object : PropertiesSource(format, uri, rootKey) {}
 }
