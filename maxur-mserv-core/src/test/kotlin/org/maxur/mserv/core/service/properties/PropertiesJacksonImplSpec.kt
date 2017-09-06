@@ -25,34 +25,34 @@ class PropertiesJacksonImplSpec : Spek({
             LocatorImpl.holder = TestLocatorHolder
         }
 
-        fun yaml(uri: URI? = null, root: String? = null): PropertiesSource
-                = object : PropertiesSource("Yaml", uri, root) {}
-
         context("Load properties source by url") {
 
             it("should return opened source with url by default") {
-                val sut = PropertiesSourceJacksonImpl(YAMLFactory(), "yaml", yaml())
+                val sut = PropertiesSourceJacksonImpl(YAMLFactory(), "yaml")
                 assertThat(sut).isNotNull()
                 assertThat(sut.format).isEqualTo("Yaml")
                 assertThat(sut.uri.toString()).endsWith("application.yaml")
             }
             it("should return opened source with classpath url") {
-                val sut = PropertiesSourceJacksonImpl(YAMLFactory(), "yaml",
-                        yaml(URI("classpath://application.yaml")))
+                val sut = PropertiesSourceJacksonImpl(
+                        YAMLFactory(),
+                        "yaml",
+                        URI("classpath://application.yaml")
+                )
                 assertThat(sut).isNotNull()
                 assertThat(sut.format).isEqualTo("Yaml")
                 assertThat(sut.uri.toString()).endsWith("application.yaml")
             }
             it("should return opened source with url by default") {
                 val uri = URL(PropertiesJacksonImplSpec::class.java.getResource("/application.yaml").path).toURI()
-                val sut = PropertiesSourceJacksonImpl(YAMLFactory(), "yaml", yaml(uri))
+                val sut = PropertiesSourceJacksonImpl(YAMLFactory(), "yaml", uri)
                 assertThat(sut).isNotNull()
                 assertThat(sut.format).isEqualTo("Yaml")
                 assertThat(sut.uri.toString()).endsWith("application.yaml")
             }
         }
         context("Load properties source from file") {
-            val sut = PropertiesSourceJacksonImpl(YAMLFactory(), "yaml", yaml())
+            val sut = PropertiesSourceJacksonImpl(YAMLFactory(), "yaml")
 
             it("should return value of properties by it's key") {
                 assertThat(sut.asString("name")).isEqualTo("μService")

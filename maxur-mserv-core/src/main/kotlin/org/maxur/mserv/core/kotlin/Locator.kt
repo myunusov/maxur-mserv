@@ -148,4 +148,7 @@ class Locator @Inject constructor(val impl: LocatorImpl) : LocatorImpl by impl {
         return name.hashCode()
     }
 
+    inline fun <reified R : Any> service(name: String? = null): R? {
+        return service(R::class, name) as R
+    }
 }

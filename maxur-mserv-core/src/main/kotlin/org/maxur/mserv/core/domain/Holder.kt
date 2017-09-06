@@ -3,18 +3,18 @@ package org.maxur.mserv.core.domain
 import org.maxur.mserv.core.kotlin.Locator
 import kotlin.reflect.KClass
 
-abstract class Holder<Type : Any> {
+sealed class Holder<Type : Any> {
 
     companion object {
         fun string(value: String): Holder<String> = when {
-            value.startsWith(":") -> Holder.get { locator -> locator.property(value.substringAfter(":"))!! }
+            value.startsWith(":") -> Holder.creator { locator -> locator.property(value.substringAfter(":"))!! }
             else -> Holder.wrap(value)
         }
 
         fun <Type : Any> none(): Holder<Type> = Wrapper(null)
         fun <Type : Any> wrap(value: Type?): Holder<Type> = Wrapper(value)
-        fun <Type : Any> get(func: (Locator) -> Type): Holder<Type> = Descriptor1(func)
-        fun <Type : Any> get(func: (Locator, clazz: KClass<out Type>) -> Type): Holder<Type> = Descriptor2(func)
+        fun <Type : Any> creator(func: (Locator) -> Type): Holder<Type> = Descriptor1(func)
+        fun <Type : Any> creator(func: (Locator, clazz: KClass<out Type>) -> Type): Holder<Type> = Descriptor2(func)
     }
 
     inline fun <reified R : Type> get(locator: Locator): R? {

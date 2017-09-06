@@ -69,9 +69,25 @@ interface Properties {
     fun <P> read(key: String, clazz: Class<P>): P?
 
     fun URI.withoutScheme() =
-        if (scheme.isNullOrEmpty())
-            toString()
-        else
-            toString().substring(scheme.length + 1).trimStart('/')
+            if (scheme.isNullOrEmpty())
+                toString()
+            else
+                toString().substring(scheme.length + 1).trimStart('/')
 
+}
+
+class MapProperties(val map: MutableMap<String, Any>) : Properties {
+
+    override val sources: List<PropertiesSource> = listOf(NullProperties)
+
+    override fun asString(key: String): String? = map[key] as String?
+
+    override fun asLong(key: String): Long? = map[key] as Long?
+
+    override fun asInteger(key: String): Int? = map[key] as Int?
+
+    override fun asURI(key: String): URI? = map[key] as URI?
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <P> read(key: String, clazz: Class<P>): P? = map[key] as P?
 }

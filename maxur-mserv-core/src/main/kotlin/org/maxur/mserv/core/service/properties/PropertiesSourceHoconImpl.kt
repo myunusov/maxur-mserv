@@ -18,39 +18,43 @@ import java.time.Duration
 
 class PropertiesFactoryHoconImpl : PropertiesFactory() {
 
-    override fun make(source: PropertiesSource): Result<Exception, Properties> =
-            tryTo { PropertiesSourceHoconImpl(source) }
+    override fun make(uri: URI?, rootKey: String?): Result<Exception, Properties> =
+            tryTo { PropertiesSourceHoconImpl(uri, rootKey) }
 }
 
-internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource)
-    : Properties, PropertiesSource("Hocon", rootKey = rawSource.rootKey ?: "DEFAULTS") {
+internal class PropertiesSourceHoconImpl(
+        private val sourceUri: URI? = null,
+        rootKey: String? = null
+) : Properties, PropertiesSource() {
+
+    override val format = "Hocon"
+    override val rootKey = rootKey ?: "DEFAULTS"
 
     private var root: Config = try {
-        rootNode().getConfig(rootKey)
+        rootNode().getConfig(this.rootKey)
     } catch (e: ConfigException.Missing) {
-        throw IllegalStateException("The properties source '${rawSource.uri ?: "<default>"}' not found. " +
-                "You need create one with '${rootKey ?: "/"}' section")
+        throw IllegalStateException("The properties source '${sourceUri ?: "<default>"}' not found. " +
+                "You need create one with '${this.rootKey}' section")
     }
 
-    override val uri: URI? get() = root.origin()?.url()?.toURI() ?: rawSource.uri
-
-    private val mapper = ObjectMapperProvider.config(ObjectMapper(HoconFactory()))
-
     private fun rootNode(): Config =
-            if (rawSource.uri == null)
+            if (sourceUri == null)
                 ConfigFactory.load()
             else {
-                val uri: URI = rawSource.uri!!
-                when (uri.scheme) {
-                    null -> loadFrom(File(uri.toString()))
-                    "file" -> loadFrom(Paths.get(uri).toFile())
-                    "classpath" -> ConfigFactory.load(uri.withoutScheme())
+                when (sourceUri.scheme) {
+                    null -> loadFrom(File(sourceUri.toString()))
+                    "file" -> loadFrom(Paths.get(sourceUri).toFile())
+                    "classpath" -> ConfigFactory.load(sourceUri.withoutScheme())
                     else -> throw IllegalArgumentException(
-                            "Unsupported schema '${uri.scheme}' to properties source. " +
+                            "Unsupported schema '${sourceUri.scheme}' to properties source. " +
                                     "Must be one of [file, classpath]"
                     )
                 }
             }
+
+    override val uri: URI get() = root.origin()?.url()?.toURI() ?: sourceUri ?: URI("")
+
+    private val mapper = ObjectMapperProvider.config(ObjectMapper(HoconFactory()))
 
     @Suppress("UNCHECKED_CAST")
     override fun <P> read(key: String, clazz: Class<P>): P? =
@@ -97,8 +101,8 @@ internal class PropertiesSourceHoconImpl(private val rawSource: PropertiesSource
     override fun asInteger(key: String): Int? = getValue(key, { it.getInt(key) })
 
     private fun <T> getValue(key: String, transform: (Config) -> T?): T? = try {
-                root.let { transform.invoke(it) }
-            } catch (e: ConfigException.Missing) {
-                throw IllegalStateException("Configuration parameter '$key' is not found.", e)
-            }
+        root.let { transform.invoke(it) }
+    } catch (e: ConfigException.Missing) {
+        throw IllegalStateException("Configuration parameter '$key' is not found.", e)
+    }
 }

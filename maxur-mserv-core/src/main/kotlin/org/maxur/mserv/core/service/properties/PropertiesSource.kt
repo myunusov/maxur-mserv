@@ -13,11 +13,11 @@ import java.net.URI
  * @version 1.0
  * @since <pre>24.06.2017</pre>
  */
-abstract class PropertiesSource(
-        open val format: String? = null,
-        open val uri: URI? = null,
-        open val rootKey: String? = null
-) {
+abstract class PropertiesSource {
+
+    abstract val format: String
+    abstract val uri: URI
+    abstract val rootKey: String
 
     val sources: List<PropertiesSource> = listOf(this)
 
@@ -25,8 +25,7 @@ abstract class PropertiesSource(
 
         fun default(): Properties {
             Locator.beans(PropertiesFactory::class).map {
-                it.make(object : PropertiesSource() {})
-                        .fold({ }, { return it })
+                it.make().fold({ }, { return it })
             }
             return NullProperties
         }
@@ -36,6 +35,9 @@ abstract class PropertiesSource(
 }
 
 object NullProperties : PropertiesSource(), Properties {
+    override val format = "undefined"
+    override val uri = URI("")
+    override val rootKey: String = ""
     override fun asString(key: String): String? = error(key)
     override fun asLong(key: String): Long? = error(key)
     override fun asInteger(key: String): Int? = error(key)

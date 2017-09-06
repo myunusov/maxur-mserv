@@ -37,7 +37,7 @@ abstract class MicroServiceBuilder(val init: LocatorConfig.() -> Unit = {}) {
     /**
      * List of properties sources.
      */
-    val properties: CompositeBuilder<Properties> = CompositePropertiesBuilder()
+    val properties: CompositePropertiesBuilder = CompositePropertiesBuilder()
     /**
      * List of hooks on after start.
      */
@@ -62,25 +62,34 @@ abstract class MicroServiceBuilder(val init: LocatorConfig.() -> Unit = {}) {
      */
     var locatorBuilder: LocatorBuilder = LocatorHK2ImplBuilder()
 
+    val locator: Locator by lazy {
+        locatorBuilder.apply {
+            packages = this@MicroServiceBuilder.packages.strings
+        }.build {
+            bind()
+            init()
+        }
+    }
+
     protected var nameHolder = Holder.string("Anonymous")
 
     /**
      * Build Microservice.
      * @return new instance of Microservice
      */
-    open fun build(): MicroService = build(locator())
-
-    private fun locator(): Locator = locatorBuilder.apply {
-        packages = this@MicroServiceBuilder.packages.strings
-    }.build {
-        bind()
-        init()
+    open fun build(): MicroService = BaseMicroService(locator).also {
+        it.name = nameHolder.get(locator)!!
+        it.afterStart.addAll(afterStart.list)
+        it.beforeStop.addAll(beforeStop.list)
+        it.onError.addAll(onError.list)
+        locator.configure {
+            bind(it).to(MicroService::class)
+        }
     }
 
     private fun LocatorConfig.bind() {
         bindFactory(properties::build).to(Properties::class)
         bindFactory(services::build).to(EmbeddedService::class)
-        bindFactory({ locator -> BaseMicroService(locator) }).to(MicroService::class)
         bind(ObjectMapperProvider.objectMapper).to(ObjectMapper::class)
         bind(WebServerGrizzlyFactoryImpl::class).to(EmbeddedServiceFactory::class).named("grizzly")
         bind(PropertiesFactoryHoconImpl::class).to(PropertiesFactory::class).named("hocon")
@@ -88,14 +97,4 @@ abstract class MicroServiceBuilder(val init: LocatorConfig.() -> Unit = {}) {
         bind(PropertiesFactoryYamlImpl::class).to(PropertiesFactory::class).named("yaml")
     }
 
-    private fun build(locator: Locator): MicroService {
-        val service = locator.service(MicroService::class) ?: locator.onConfigurationError()
-        if (service is BaseMicroService) {
-            service.name = nameHolder.get(locator)!!
-            service.afterStart.addAll(afterStart.list)
-            service.beforeStop.addAll(beforeStop.list)
-            service.onError.addAll(onError.list)
-        }
-        return service
-    }
 }

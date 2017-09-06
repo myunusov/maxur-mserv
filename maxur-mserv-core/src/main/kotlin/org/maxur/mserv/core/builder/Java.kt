@@ -17,6 +17,7 @@ interface IJBuilder {
     fun packages(value: String): JBuilder
     fun properties(format: String): JPropertiesBuilder
     fun properties(): JBuilder
+    fun properties(key: String, value: Any): JBuilder
     fun withoutProperties(): JBuilder
     fun service(type: String, properties: String): JBuilder
     fun rest(): JBuilder
@@ -48,6 +49,11 @@ class JBuilder : MicroServiceBuilder(), IJBuilder {
 
     override fun properties(): JBuilder {
         properties += PropertiesBuilder.BasePropertiesBuilder()
+        return this
+    }
+
+    override fun properties(key: String, value: Any): JBuilder {
+        properties += Pair(key, value)
         return this
     }
 
