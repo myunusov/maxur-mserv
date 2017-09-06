@@ -29,7 +29,7 @@ class ServiceBuilder : Builder<EmbeddedService?> {
     var typeHolder: String? = null
 
     var type: String?
-        get() = typeHolder
+        get() = typeHolder?.toLowerCase() ?: "unknown"
         set(value) {
             this.typeHolder = value
             this.holder = makeServiceHolder()
@@ -44,21 +44,18 @@ class ServiceBuilder : Builder<EmbeddedService?> {
             this.holder = makeServiceHolder()
         }
 
-    private fun makeServiceHolder(): Holder<EmbeddedService> {
-        return Holder.get { locator ->
-            locator
-                    .locate(EmbeddedServiceFactory::class, typeHolder?.toLowerCase() ?: "unknown")
-                    .make(propertiesHolder) ?:
-                    throw IllegalStateException("Service '$typeHolder' is not configured\n")
-        }
+    private fun makeServiceHolder(): Holder<EmbeddedService> = Holder.creator { locator ->
+        val factory: EmbeddedServiceFactory? = locator.service(type)
+        factory ?.make(propertiesHolder) ?: throw IllegalStateException("Service '$type' is not configured\n")
     }
 
     private fun propertiesKey(value: String): Holder<Any> {
-        val key: String = if (value.startsWith(":"))
-            value.substringAfter(":")
-        else
-            throw IllegalArgumentException("A Key Name must be started with ':'")
-        return Holder.get { locator, clazz -> locator.property(key, clazz)!! }
+        val key =
+                if (value.startsWith(":"))
+                    value.substringAfter(":")
+                else
+                    throw IllegalArgumentException("A Key Name must be started with ':'")
+        return Holder.creator { locator, clazz -> locator.property(key, clazz)!! }
     }
 
     override fun build(locator: Locator): EmbeddedService? {
