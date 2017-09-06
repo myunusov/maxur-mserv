@@ -21,30 +21,30 @@ import java.net.URI
  */
 abstract class PropertiesBuilder : Builder<Properties?> {
 
+    /** The property source format (Mandatory) */
+    var format: String? = null
+        get() = field?.toLowerCase()
+        set(value) {
+            field = value
+        }
+    /** the property source url. It's Optional */
+    var url: String? = null
+
+    /** The root key of service property. It's Optional.*/
+    var rootKey: String? = null
+
+    protected var uri: URI? = null
+        get() = url?.let { URI.create(url) }
+
     /**
      * Base Properties Builder.
      */
     class BasePropertiesBuilder : PropertiesBuilder() {
-        /** The property source format (Mandatory) */
-        var format: String? = null
-            get() = field?.toLowerCase()
-            set(value) {
-                field = value
-            }
-        /** the property source url. It's Optional */
-        var url: String? = null
-        /** The root key of service property. It's Optional.*/
-        var rootKey: String? = null
-
-        private var uri: URI? = null
-            get() = url?.let { URI.create(url) }
 
         /** {@inheritDoc} */
-        override fun build(locator: Locator): Properties {
-            return locator.locate(PropertiesFactory::class, format)
-                .make(object : PropertiesSource(format, uri, rootKey) {})
-                .result()
-        }
+        override fun build(locator: Locator): Properties = locator.locate(PropertiesFactory::class, format)
+            .make(uri, rootKey)
+            .result()
     }
 
     /**
@@ -87,24 +87,16 @@ class CompositePropertiesBuilder : CompositeBuilder<Properties>() {
 }
 
 abstract class PredefinedPropertiesBuilder(
-    private val format: String,
+    format: String,
     private val factory: PropertiesFactory,
     init: PredefinedPropertiesBuilder.() -> Unit
 ) : PropertiesBuilder() {
-    /** the property source url. It's Optional */
-    var url: String? = null
-    /** The root key of service property. It's Optional.*/
-    var rootKey: String? = null
-
-    private var uri: URI? = null
-        get() = url?.let { URI.create(url) }
 
     init {
+        this.format = format
         init()
     }
 
-    protected val source = object : PropertiesSource(format, uri, rootKey) {}
-
     /** {@inheritDoc} */
-    override fun build(locator: Locator): Properties? = factory.make(source).result()
+    override fun build(locator: Locator): Properties? = factory.make(uri, rootKey).result()
 }

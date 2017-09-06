@@ -71,8 +71,8 @@ class MicroServiceBuilderSpec : Spek({
 
             listOf(
                 Triple("Hocon", "DEFAULTS", "conf"),
-                Triple("Yaml", null, "yaml"),
-                Triple("Json", null, "json")
+                Triple("Yaml", "/", "yaml"),
+                Triple("Json", "/", "json")
             )
                 .forEach { (name, root, ext) ->
                     describe("With '$name' properties") {
@@ -131,8 +131,8 @@ class MicroServiceBuilderSpec : Spek({
 
             listOf(
                 Triple("Hocon", "DEFAULTS", "conf"),
-                Triple("Yaml", null, "yaml"),
-                Triple("Json", null, "json")
+                Triple("Yaml", "/", "yaml"),
+                Triple("Json", "/", "json")
             )
                 .forEach { (name, root, ext) ->
                     describe("With '$name' properties") {

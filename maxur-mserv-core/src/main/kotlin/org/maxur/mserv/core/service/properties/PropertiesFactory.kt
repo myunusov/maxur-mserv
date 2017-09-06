@@ -4,6 +4,7 @@ package org.maxur.mserv.core.service.properties
 
 import org.jvnet.hk2.annotations.Contract
 import org.maxur.mserv.core.core.Result
+import java.net.URI
 
 /**
  * @author myunusov
@@ -12,5 +13,5 @@ import org.maxur.mserv.core.core.Result
  */
 @Contract
 abstract class PropertiesFactory {
-    abstract fun make(source: PropertiesSource): Result<Exception, Properties>
+    abstract fun make(uri: URI? = null, rootKey: String? = null): Result<Exception, Properties>
 }

@@ -24,25 +24,22 @@ class PropertiesHoconImplSpec : Spek({
             LocatorImpl.holder = TestLocatorHolder
         }
 
-        fun hocon(uri: URI? = null, root: String? = null): PropertiesSource
-                = object : PropertiesSource("Hocon", uri, root) {}
-
         context("Load properties source by url") {
             it("should return opened source with url by default") {
-                val sut = PropertiesSourceHoconImpl(hocon())
+                val sut = PropertiesSourceHoconImpl()
                 assertThat(sut).isNotNull()
                 assertThat(sut.format).isEqualTo("Hocon")
                 assertThat(sut.uri.toString()).endsWith("application.conf")
             }
             it("should return opened source with classpath url") {
-                val sut = PropertiesSourceHoconImpl(hocon(URI("classpath://application.conf")))
+                val sut = PropertiesSourceHoconImpl(URI("classpath://application.conf"))
                 assertThat(sut).isNotNull()
                 assertThat(sut.format).isEqualTo("Hocon")
                 assertThat(sut.uri.toString()).endsWith("application.conf")
             }
             it("should return opened source with url by default") {
                 val path = PropertiesHoconImplSpec::class.java.getResource("/application.conf").path
-                val sut = PropertiesSourceHoconImpl(hocon(URL(path).toURI()))
+                val sut = PropertiesSourceHoconImpl(URL(path).toURI())
                 assertThat(sut).isNotNull()
                 assertThat(sut.format).isEqualTo("Hocon")
                 assertThat(sut.uri.toString()).endsWith("application.conf")
@@ -50,7 +47,7 @@ class PropertiesHoconImplSpec : Spek({
         }
 
         context("Load properties source from file") {
-            val sut = PropertiesSourceHoconImpl(hocon())
+            val sut = PropertiesSourceHoconImpl()
             it("should return value of properties by it's key") {
                 assertThat(sut.asString("name")).isEqualTo("μService")
                 assertThat(sut.read("name", String::class)).isEqualTo("μService")

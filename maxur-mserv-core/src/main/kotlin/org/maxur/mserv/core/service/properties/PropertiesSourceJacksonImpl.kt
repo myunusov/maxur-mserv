@@ -16,33 +16,33 @@ import java.net.URI
 import java.nio.file.Paths
 
 class PropertiesFactoryJsonImpl : PropertiesFactory() {
-    override fun make(source: PropertiesSource): Result<Exception, Properties> =
-            tryTo { PropertiesSourceJacksonImpl(JsonFactory(), "json", source) }
+    override fun make(uri: URI?, rootKey: String?): Result<Exception, Properties> =
+            tryTo { PropertiesSourceJacksonImpl(JsonFactory(), "json", uri, rootKey) }
 }
 
 class PropertiesFactoryYamlImpl : PropertiesFactory() {
-    override fun make(source: PropertiesSource): Result<Exception, Properties> =
-            tryTo { PropertiesSourceJacksonImpl(YAMLFactory(), "yaml", source) }
+    override fun make(uri: URI?, rootKey: String?): Result<Exception, Properties> =
+            tryTo { PropertiesSourceJacksonImpl(YAMLFactory(), "yaml", uri, rootKey) }
 }
 
 internal class PropertiesSourceJacksonImpl(
         factory: JsonFactory,
-        defaultFormat: String,
-        rawSource: PropertiesSource
-) : Properties, PropertiesSource(
-        defaultFormat.capitalize(),
-        rawSource.uri ?: URI.create("classpath:///application.$defaultFormat"),
-        rawSource.rootKey
-) {
+        defaultExt: String,
+        uri: URI? = null,
+        rootKey: String? = null
+) : Properties, PropertiesSource() {
+
+    override val rootKey = rootKey ?: "/"
+    override val format = defaultExt.capitalize()
+    override val uri = uri ?: URI.create("classpath:///application.$defaultExt")
+
     private val mapper = ObjectMapperProvider.config(ObjectMapper(factory))
 
     private var root: JsonNode = (
-            if (rawSource.rootKey != null)
-                rootNode(uri!!)?.get(rawSource.rootKey)
-            else
-                rootNode(uri!!)
-            ) ?: throw IllegalStateException("The properties source '$uri' not found. " +
-            "You need create one with '${rootKey ?: "/"}' section")
+            if (rootKey == null) rootNode(this.uri) else rootNode(this.uri)?.get(this.rootKey))
+            ?: throw IllegalStateException(
+            "The properties source '${this.uri}' not found. You need create one with '${this.rootKey}' section"
+    )
 
     private fun rootNode(uri: URI): JsonNode? = when (uri.scheme) {
         null -> mapper.readTree(File(uri.toString()))
