@@ -7,6 +7,7 @@ import org.maxur.mserv.core.core.Result
 import org.maxur.mserv.core.core.Value
 import org.maxur.mserv.core.kotlin.Locator
 import org.maxur.mserv.core.service.properties.CompositeProperties
+import org.maxur.mserv.core.service.properties.MapProperties
 import org.maxur.mserv.core.service.properties.Properties
 import org.maxur.mserv.core.service.properties.PropertiesFactory
 import org.maxur.mserv.core.service.properties.PropertiesSource
@@ -43,8 +44,8 @@ abstract class PropertiesBuilder : Builder<Properties?> {
 
         /** {@inheritDoc} */
         override fun build(locator: Locator): Properties = locator.locate(PropertiesFactory::class, format)
-            .make(uri, rootKey)
-            .result()
+                .make(uri, rootKey)
+                .result()
     }
 
     /**
@@ -69,6 +70,8 @@ abstract class PropertiesBuilder : Builder<Properties?> {
  */
 class CompositePropertiesBuilder : CompositeBuilder<Properties>() {
 
+    var map = mutableMapOf<String, Any>()
+
     /** {@inheritDoc} */
     override fun build(locator: Locator) = when {
         list.isEmpty() -> PropertiesSource.default()
@@ -84,12 +87,26 @@ class CompositePropertiesBuilder : CompositeBuilder<Properties>() {
                 CompositeProperties(sources)
         }
     }
+
+    /**
+     * add new item to Composite.
+     * @param pair The new Property.
+     */
+    operator fun plusAssign(pair: Pair<String, Any>) {
+        if (map.isEmpty())
+            plusAssign(MapPropertiesBuilder(map))
+        map.put(pair.first, pair.second)
+    }
+}
+
+class MapPropertiesBuilder(val map: MutableMap<String, Any>) : PropertiesBuilder() {
+    override fun build(locator: Locator): Properties? = MapProperties(map)
 }
 
 abstract class PredefinedPropertiesBuilder(
-    format: String,
-    private val factory: PropertiesFactory,
-    init: PredefinedPropertiesBuilder.() -> Unit
+        format: String,
+        private val factory: PropertiesFactory,
+        init: PredefinedPropertiesBuilder.() -> Unit
 ) : PropertiesBuilder() {
 
     init {

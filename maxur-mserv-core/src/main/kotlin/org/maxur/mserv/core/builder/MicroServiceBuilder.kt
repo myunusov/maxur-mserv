@@ -37,7 +37,7 @@ abstract class MicroServiceBuilder(val init: LocatorConfig.() -> Unit = {}) {
     /**
      * List of properties sources.
      */
-    val properties: CompositeBuilder<Properties> = CompositePropertiesBuilder()
+    val properties: CompositePropertiesBuilder = CompositePropertiesBuilder()
     /**
      * List of hooks on after start.
      */
