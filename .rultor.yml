@@ -15,4 +15,4 @@ release:
   script: |
     mvn versions:set "-DnewVersion=${tag}"
     git commit -am "${tag}"
-    mvn clean deploy --settings /home/r/settings.xml -Denv=prod -Pmaxur,sonatype,debug,kotlin
+    mvn clean deploy --settings /home/r/settings.xml -Denv=prod -Pmaxur,sonatype,debug,kotlin,site
