@@ -12,12 +12,12 @@ import org.glassfish.jersey.server.ResourceConfig
 import org.glassfish.jersey.server.spi.Container
 import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.domain.Holder
-import org.maxur.mserv.core.domain.Path
 import org.maxur.mserv.core.embedded.EmbeddedService
 import org.maxur.mserv.core.embedded.EmbeddedServiceFactory
 import org.maxur.mserv.core.embedded.WebAppConfig
 import org.maxur.mserv.core.embedded.WebEntries
 import org.maxur.mserv.core.embedded.WebServer
+import org.maxur.mserv.core.embedded.properties.StaticContent
 import org.maxur.mserv.core.embedded.properties.WebAppProperties
 import org.maxur.mserv.core.kotlin.Locator
 import org.maxur.mserv.core.rest.RestResourceConfig
@@ -30,7 +30,9 @@ import javax.inject.Inject
  * @version 1.0
  * @since <pre>24.06.2017</pre>
  */
-class WebServerGrizzlyFactoryImpl @Inject constructor(val locator: Locator) : EmbeddedServiceFactory() {
+class WebServerGrizzlyFactoryImpl @Inject constructor(
+    /** The Service locator. */
+    val locator: Locator) : EmbeddedServiceFactory() {
 
     companion object {
         init {
@@ -39,6 +41,7 @@ class WebServerGrizzlyFactoryImpl @Inject constructor(val locator: Locator) : Em
         }
     }
 
+    /** Create new WebServer as EmbeddedService */
     override fun make(properties: Holder<Any>): EmbeddedService? {
         val webAppProperties: WebAppProperties = properties.get(locator)!!
 
@@ -73,12 +76,14 @@ class WebServerGrizzlyFactoryImpl @Inject constructor(val locator: Locator) : Em
 
 }
 
+/** The Web Service (Grizzly Implementation) */
 open class WebServerGrizzlyImpl(private val config: WebAppConfig, locator: Locator) : BaseService(locator), WebServer {
 
     private fun ServerConfiguration.title(): String = "$name '$httpServerName-$httpServerVersion'"
 
     private val httpServer: HttpServer = httpServer()
 
+    /** The Base API uri */
     override val baseUri: URI get() = config.url
 
     override var name: String = "Unknown web service"
@@ -100,27 +105,19 @@ open class WebServerGrizzlyImpl(private val config: WebAppConfig, locator: Locat
     private fun httpServer(): HttpServer {
         val listener = networkListener(config.url, false, null)
         val server = createHttpServer(listener)
-        makeDynamicHandler(server.serverConfiguration, config.restPath)
-        makeStaticHandlers(server.serverConfiguration)
+        server.serverConfiguration.addHttpHandler(makeDynamicHandler(),"/${config.restPath.contextPath}")
+        config.staticContent.forEach {
+            server.serverConfiguration.addHttpHandler(makeStaticHandler(it), "/${it.path.contextPath}")
+        }
         return server
     }
 
-    private fun makeDynamicHandler(serverConfiguration: ServerConfiguration, path: Path) {
-        serverConfiguration.addHttpHandler(
-                GrizzlyHttpContainer(config.resourceConfig, locator.implementation()),
-                "/${path.contextPath}"
-        )
-    }
+    private fun makeDynamicHandler() =
+        GrizzlyHttpContainer(config.resourceConfig, locator.implementation())
 
-    private fun makeStaticHandlers(serverConfiguration: ServerConfiguration) {
-        config.staticContent.forEach {
-            serverConfiguration.addHttpHandler(
-                    StaticHttpHandler(it),
-                    "/${it.path.contextPath}"
-            )
-        }
-    }
+    private fun makeStaticHandler(content: StaticContent) = StaticHttpHandler(content)
 
+    /** Web entries. */
     override fun entries(): WebEntries {
         val cfg = httpServer.serverConfiguration
         val entries = WebEntries(config.url)

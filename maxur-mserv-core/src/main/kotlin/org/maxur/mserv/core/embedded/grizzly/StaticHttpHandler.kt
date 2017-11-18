@@ -48,11 +48,13 @@ import java.util.jar.JarEntry
  */
 class StaticHttpHandler(
         staticContent: StaticContent,
+        /** The Class Loader */
         val classLoader: ClassLoader = StaticHttpHandler::class.java.classLoader
 ) : StaticHttpHandlerBase() {
 
     companion object {
-        val log: org.slf4j.Logger = LoggerFactory.getLogger(StaticHttpHandler::class.java)
+        /** The Logger */
+        val log = LoggerFactory.getLogger(StaticHttpHandler::class.java)
     }
 
     private val resourceLocator: ResourceLocator = ResourceLocator(classLoader, staticContent)

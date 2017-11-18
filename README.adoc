@@ -73,14 +73,14 @@ The `pom.xml` and `build.gradle` files show you the general setup.
 <dependency>
     <groupId>org.maxur</groupId>
     <artifactId>maxur-mserv-core</artifactId>
-    <version>0.3-SNAPSHOT</version>
+    <version>0.3.1-SNAPSHOT</version>
 </dependency>
 ----
 
 ==== Gradle
 [source, groovy]
 ----
-compile group: 'org.maxur', name: 'maxur-mserv-core', version: '0.3-SNAPSHOT'
+compile group: 'org.maxur', name: 'maxur-mserv-core', version: '0.3.1-SNAPSHOT'
 ----
 
 === Tutorial
