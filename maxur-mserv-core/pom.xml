@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.maxur</groupId>
         <artifactId>maxur-base</artifactId>
         <version>1.01</version>
-        <relativePath/>
+        <relativePath />
     </parent>
 
     <artifactId>maxur-mserv-core</artifactId>
     <name>maxur-mserv-core</name>
-    <version>0.3-SNAPSHOT</version>
+    <version>0.3.1-SNAPSHOT</version>
     <description>Maxur Microservice Framework</description>
 
     <issueManagement>
@@ -24,7 +22,7 @@
     <ciManagement>
         <system>CircleCI</system>
         <url>https://circleci.com/gh/myunusov/maxur-mserv/</url>
-        <notifiers/>
+        <notifiers />
     </ciManagement>
 
     <distributionManagement>
@@ -46,7 +44,7 @@
         <maxur-mserv.root.path>${basedir}/..</maxur-mserv.root.path>
         <release.version>${project.version}</release.version>
 
-        <kotlin.version>1.1.4-2</kotlin.version>
+        <kotlin.version>1.1.60</kotlin.version>
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
         <kotlin.compiler.jvmTarget>${project.jdk}</kotlin.compiler.jvmTarget>
 
@@ -121,8 +119,8 @@
                                         <exclude>${snapshot.allowed.artifacts}</exclude>
                                     </excludes>
                                 </requireReleaseDeps>
-                                <requireUpperBoundDeps/>
-                                <DependencyConvergence/>
+                                <requireUpperBoundDeps />
+                                <DependencyConvergence />
                             </rules>
                             <fail>true</fail>
                         </configuration>
@@ -144,10 +142,8 @@
                                 <phase>verify</phase>
                                 <configuration>
                                     <target name="ktlint">
-                                        <java taskname="ktlint" dir="${basedir}" fork="true" failonerror="false"
-                                              classname="com.github.shyiko.ktlint.Main"
-                                              classpathref="maven.plugin.classpath">
-                                            <arg value="src/**/*.kt"/>
+                                        <java taskname="ktlint" dir="${basedir}" fork="true" failonerror="false" classname="com.github.shyiko.ktlint.Main" classpathref="maven.plugin.classpath">
+                                            <arg value="src/**/*.kt" />
                                         </java>
                                     </target>
                                 </configuration>
@@ -159,11 +155,9 @@
                                 <id>ktlint-format</id>
                                 <configuration>
                                     <target name="ktlint">
-                                        <java taskname="ktlint" dir="${basedir}" fork="true" failonerror="false"
-                                              classname="com.github.shyiko.ktlint.Main"
-                                              classpathref="maven.plugin.classpath">
-                                            <arg value="-F"/>
-                                            <arg value="src/**/*.kt"/>
+                                        <java taskname="ktlint" dir="${basedir}" fork="true" failonerror="false" classname="com.github.shyiko.ktlint.Main" classpathref="maven.plugin.classpath">
+                                            <arg value="-F" />
+                                            <arg value="src/**/*.kt" />
                                         </java>
                                     </target>
                                 </configuration>
@@ -361,8 +355,8 @@
                                 <project-version>${project.version}</project-version>
                                 <imagesDir>src/doc/images</imagesDir>
                                 <!-- set the idprefix to blank -->
-                                <idprefix/>
-                                <experimental/>
+                                <idprefix />
+                                <experimental />
                                 <icons>font</icons>
                                 <sectanchors>true</sectanchors>
                                 <idseparator>-</idseparator>
