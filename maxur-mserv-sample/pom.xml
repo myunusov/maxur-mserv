@@ -5,11 +5,11 @@
     <parent>
         <groupId>org.maxur</groupId>
         <artifactId>maxur-mserv-base</artifactId>
-        <version>0.3.1-SNAPSHOT</version>
+        <version>0.3.1</version>
     </parent>
 
     <artifactId>maxur-mserv-sample</artifactId>
-    <version>0.3.1-SNAPSHOT</version>
+    <version>0.3.1</version>
 	<name>maxur-mserv-kotlin-sample</name>
 	<description>Maxur Sample Microservice</description>	
 
@@ -96,7 +96,7 @@
         <dependency>
             <groupId>org.maxur</groupId>
             <artifactId>maxur-mserv-core</artifactId>
-            <version>0.3.1-SNAPSHOT</version>
+            <version>0.3.1</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>

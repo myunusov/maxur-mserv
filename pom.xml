@@ -4,7 +4,7 @@
 
     <groupId>org.maxur</groupId>
     <artifactId>maxur-mserv-base</artifactId>
-    <version>0.3.1-SNAPSHOT</version>
+    <version>0.3.1</version>
     <packaging>pom</packaging>
     <name>maxur-mserv-base</name>
     <description>Maxur Microservice Base POM</description>
