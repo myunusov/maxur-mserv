@@ -31,8 +31,8 @@ import javax.inject.Inject
  * @since <pre>24.06.2017</pre>
  */
 class WebServerGrizzlyFactoryImpl @Inject constructor(
-    /** The Service locator. */
-    val locator: Locator) : EmbeddedServiceFactory() {
+        /** The Service locator. */
+        val locator: Locator) : EmbeddedServiceFactory() {
 
     companion object {
         init {
@@ -105,7 +105,7 @@ open class WebServerGrizzlyImpl(private val config: WebAppConfig, locator: Locat
     private fun httpServer(): HttpServer {
         val listener = networkListener(config.url, false, null)
         val server = createHttpServer(listener)
-        server.serverConfiguration.addHttpHandler(makeDynamicHandler(),"/${config.restPath.contextPath}")
+        server.serverConfiguration.addHttpHandler(makeDynamicHandler(), "/${config.restPath.contextPath}")
         config.staticContent.forEach {
             server.serverConfiguration.addHttpHandler(makeStaticHandler(it), "/${it.path.contextPath}")
         }
@@ -113,7 +113,7 @@ open class WebServerGrizzlyImpl(private val config: WebAppConfig, locator: Locat
     }
 
     private fun makeDynamicHandler() =
-        GrizzlyHttpContainer(config.resourceConfig, locator.implementation())
+            GrizzlyHttpContainer(config.resourceConfig, locator.implementation())
 
     private fun makeStaticHandler(content: StaticContent) = StaticHttpHandler(content)
 
