@@ -1,7 +1,10 @@
 package org.maxur.mserv.core.rest
 
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import dk.nykredit.jackson.dataformat.hal.HALLink
 import dk.nykredit.jackson.dataformat.hal.annotation.Link
 import dk.nykredit.jackson.dataformat.hal.annotation.Resource
@@ -78,10 +81,20 @@ class RunningCommandResource @Inject constructor(
             ))
         )
         @Valid command: ServiceCommand
-    ) = when (command.type.toUpperCase()) {
-        "STOP" -> service.deferredStop()
-        "RESTART" -> service.deferredRestart()
-        else -> throw IllegalArgumentException("Command '$command' unknown")
+    ) = command.execute(service)
+
+    /**  ServiceCommandDeserializer */
+    class ServiceCommandDeserializer: JsonDeserializer<ServiceCommand>() {
+
+        /** {@inheritDoc} */
+        override fun deserialize(parser: JsonParser, context: DeserializationContext): ServiceCommand {
+            val type = parser.codec.readTree<JsonNode>(parser).get("type").asText()
+            return when (type.toUpperCase()) {
+                "STOP" -> ServiceCommand(type, MicroService::deferredStop)
+                "RESTART" -> ServiceCommand(type, MicroService::deferredRestart)
+                else -> throw IllegalArgumentException("Command '$type' unknown")
+            }
+        }
     }
 
     /** The service command */
@@ -89,7 +102,7 @@ class RunningCommandResource @Inject constructor(
         value = "ServiceCommand",
         description = "This class represents the service command"
     )
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonDeserialize(using = ServiceCommandDeserializer::class)
     data class ServiceCommand(
         /** The command type */
         @ApiModelProperty(
@@ -103,8 +116,9 @@ class RunningCommandResource @Inject constructor(
         )
         @NotBlank
         @Pattern(regexp = "^(stop|restart)$")
-        @JsonProperty("type")
-        val type: String
+        val type: String,
+        /** execution block */
+        val execute: (MicroService) -> Unit
     )
 }
 
