@@ -32,11 +32,6 @@ abstract class BaseService(val locator: Locator) {
     fun stop() = state.stop(this)
 
     /**
-     * Immediately restart this Service.
-     */
-    fun restart() = state.restart(this)
-
-    /**
      * shutdown this service.
      */
     protected abstract fun shutdown()
@@ -45,11 +40,6 @@ abstract class BaseService(val locator: Locator) {
      * launch this service.
      */
     protected abstract fun launch()
-
-    /**
-     * relaunch this service.
-     */
-    protected abstract fun relaunch()
 
     /**
      * Represent State of micro-service
@@ -61,7 +51,6 @@ abstract class BaseService(val locator: Locator) {
         STARTED {
             override fun start(service: BaseService) = Unit
             override fun stop(service: BaseService) = shutdown(service)
-            override fun restart(service: BaseService) = relaunch(service)
         },
         /**
          * Stop application
@@ -69,12 +58,10 @@ abstract class BaseService(val locator: Locator) {
         STOPPED {
             override fun start(service: BaseService) = launch(service)
             override fun stop(service: BaseService) = Unit
-            override fun restart(service: BaseService) = launch(service)
         };
 
         abstract fun start(service: BaseService)
         abstract fun stop(service: BaseService)
-        abstract fun restart(service: BaseService)
 
         protected fun shutdown(service: BaseService) = check(service, {
             beforeStop.forEach { call(it, service) }
@@ -86,13 +73,6 @@ abstract class BaseService(val locator: Locator) {
             launch()
             state = STARTED
             afterStart.forEach { call(it, service) }
-        })
-
-        protected fun relaunch(service: BaseService) = check(service, {
-            beforeStop.forEach { call(it, service) }
-            relaunch()
-            afterStart.forEach { call(it, service) }
-            state = STARTED
         })
 
         private inline fun check(service: BaseService, function: BaseService.() -> Unit) {

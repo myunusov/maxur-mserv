@@ -96,11 +96,6 @@ open class WebServerGrizzlyImpl(private val config: WebAppConfig, locator: Locat
         httpServer.shutdownNow()
     }
 
-    override fun relaunch() {
-        httpServer.shutdownNow()
-        httpServer.start()
-    }
-
     private fun httpServer(): HttpServer {
         val listener = networkListener(config.url, false, null)
         val server = createHttpServer(listener)

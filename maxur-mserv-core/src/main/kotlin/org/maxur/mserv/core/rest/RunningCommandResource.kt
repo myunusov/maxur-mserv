@@ -19,6 +19,8 @@ import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
 import org.hibernate.validator.constraints.NotBlank
 import org.maxur.mserv.core.MicroService
+import org.maxur.mserv.core.core.command.Command
+import org.maxur.mserv.core.core.command.CommandHandler
 import java.net.URI
 import javax.inject.Inject
 import javax.validation.Valid
@@ -40,8 +42,8 @@ import javax.ws.rs.core.MediaType
 @Path("/service/command")
 @Api(value = "/service/command", description = "Endpoint for Service specific operations")
 class RunningCommandResource @Inject constructor(
-    /** the Microservice */
-    val service: MicroService
+    /** the Command Handler */
+    val handler: CommandHandler
 ) {
 
     /** Returns all running commands */
@@ -70,7 +72,7 @@ class RunningCommandResource @Inject constructor(
         ApiResponse(code = 500, message = "Internal server error")
     )
     )
-    fun command(
+    fun runCommand(
         @ApiParam(
             name = "command",
             type = "object",
@@ -81,7 +83,10 @@ class RunningCommandResource @Inject constructor(
             ))
         )
         @Valid command: ServiceCommand
-    ) = command.execute(service)
+    ) = handler
+        .withInjector()
+        .withDelay(1000)
+        .handle(command)
 
     /** ServiceCommandDeserializer */
     class ServiceCommandDeserializer : JsonDeserializer<ServiceCommand>() {
@@ -90,8 +95,11 @@ class RunningCommandResource @Inject constructor(
         override fun deserialize(parser: JsonParser, context: DeserializationContext): ServiceCommand {
             val type = parser.codec.readTree<JsonNode>(parser).get("type").asText()
             return when (type.toUpperCase()) {
-                "STOP" -> ServiceCommand(type, MicroService::deferredStop)
-                "RESTART" -> ServiceCommand(type, MicroService::deferredRestart)
+                "STOP" -> ServiceCommand(type, MicroService::stop)
+                "RESTART" -> ServiceCommand(type, { service ->
+                    service.stop()
+                    service.start()
+                })
                 else -> throw IllegalArgumentException("Command '$type' unknown")
             }
         }
@@ -116,10 +124,18 @@ class RunningCommandResource @Inject constructor(
         )
         @NotBlank
         @Pattern(regexp = "^(stop|restart)$")
-        val type: String,
+        override val type: String,
         /** execution block */
-        val execute: (MicroService) -> Unit
-    )
+        val action: (MicroService) -> Unit
+    ) : Command {
+
+        @Inject
+        lateinit var service: MicroService
+
+        override fun execute() {
+            action(service)
+        }
+    }
 }
 
 /** Running command endpoint HAL view */

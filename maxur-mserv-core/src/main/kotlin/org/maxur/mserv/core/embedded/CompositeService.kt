@@ -9,8 +9,5 @@ class CompositeService(val services: List<EmbeddedService> = emptyList()) : Embe
     override fun start() = services.forEach({ it.start() })
 
     /** {@inheritDoc} */
-    override fun restart() = services.forEach({ it.start() })
-
-    /** {@inheritDoc} */
     override fun stop() = services.reversed().forEach({ it.stop() })
 }

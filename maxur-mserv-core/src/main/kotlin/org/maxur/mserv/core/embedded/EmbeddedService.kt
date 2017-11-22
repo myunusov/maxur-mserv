@@ -15,9 +15,4 @@ interface EmbeddedService {
      * Stop server.
      */
     fun stop()
-
-    /**
-     * Relaunch server.
-     */
-    fun restart()
 }

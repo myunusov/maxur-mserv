@@ -44,6 +44,14 @@ interface LocatorImpl {
     val name: String
 
     /**
+     * This will analyze the given object and inject into its fields and methods.
+     * The object injected in this way will not be managed by HK2
+     *
+     * @param injectMe The object to be analyzed and injected into
+     */
+    fun inject(injectMe: Any)
+
+    /**
      * Gets the best service from this locator that implements
      * this contract or has this implementation and has the given name (Kotlin edition).
      * <p>

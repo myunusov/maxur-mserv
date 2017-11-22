@@ -206,6 +206,9 @@ class LocatorImplTest {
         @Suppress("UNCHECKED_CAST")
         class FakeLocator(val str: String, override val name: String = "fake $str") : LocatorImpl {
 
+            override fun inject(injectMe: Any) {
+            }
+
             override fun config(): LocatorConfig = object : LocatorConfig(this) {
                 override fun <T : Any> makeDescriptor(bean: Bean<T>, contract: Contract<T>?): Descriptor<T> =
                         object : Descriptor<T>(bean, mutableSetOf(contract!!)) {

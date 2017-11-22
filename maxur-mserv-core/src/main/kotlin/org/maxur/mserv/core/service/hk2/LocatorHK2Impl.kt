@@ -46,6 +46,11 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
     }
 
     /** {@inheritDoc} */
+    override fun inject(injectMe: Any) {
+        locator.inject(injectMe)
+    }
+
+    /** {@inheritDoc} */
     @Suppress("UNCHECKED_CAST")
     override fun <T> implementation(): T = locator as T
 
