@@ -42,7 +42,7 @@ import kotlin.reflect.KClass
  * Jersey {@code Container} implementation based on Grizzly {@link org.glassfish.grizzly.http.server.HttpHandler}.
  */
 class GrizzlyHttpContainer internal constructor(
-        @Volatile private var appHandler: ApplicationHandler
+    @Volatile private var appHandler: ApplicationHandler
 ) : HttpHandler(), Container {
 
     companion object {
@@ -61,7 +61,7 @@ class GrizzlyHttpContainer internal constructor(
      * @param parentLocator parent HK2 service locator.
      */
     constructor(application: Application, parentLocator: ServiceLocator)
-            : this(ApplicationHandler(application, GrizzlyBinder(), parentLocator))
+        : this(ApplicationHandler(application, GrizzlyBinder(), parentLocator))
 
     /**
      * An internal binder to enable Grizzly HTTP container specific types injection.
@@ -91,9 +91,9 @@ class GrizzlyHttpContainer internal constructor(
         }
 
         private fun <T : Any> bindFactories(
-                refFactoryClass: KClass<out ReferencingFactory<T>>,
-                clazz: KClass<T>,
-                ref: TypeLiteral<Ref<T>>
+            refFactoryClass: KClass<out ReferencingFactory<T>>,
+            clazz: KClass<T>,
+            ref: TypeLiteral<Ref<T>>
         ) {
             bindFactory(refFactoryClass.java).to(clazz.java).proxy(false).`in`(RequestScoped::class.java)
             bindFactory(ReferencingFactory.referenceFactory<T>()).to(ref).`in`(RequestScoped::class.java)
@@ -185,7 +185,7 @@ private class ContainerRequestFactory(val configuration: ResourceConfig) {
     }
 
     private fun ResourceConfig.propertyBy(key: String) = ServerProperties.getValue(
-            configuration.properties, key, false, Boolean::class.javaObjectType
+        configuration.properties, key, false, Boolean::class.javaObjectType
     )
 
     /**
@@ -193,11 +193,11 @@ private class ContainerRequestFactory(val configuration: ResourceConfig) {
      */
     fun make(request: Request, response: Response): ContainerRequest {
         val requestContext = ContainerRequest(
-                request.baseUri(),
-                request.requestUri(),
-                request.method.methodString,
-                request.securityContext(),
-                RequestPropertiesDelegate(request)
+            request.baseUri(),
+            request.requestUri(),
+            request.method.methodString,
+            request.securityContext(),
+            RequestPropertiesDelegate(request)
         )
         requestContext.entityStream = request.inputStream
         for (headerName in request.headerNames) {
@@ -257,11 +257,11 @@ private class ContainerRequestFactory(val configuration: ResourceConfig) {
     }
 
     private fun Request.uri(basePath: String? = null): URI =
-            URI(scheme, null, serverName, serverPort, basePath, null, null)
+        URI(scheme, null, serverName, serverPort, basePath, null, null)
 
     private class ResponseWriter internal constructor(
-            private val grizzlyResponse: Response,
-            private val configSetStatusOverSendError: Boolean
+        private val grizzlyResponse: Response,
+        private val configSetStatusOverSendError: Boolean
     ) : ContainerResponseWriter {
 
         private val emptyCompletionHandler = object : CompletionHandler<Response> {
@@ -281,7 +281,7 @@ private class ContainerRequestFactory(val configuration: ResourceConfig) {
 
         private val name: String = if (GrizzlyHttpContainer.log.isDebugEnabled) {
             "ResponseWriter {id=${UUID.randomUUID()}, grizzlyResponse=${grizzlyResponse.hashCode()}}"
-                    .also { GrizzlyHttpContainer.log.debug("{0} - init", it) }
+                .also { GrizzlyHttpContainer.log.debug("{0} - init", it) }
         } else {
             "ResponseWriter"
         }
@@ -302,9 +302,9 @@ private class ContainerRequestFactory(val configuration: ResourceConfig) {
 
         /** {@inheritDoc} */
         override fun suspend(
-                timeOut: Long,
-                timeUnit: TimeUnit,
-                timeoutHandler: ContainerResponseWriter.TimeoutHandler?
+            timeOut: Long,
+            timeUnit: TimeUnit,
+            timeoutHandler: ContainerResponseWriter.TimeoutHandler?
         ): Boolean = try {
             grizzlyResponse.suspend(timeOut, timeUnit, emptyCompletionHandler) {
                 timeoutHandler?.onTimeout(this@ResponseWriter)
@@ -332,25 +332,25 @@ private class ContainerRequestFactory(val configuration: ResourceConfig) {
         /** {@inheritDoc} */
         @Throws(ContainerException::class)
         override fun writeResponseStatusAndHeaders(
-                contentLength: Long,
-                responseContext: ContainerResponse
+            contentLength: Long,
+            responseContext: ContainerResponse
         ): OutputStream =
-                try {
-                    val statusInfo = responseContext.statusInfo
-                    when {
-                        statusInfo.reasonPhrase == null -> grizzlyResponse.status = statusInfo.statusCode
-                        else -> grizzlyResponse.setStatus(statusInfo.statusCode, statusInfo.reasonPhrase)
-                    }
-                    grizzlyResponse.contentLengthLong = contentLength
-                    for ((key, values) in responseContext.stringHeaders) {
-                        for (value in values) {
-                            grizzlyResponse.addHeader(key, value)
-                        }
-                    }
-                    grizzlyResponse.outputStream
-                } finally {
-                    GrizzlyHttpContainer.log.debug("{0} - writeResponseStatusAndHeaders() called", name)
+            try {
+                val statusInfo = responseContext.statusInfo
+                when {
+                    statusInfo.reasonPhrase == null -> grizzlyResponse.status = statusInfo.statusCode
+                    else -> grizzlyResponse.setStatus(statusInfo.statusCode, statusInfo.reasonPhrase)
                 }
+                grizzlyResponse.contentLengthLong = contentLength
+                for ((key, values) in responseContext.stringHeaders) {
+                    for (value in values) {
+                        grizzlyResponse.addHeader(key, value)
+                    }
+                }
+                grizzlyResponse.outputStream
+            } finally {
+                GrizzlyHttpContainer.log.debug("{0} - writeResponseStatusAndHeaders() called", name)
+            }
 
         /** {@inheritDoc} */
         override fun failure(error: Throwable) {
@@ -386,6 +386,5 @@ private class ContainerRequestFactory(val configuration: ResourceConfig) {
             }
         }
     }
-
 }
 

@@ -31,16 +31,15 @@ class ServiceResourceIT : AbstractResourceAT() {
 
         val baseTarget = target("/service")
         val json = baseTarget.request()
-                .accept("application/hal+json")
-                .get(String::class.java)
+            .accept("application/hal+json")
+            .get(String::class.java)
         val node = mapper.readTree(json)
 
         assertThat(node.findPath("name").asText())
-                .isEqualTo("test: 0.1")
+            .isEqualTo("test: 0.1")
         assertThat(node.findPath("self").findPath("href").asText())
-                .isEqualTo("service")
+            .isEqualTo("service")
         assertThat(node.findPath("command").findPath("href").asText())
-                .isEqualTo("service/command")
+            .isEqualTo("service/command")
     }
-
 }

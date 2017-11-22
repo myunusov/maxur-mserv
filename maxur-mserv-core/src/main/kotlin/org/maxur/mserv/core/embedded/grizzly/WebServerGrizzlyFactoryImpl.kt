@@ -31,8 +31,8 @@ import javax.inject.Inject
  * @since <pre>24.06.2017</pre>
  */
 class WebServerGrizzlyFactoryImpl @Inject constructor(
-        /** The Service locator. */
-        val locator: Locator) : EmbeddedServiceFactory() {
+    /** The Service locator. */
+    val locator: Locator) : EmbeddedServiceFactory() {
 
     companion object {
         init {
@@ -55,25 +55,24 @@ class WebServerGrizzlyFactoryImpl @Inject constructor(
         val staticContent = webAppProperties.staticContent(restConfig)
 
         val config = WebAppConfig(
-                webAppProperties.url,
-                webAppProperties.restPath,
-                staticContent,
-                restConfig
+            webAppProperties.url,
+            webAppProperties.restPath,
+            staticContent,
+            restConfig
         )
         return WebServerGrizzlyImpl(config, locator)
     }
 
     private fun restConfig(name: String?): RestResourceConfig =
-            locator.service(RestResourceConfig::class, name) ?:
-                    resourceConfigNotFoundError(locator, name ?: "undefined")
+        locator.service(RestResourceConfig::class, name) ?:
+            resourceConfigNotFoundError(locator, name ?: "undefined")
 
     private fun <T> resourceConfigNotFoundError(locator: Locator, name: String): T {
         val list = locator.names(ResourceConfig::class)
         throw IllegalStateException(
-                "Resource Config '$name' is not supported. Try one from this list: $list or create one"
+            "Resource Config '$name' is not supported. Try one from this list: $list or create one"
         )
     }
-
 }
 
 /** The Web Service (Grizzly Implementation) */
@@ -113,7 +112,7 @@ open class WebServerGrizzlyImpl(private val config: WebAppConfig, locator: Locat
     }
 
     private fun makeDynamicHandler() =
-            GrizzlyHttpContainer(config.resourceConfig, locator.implementation())
+        GrizzlyHttpContainer(config.resourceConfig, locator.implementation())
 
     private fun makeStaticHandler(content: StaticContent) = StaticHttpHandler(content)
 
@@ -124,9 +123,9 @@ open class WebServerGrizzlyImpl(private val config: WebAppConfig, locator: Locat
         cfg.httpHandlersWithMapping.forEach { (_, regs) ->
             run {
                 for (reg in regs) entries.add(
-                        reg.contextPath,
-                        reg.urlPattern,
-                        config.staticContentByPath(reg.contextPath)?.startUrl ?: ""
+                    reg.contextPath,
+                    reg.urlPattern,
+                    config.staticContentByPath(reg.contextPath)?.startUrl ?: ""
                 )
             }
         }
@@ -142,9 +141,9 @@ open class WebServerGrizzlyImpl(private val config: WebAppConfig, locator: Locat
     }
 
     private fun networkListener(
-            uri: URI,
-            secure: Boolean,
-            sslEngineConfigurator: SSLEngineConfigurator?
+        uri: URI,
+        secure: Boolean,
+        sslEngineConfigurator: SSLEngineConfigurator?
     ): NetworkListener {
         val host = if (uri.host == null) NetworkListener.DEFAULT_NETWORK_HOST else uri.host
         val port = when {
@@ -153,15 +152,14 @@ open class WebServerGrizzlyImpl(private val config: WebAppConfig, locator: Locat
         }
         val listener = NetworkListener("grizzly", host, port)
         listener.transport.workerThreadPoolConfig.threadFactory = ThreadFactoryBuilder()
-                .setNameFormat("grizzly-http-server-%d")
-                .setUncaughtExceptionHandler(JerseyProcessingUncaughtExceptionHandler())
-                .build()
+            .setNameFormat("grizzly-http-server-%d")
+            .setUncaughtExceptionHandler(JerseyProcessingUncaughtExceptionHandler())
+            .build()
         listener.isSecure = secure
         if (sslEngineConfigurator != null) {
             listener.setSSLEngineConfig(sslEngineConfigurator)
         }
         return listener
     }
-
 }
 

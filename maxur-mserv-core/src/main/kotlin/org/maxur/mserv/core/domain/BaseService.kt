@@ -112,14 +112,12 @@ abstract class BaseService(val locator: Locator) {
         }
 
         private fun match(param: KParameter, vararg values: Any): Any? =
-                values.firstOrNull { isApplicable(param, it) } ?: Locator.bean(param)
+            values.firstOrNull { isApplicable(param, it) } ?: Locator.bean(param)
 
         @Suppress("UNCHECKED_CAST")
         private fun isApplicable(type: KType, clazz: KClass<out Any>) =
-                clazz.isSubclassOf(type.classifier as KClass<Any>)
+            clazz.isSubclassOf(type.classifier as KClass<Any>)
 
         private fun isApplicable(param: KParameter, value: Any) = isApplicable(param.type, value::class)
-
     }
-
 }

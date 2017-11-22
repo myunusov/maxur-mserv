@@ -27,10 +27,10 @@ class ServiceEventListener(private val prefix: String) : ApplicationEventListene
     override fun onEvent(event: ApplicationEvent) {
         when (event.type) {
             ApplicationEvent.Type.INITIALIZATION_FINISHED -> log.debug("Application "
-                    + event.resourceConfig.applicationName
-                    + " was initialized.")
+                + event.resourceConfig.applicationName
+                + " was initialized.")
             ApplicationEvent.Type.DESTROY_FINISHED -> log.debug("Application "
-                    + event.resourceConfig.applicationName + " destroyed.")
+                + event.resourceConfig.applicationName + " destroyed.")
             else -> {
                 //ignore
             }
@@ -46,6 +46,5 @@ class ServiceEventListener(private val prefix: String) : ApplicationEventListene
         }
         // return the listener instance that will handle this request.
         return ServiceRequestEventListener(requestCnt)
-
     }
 }

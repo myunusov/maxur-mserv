@@ -29,19 +29,18 @@ open class FaviconResource {
     @Path("/{fileName: .*ico}")
     @Produces("image/x-icon")
     fun favicon(@PathParam("fileName") fileName: String) = (
-            loadImage(fileName)
-                    ?.let { Response.ok(ByteArrayInputStream(it)) }
-                    ?: Response.status(Response.Status.NOT_FOUND)
-            ).build()
+        loadImage(fileName)
+            ?.let { Response.ok(ByteArrayInputStream(it)) }
+            ?: Response.status(Response.Status.NOT_FOUND)
+        ).build()
 
     private fun loadImage(fileName: String) =
-            FaviconResource::class.java.getResource("/$fileName")?.let {
-                val conn = it.openConnection()
-                val inConnectionReader = conn.getInputStream()
-                val size = conn.contentLength
-                val imageData = ByteArray(size)
-                inConnectionReader.read(imageData, 0, size)
-                imageData
-            }
-
+        FaviconResource::class.java.getResource("/$fileName")?.let {
+            val conn = it.openConnection()
+            val inConnectionReader = conn.getInputStream()
+            val size = conn.contentLength
+            val imageData = ByteArray(size)
+            inConnectionReader.read(imageData, 0, size)
+            imageData
+        }
 }

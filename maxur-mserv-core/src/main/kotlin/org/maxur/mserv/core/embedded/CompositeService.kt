@@ -13,5 +13,4 @@ class CompositeService(val services: List<EmbeddedService> = emptyList()) : Embe
 
     /** {@inheritDoc} */
     override fun stop() = services.reversed().forEach({ it.stop() })
-
 }

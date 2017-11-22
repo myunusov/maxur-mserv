@@ -16,5 +16,4 @@ abstract class EmbeddedServiceFactory {
     lateinit var name: String
 
     abstract fun make(properties: Holder<Any>): EmbeddedService?
-
 }

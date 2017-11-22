@@ -21,5 +21,4 @@ class StringsHolder(val strings: MutableSet<String> = mutableSetOf()) {
 
     /** {@inheritDoc} */
     override fun toString(): String = strings.joinToString(",")
-
 }

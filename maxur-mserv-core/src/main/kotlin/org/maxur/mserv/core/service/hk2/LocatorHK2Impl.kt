@@ -51,11 +51,11 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
 
     /** {@inheritDoc} */
     override fun names(contractOrImpl: Class<*>): List<String> =
-            locator.getAllServiceHandles(contractOrImpl).map { it.activeDescriptor.name }
+        locator.getAllServiceHandles(contractOrImpl).map { it.activeDescriptor.name }
 
     /** {@inheritDoc} */
     override fun <T> property(key: String, clazz: Class<T>): T? =
-            locator.getService(Properties::class.java).read(key, clazz)
+        locator.getService(Properties::class.java).read(key, clazz)
 
     /** {@inheritDoc} */
     override fun <T> service(contractOrImpl: Class<T>, name: String?): T? = tryTo {
@@ -86,7 +86,7 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
 
     /** {@inheritDoc} */
     override fun <T> services(contractOrImpl: Class<T>): List<T> =
-            locator.getAllServices(contractOrImpl).map { it as T }
+        locator.getAllServices(contractOrImpl).map { it as T }
 
     /** {@inheritDoc} */
     override fun configurationError() = service(ErrorHandler::class.java)?.latestError
@@ -102,13 +102,13 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
     class Config(locatorImpl: LocatorImpl) : LocatorConfig(locatorImpl) {
 
         override fun <T : Any> makeDescriptor(bean: Bean<T>, contract: Contract<T>?): Descriptor<T> =
-                object : Descriptor<T>(bean, contract?.let { mutableSetOf(contract) } ?: mutableSetOf()) {
-                    @Suppress("UNCHECKED_CAST")
-                    override fun toSpecificContract(contract: Any) {
-                        if (contract is TypeLiteral<*>)
-                            contracts.add(ContractTypeLiteral(contract as TypeLiteral<in T>))
-                    }
+            object : Descriptor<T>(bean, contract?.let { mutableSetOf(contract) } ?: mutableSetOf()) {
+                @Suppress("UNCHECKED_CAST")
+                override fun toSpecificContract(contract: Any) {
+                    if (contract is TypeLiteral<*>)
+                        contracts.add(ContractTypeLiteral(contract as TypeLiteral<in T>))
                 }
+            }
 
         override fun apply() {
             val binder = object : AbstractBinder() {
@@ -144,8 +144,8 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
             }
         }
 
-        private fun <T : Any> AbstractBinder.builder(descriptor: Descriptor<T>)
-                : Either<ServiceBindingBuilder<in T>, ScopedBindingBuilder<in T>> {
+        private fun <T : Any> AbstractBinder.builder(descriptor: Descriptor<T>):
+            Either<ServiceBindingBuilder<in T>, ScopedBindingBuilder<in T>> {
             val bean = descriptor.bean
             return when (bean) {
                 is BeanFunction -> left(bindFactory(ServiceProvider(locator, bean.func)))
@@ -175,5 +175,4 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
 
         class ContractTypeLiteral<T : Any>(val literal: org.glassfish.hk2.api.TypeLiteral<in T>) : Contract<T>()
     }
-
 }

@@ -58,8 +58,8 @@ class LocatorHK2ImplTest {
 
     @Test
     fun property() {
-            Mockito.`when`(properties.read("A", String::class.java)).thenReturn("A")
-            assertThat(locator.property("A", String::class.java)).isEqualTo("A")
+        Mockito.`when`(properties.read("A", String::class.java)).thenReturn("A")
+        assertThat(locator.property("A", String::class.java)).isEqualTo("A")
     }
 
     @Test
@@ -79,5 +79,4 @@ class LocatorHK2ImplTest {
         // idempotent
         locator.shutdown()
     }
-
 }

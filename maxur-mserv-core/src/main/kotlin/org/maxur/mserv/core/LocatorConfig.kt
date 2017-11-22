@@ -13,33 +13,33 @@ abstract class LocatorConfig(protected val locator: LocatorImpl) {
      */
     @Suppress("UNCHECKED_CAST")
     fun <T : Any> bind(implementation: T): Descriptor<T> =
-            descriptor(BeanObject(implementation), ContractClass(implementation::class as KClass<in T>))
+        descriptor(BeanObject(implementation), ContractClass(implementation::class as KClass<in T>))
 
     /**
      * Bind service [implementation] class
      * @param implementation The Service implementation class
      */
     fun <T : Any> bind(implementation: KClass<in T>): Descriptor<T> =
-            descriptor(BeanSingleton(implementation), ContractClass(implementation))
+        descriptor(BeanSingleton(implementation), ContractClass(implementation))
 
     /**
      * Bind factory by [function]
      * @param function The Service creation function
      */
     fun <T : Any> bindFactory(function: (Locator) -> T): Descriptor<T> =
-            descriptor(BeanFunction(function))
+        descriptor(BeanFunction(function))
 
     private fun <T : Any> descriptor(bean: Bean<T>, contract: Contract<T>? = null): Descriptor<T> =
-            makeDescriptor(bean, contract).also { descriptors.add(it) }
+        makeDescriptor(bean, contract).also { descriptors.add(it) }
 
     protected abstract fun <T : Any> makeDescriptor(bean: Bean<T>, contract: Contract<T>?): Descriptor<T>
 
     abstract fun apply()
 
     abstract class Descriptor<T : Any>(
-            var bean: Bean<T>,
-            val contracts: MutableSet<Contract<T>> = mutableSetOf(),
-            var name: String? = null
+        var bean: Bean<T>,
+        val contracts: MutableSet<Contract<T>> = mutableSetOf(),
+        var name: String? = null
     ) {
 
         fun to(contract: Any): Descriptor<T> = this.apply {
@@ -63,7 +63,6 @@ abstract class LocatorConfig(protected val locator: LocatorImpl) {
         fun named(name: String): Descriptor<T> = this.apply {
             this.name = name
         }
-
     }
 
     abstract class Bean<T : Any>
@@ -74,5 +73,4 @@ abstract class LocatorConfig(protected val locator: LocatorImpl) {
 
     abstract class Contract<T : Any>
     class ContractClass<T : Any>(val contract: KClass<in T>) : Contract<T>()
-
 }

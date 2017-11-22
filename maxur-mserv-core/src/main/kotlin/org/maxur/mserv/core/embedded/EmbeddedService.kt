@@ -20,5 +20,4 @@ interface EmbeddedService {
      * Relaunch server.
      */
     fun restart()
-
 }

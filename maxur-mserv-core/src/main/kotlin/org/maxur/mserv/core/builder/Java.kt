@@ -91,24 +91,23 @@ class JBuilder : MicroServiceBuilder(), IJBuilder {
     }
 
     private fun unitFunc(func: Consumer<in BaseService>): Function1<BaseService, Unit> =
-            object : Function1<BaseService, Unit> {
-                override fun invoke(service: BaseService) = func.accept(service)
-            }
+        object : Function1<BaseService, Unit> {
+            override fun invoke(service: BaseService) = func.accept(service)
+        }
 
     private fun errorFunc(func: Consumer<Exception>): Function1<Exception, Unit> =
-            object : Function1<Exception, Unit> {
-                override fun invoke(e: Exception) = func.accept(e)
-            }
+        object : Function1<Exception, Unit> {
+            override fun invoke(e: Exception) = func.accept(e)
+        }
 
     override fun start() {
         build().start()
     }
-
 }
 
 class JPropertiesBuilder(
-        private val parent: JBuilder,
-        private val builder: PropertiesBuilder.BasePropertiesBuilder
+    private val parent: JBuilder,
+    private val builder: PropertiesBuilder.BasePropertiesBuilder
 ) : IJBuilder by parent {
 
     fun url(value: String): JPropertiesBuilder {
@@ -120,6 +119,5 @@ class JPropertiesBuilder(
         builder.rootKey = value
         return this
     }
-
 }
 

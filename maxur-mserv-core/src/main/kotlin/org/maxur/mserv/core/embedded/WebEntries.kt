@@ -18,5 +18,4 @@ class WebEntries(val url: URI) {
             return "$path$pattern/$startUrl"
         }
     }
-
 }

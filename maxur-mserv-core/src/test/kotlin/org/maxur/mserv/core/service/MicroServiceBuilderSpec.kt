@@ -88,11 +88,11 @@ class MicroServiceBuilderSpec : Spek({
             }
             it("should return new micro-service for java client") {
                 val service =
-                        Java.service()
-                                .properties("name", "Test Service")
-                                .properties("url", URL("file:///"))
-                                .properties("count", 0)
-                                .build()
+                    Java.service()
+                        .properties("name", "Test Service")
+                        .properties("url", URL("file:///"))
+                        .properties("count", 0)
+                        .build()
                 assertThat(service).isNotNull()
                 val source = source
                 assertThat(source).isNotNull()
@@ -159,9 +159,7 @@ class MicroServiceBuilderSpec : Spek({
                             }
                             Locator.stop()
                         }
-
                     }
-
                 }
         }
 
@@ -292,9 +290,7 @@ class MicroServiceBuilderSpec : Spek({
                             }
                             Locator.stop()
                         }
-
                     }
-
                 }
         }
 
@@ -374,9 +370,7 @@ class MicroServiceBuilderSpec : Spek({
                             Locator.bean(Properties::class)
                         }
                     }
-
                 }
-
             }
         }
 
@@ -405,7 +399,6 @@ class MicroServiceBuilderSpec : Spek({
             assertThat(service).isNotNull()
         }
     }
-
 })
 
 private fun condition(function: (String) -> Boolean, description: String): Condition<String>

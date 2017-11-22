@@ -30,14 +30,13 @@ class ServiceResource @Inject constructor(val service: MicroService) {
     @GET
     @Produces("application/hal+json")
     @ApiOperation(value = "Represent this service",
-            response = ServiceView::class, produces = "application/hal+json")
+        response = ServiceView::class, produces = "application/hal+json")
     @ApiResponses(value = *arrayOf(
-            ApiResponse(code = 200, message = "Successful operation"),
-            ApiResponse(code = 500, message = "Internal server error")
+        ApiResponse(code = 200, message = "Successful operation"),
+        ApiResponse(code = 500, message = "Internal server error")
     )
     )
     fun service(): ServiceView = ServiceView(service)
-
 }
 
 @Suppress("unused")
@@ -53,6 +52,5 @@ class ServiceView(service: MicroService) {
 
     @Link("command")
     var command: HALLink = HALLink.Builder(URI("service/command")).build()
-
 }
 

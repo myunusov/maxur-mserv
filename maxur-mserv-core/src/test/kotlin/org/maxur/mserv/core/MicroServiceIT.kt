@@ -58,14 +58,14 @@ class MicroServiceIT {
     @Test
     fun javaMain() {
         Java.service()
-                .name(":name")
-                .packages("org.maxur.mserv.core.sample")
-                .properties("yaml")
-                .rest()
-                .afterStart(Consumer { this.afterStartJava(it) })
-                .beforeStop(Consumer { this.beforeStopJava(it) })
-                .onError(Consumer { ex -> throw ex })
-                .start()
+            .name(":name")
+            .packages("org.maxur.mserv.core.sample")
+            .properties("yaml")
+            .rest()
+            .afterStart(Consumer { this.afterStartJava(it) })
+            .beforeStop(Consumer { this.beforeStopJava(it) })
+            .onError(Consumer { ex -> throw ex })
+            .start()
         serviceToJava?.stop()
         Locator.stop()
     }
@@ -84,7 +84,5 @@ class MicroServiceIT {
         val sampleService = Locator.bean(SampleService::class)
         assertThat(sampleService).isNotNull()
         assertThat(sampleService!!.name).isEqualToIgnoringWhitespace("μService")
-
     }
-
 }

@@ -20,5 +20,4 @@ class CompositeProperties(val properties: List<Properties> = emptyList()) : Prop
     override fun asURI(key: String): URI? = properties.map({ it.asURI(key) }).firstOrNull()
 
     override fun <P> read(key: String, clazz: Class<P>): P? = properties.map({ it.read(key, clazz) }).firstOrNull()
-
 }

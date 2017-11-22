@@ -46,5 +46,4 @@ abstract class LocatorBuilder() {
     protected abstract fun make(): LocatorImpl
 
     protected abstract fun configure(locator: LocatorImpl, function: LocatorConfig.() -> Unit): LocatorConfig
-
 }

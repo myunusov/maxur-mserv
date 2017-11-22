@@ -44,7 +44,7 @@ class RunningCommandResource @Inject constructor(
     val service: MicroService
 ) {
 
-    /**  Returns all running commands */
+    /** Returns all running commands */
     @GET
     @Produces("application/hal+json")
     @ApiOperation(value = "Represent this service running commands",
@@ -83,8 +83,8 @@ class RunningCommandResource @Inject constructor(
         @Valid command: ServiceCommand
     ) = command.execute(service)
 
-    /**  ServiceCommandDeserializer */
-    class ServiceCommandDeserializer: JsonDeserializer<ServiceCommand>() {
+    /** ServiceCommandDeserializer */
+    class ServiceCommandDeserializer : JsonDeserializer<ServiceCommand>() {
 
         /** {@inheritDoc} */
         override fun deserialize(parser: JsonParser, context: DeserializationContext): ServiceCommand {
@@ -135,5 +135,4 @@ class RunningCommandsView {
     /** This endpoint */
     @Link
     var self: HALLink = HALLink.Builder(URI("command")).build()
-
 }

@@ -100,5 +100,4 @@ abstract class MicroServiceBuilder(
         bind(PropertiesFactoryJsonImpl::class).to(PropertiesFactory::class).named("json")
         bind(PropertiesFactoryYamlImpl::class).to(PropertiesFactory::class).named("yaml")
     }
-
 }

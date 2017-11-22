@@ -126,13 +126,12 @@ interface LocatorImpl {
     fun registerAsSingleton() = holder.put(this)
 
     fun configure(function: LocatorConfig.() -> Unit) =
-            Locator.current.let {
-                config().apply {
-                    function()
-                    apply()
-                }
+        Locator.current.let {
+            config().apply {
+                function()
+                apply()
             }
+        }
 
     fun config(): LocatorConfig
-
 }

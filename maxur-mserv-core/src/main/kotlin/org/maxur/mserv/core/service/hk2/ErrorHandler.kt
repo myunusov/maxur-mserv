@@ -30,5 +30,4 @@ open class ErrorHandler : ErrorService {
             log.error("Bean initialization error: ", latestError)
         }
     }
-
 }
