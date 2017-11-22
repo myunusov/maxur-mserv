@@ -43,7 +43,7 @@ import javax.ws.rs.core.MediaType
 @Api(value = "/service/command", description = "Endpoint for Service specific operations")
 class RunningCommandResource @Inject constructor(
     /** the Command Handler */
-    val handler: CommandHandler
+    private val handler: CommandHandler
 ) {
 
     /** Returns all running commands */
@@ -97,7 +97,7 @@ class RunningCommandResource @Inject constructor(
             return when (type.toUpperCase()) {
                 "STOP" -> ServiceCommand(type, MicroService::stop)
                 "RESTART" -> ServiceCommand(type, { service ->
-                    service.stop()
+                    service.pause()
                     service.start()
                 })
                 else -> throw IllegalArgumentException("Command '$type' unknown")
@@ -126,12 +126,14 @@ class RunningCommandResource @Inject constructor(
         @Pattern(regexp = "^(stop|restart)$")
         override val type: String,
         /** execution block */
-        val action: (MicroService) -> Unit
+        private val action: (MicroService) -> Unit
     ) : Command {
 
+        /** The microservice */
         @Inject
-        lateinit var service: MicroService
+        private lateinit var service: MicroService
 
+        /** {@inheritDoc} */
         override fun execute() {
             action(service)
         }

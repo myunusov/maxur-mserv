@@ -32,6 +32,11 @@ interface MicroService {
      * Stop this Service
      */
     fun stop()
+
+    /**
+     * Suspend this Service
+     */
+    fun pause()
 }
 
 /**
@@ -40,14 +45,14 @@ interface MicroService {
  */
 class BaseMicroService constructor(
     locator: Locator,
-    val embeddedService: EmbeddedService = locator.service(EmbeddedService::class)!!
+    private val embeddedService: EmbeddedService = locator.service(EmbeddedService::class)!!
 ) : BaseService(locator), MicroService {
 
     init {
         Runtime.getRuntime().addShutdownHook(object : Thread() {
             /** {@inheritDoc} */
             override fun run() {
-                this@BaseMicroService.stop()
+               this@BaseMicroService.stop()
             }
         })
     }
@@ -56,12 +61,16 @@ class BaseMicroService constructor(
 
     override val version: String = MicroService::class.java.`package`.implementationVersion ?: ""
 
-    override fun launch() {
-        embeddedService.start()
+    override fun suspend() {
+        embeddedService.stop()
     }
 
     override fun shutdown() {
         embeddedService.stop()
         locator.shutdown()
+    }
+
+    override fun launch() {
+        embeddedService.start()
     }
 }

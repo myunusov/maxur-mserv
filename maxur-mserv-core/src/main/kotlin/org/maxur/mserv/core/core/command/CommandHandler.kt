@@ -4,18 +4,30 @@ import org.jvnet.hk2.annotations.Contract
 import org.maxur.mserv.core.kotlin.Locator
 import java.util.concurrent.Executors
 
+/** The Command Handler */
 @Contract
 interface CommandHandler {
 
+    /** The Service Locator */
     val locator: Locator
 
+
+    /** Handle the [command] */
     fun handle(command: Command)
 
+    /** Wrap the command handler with IoC injector */
     fun withInjector(): CommandHandler = InjectorWrapper(this)
 
+    /** Wrap the command handler with delayed service. The [millis] is the length of time to delay in milliseconds */
     fun withDelay(millis: Long): CommandHandler = DeferredWrapper(this, millis)
 
-    private class DeferredWrapper(val handler: CommandHandler, val millis: Long) : CommandHandler {
+
+    private class DeferredWrapper(
+        /** The Wrapped command handler */
+        val handler: CommandHandler,
+        /** The length of time to delay in milliseconds */
+        val millis: Long
+    ) : CommandHandler {
         /** {@inheritDoc} */
         override val locator: Locator = handler.locator
 
@@ -39,7 +51,9 @@ interface CommandHandler {
         }
     }
 
-    private class InjectorWrapper(val handler: CommandHandler) : CommandHandler {
+    private class InjectorWrapper(
+        /** The Wrapped command handler */
+        val handler: CommandHandler) : CommandHandler {
         /** {@inheritDoc} */
         override val locator: Locator = handler.locator
 

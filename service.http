@@ -1,0 +1,17 @@
+### Restart
+POST http://localhost:8080/api/service/command
+Content-Type: application/json
+
+{
+  "type": "restart"
+}
+
+### Stop
+POST http://localhost:8080/api/service/command
+Content-Type: application/json
+
+{
+  "type": "stop"
+}
+
+

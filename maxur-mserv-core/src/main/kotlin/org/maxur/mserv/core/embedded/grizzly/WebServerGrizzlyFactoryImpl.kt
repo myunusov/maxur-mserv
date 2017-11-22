@@ -77,7 +77,6 @@ class WebServerGrizzlyFactoryImpl @Inject constructor(
 
 /** The Web Service (Grizzly Implementation) */
 open class WebServerGrizzlyImpl(private val config: WebAppConfig, locator: Locator) : BaseService(locator), WebServer {
-
     private fun ServerConfiguration.title(): String = "$name '$httpServerName-$httpServerVersion'"
 
     private val httpServer: HttpServer = httpServer()
@@ -90,6 +89,10 @@ open class WebServerGrizzlyImpl(private val config: WebAppConfig, locator: Locat
 
     override fun launch() {
         httpServer.start()
+    }
+
+    override fun suspend() {
+        httpServer.shutdownNow()
     }
 
     override fun shutdown() {

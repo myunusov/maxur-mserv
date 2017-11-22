@@ -7,10 +7,16 @@ import kotlin.reflect.KParameter
 import kotlin.reflect.KType
 import kotlin.reflect.full.isSubclassOf
 
-abstract class BaseService(val locator: Locator) {
+/** The Base Service */
+abstract class BaseService(
+    /** The Service Locator */
+    val locator: Locator) {
 
+    /** The hook on start */
     var afterStart: MutableList<KFunction<Any>> = ArrayList()
+    /** The hook on stop */
     var beforeStop: MutableList<KFunction<Any>> = ArrayList()
+    /** The hook on error */
     var onError: MutableList<KFunction<Any>> = ArrayList()
 
     protected var state: BaseService.State = BaseService.State.STOPPED
@@ -32,6 +38,11 @@ abstract class BaseService(val locator: Locator) {
     fun stop() = state.stop(this)
 
     /**
+     * Suspend this Service.
+     */
+    fun pause() = state.pause(this)
+
+    /**
      * shutdown this service.
      */
     protected abstract fun shutdown()
@@ -42,6 +53,11 @@ abstract class BaseService(val locator: Locator) {
     protected abstract fun launch()
 
     /**
+     * suspend this service.
+     */
+    protected abstract fun suspend()
+
+    /**
      * Represent State of micro-service
      */
     enum class State {
@@ -49,23 +65,42 @@ abstract class BaseService(val locator: Locator) {
          *  Running application
          */
         STARTED {
+            /** {@inheritDoc} */
             override fun start(service: BaseService) = Unit
+            /** {@inheritDoc} */
             override fun stop(service: BaseService) = shutdown(service)
+            /** {@inheritDoc} */
+            override fun pause(service: BaseService) = suspend(service)
         },
         /**
          * Stop application
          */
         STOPPED {
+            /** {@inheritDoc} */
             override fun start(service: BaseService) = launch(service)
+            /** {@inheritDoc} */
             override fun stop(service: BaseService) = Unit
+            /** {@inheritDoc} */
+            override fun pause(service: BaseService) = Unit
         };
 
+        /** Start Service */
         abstract fun start(service: BaseService)
+        /** Stop Service */
         abstract fun stop(service: BaseService)
+        /** Pause Service */
+        abstract fun pause(service: BaseService)
+
 
         protected fun shutdown(service: BaseService) = check(service, {
             beforeStop.forEach { call(it, service) }
             shutdown()
+            state = STOPPED
+        })
+
+        protected fun suspend(service: BaseService) = check(service, {
+            beforeStop.forEach { call(it, service) }
+            suspend()
             state = STOPPED
         })
 

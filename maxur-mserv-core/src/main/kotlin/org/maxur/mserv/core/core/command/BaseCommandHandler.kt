@@ -4,6 +4,7 @@ import org.jvnet.hk2.annotations.Service
 import org.maxur.mserv.core.kotlin.Locator
 import javax.inject.Inject
 
+/** The Command Handler (Base implementation) */
 @Service
 open class BaseCommandHandler @Inject constructor(
     /** {@inheritDoc} */
