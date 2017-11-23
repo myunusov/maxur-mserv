@@ -1,23 +1,22 @@
-package org.maxur.mserv.core.builder
+package org.maxur.mserv.core.runner
 
-import org.maxur.mserv.core.MicroService
 import org.maxur.mserv.core.domain.Holder
 import org.maxur.mserv.core.service.properties.PropertiesFactoryHoconImpl
 import org.maxur.mserv.core.service.properties.PropertiesFactoryJsonImpl
 import org.maxur.mserv.core.service.properties.PropertiesFactoryYamlImpl
 
 object Kotlin {
-    fun service(init: KBuilder.() -> Unit): MicroService = KBuilder(init).build()
+    fun runner(init: KRunner.() -> Unit) = KRunner(init)
 }
 
-class KBuilder() : MicroServiceBuilder() {
+class KRunner() : MicroServiceRunner() {
 
     var name: String = "Anonymous"
         set(value) {
             nameHolder = Holder.string(value)
         }
 
-    constructor(init: KBuilder.() -> Unit) : this() {
+    constructor(init: KRunner.() -> Unit) : this() {
         init()
     }
 

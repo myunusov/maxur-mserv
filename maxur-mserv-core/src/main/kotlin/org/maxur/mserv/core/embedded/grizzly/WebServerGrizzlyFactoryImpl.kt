@@ -91,10 +91,6 @@ open class WebServerGrizzlyImpl(private val config: WebAppConfig, locator: Locat
         httpServer.start()
     }
 
-    override fun suspend() {
-        httpServer.shutdownNow()
-    }
-
     override fun shutdown() {
         httpServer.shutdownNow()
     }

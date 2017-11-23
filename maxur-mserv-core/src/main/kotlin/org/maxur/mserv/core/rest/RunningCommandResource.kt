@@ -21,6 +21,7 @@ import org.hibernate.validator.constraints.NotBlank
 import org.maxur.mserv.core.MicroService
 import org.maxur.mserv.core.core.command.Command
 import org.maxur.mserv.core.core.command.CommandHandler
+import org.maxur.mserv.core.runner.MicroServiceRunner
 import java.net.URI
 import javax.inject.Inject
 import javax.validation.Valid
@@ -95,10 +96,10 @@ class RunningCommandResource @Inject constructor(
         override fun deserialize(parser: JsonParser, context: DeserializationContext): ServiceCommand {
             val type = parser.codec.readTree<JsonNode>(parser).get("type").asText()
             return when (type.toUpperCase()) {
-                "STOP" -> ServiceCommand(type, MicroService::stop)
-                "RESTART" -> ServiceCommand(type, { service ->
-                    service.pause()
-                    service.start()
+                "STOP" -> ServiceCommand(type, { service, _ -> service.stop() })
+                "RESTART" -> ServiceCommand(type, { service, runner ->
+                    service.stop()
+                    runner.start()
                 })
                 else -> throw IllegalArgumentException("Command '$type' unknown")
             }
@@ -126,16 +127,20 @@ class RunningCommandResource @Inject constructor(
         @Pattern(regexp = "^(stop|restart)$")
         override val type: String,
         /** execution block */
-        private val action: (MicroService) -> Unit
+        private val action: (MicroService, MicroServiceRunner) -> Unit
     ) : Command {
 
         /** The microservice */
         @Inject
         private lateinit var service: MicroService
 
+        /** The microservice */
+        @Inject
+        private lateinit var runner: MicroServiceRunner
+
         /** {@inheritDoc} */
         override fun execute() {
-            action(service)
+            action(service, runner)
         }
     }
 }

@@ -124,49 +124,57 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
             ServiceLocatorUtilities.bind(locator.implementation<ServiceLocator>(), binder)
         }
 
+        @Suppress("UNCHECKED_CAST")
         private fun AbstractBinder.makeBinders(descriptor: Descriptor<out Any>) {
             if (descriptor.contracts.isEmpty()) {
                 throw IllegalStateException("Contract must be")
             }
+            val binder = builder(descriptor)
             descriptor.contracts.forEach {
-                val contract = it
-                builder(descriptor).fold({
-                    val builder = it
-                    when (contract) {
-                        is ContractClass -> builder.to(contract.contract.java)
-                        is ContractTypeLiteral -> builder.to(contract.literal)
-                    }
-                    descriptor.name?.let { builder.named(it) }
-                    builder.`in`(Singleton::class.java)
-                }, {
-                    val builder = it
-                    when (contract) {
-                        is ContractClass -> builder.to(contract.contract.java)
-                        is ContractTypeLiteral -> builder.to(contract.literal)
-                    }
-                    descriptor.name?.let { builder.named(it) }
-                })
+                when (it) {
+                    is ContractClass -> binder.bind(it.contract.java as Class<Any>)
+                    is ContractTypeLiteral -> binder.bind(it.literal as TypeLiteral<Any>)
+                }
             }
+            descriptor.name?.let { binder.named(it) }
+            binder.initScope()
         }
 
-        private fun <T : Any> AbstractBinder.builder(descriptor: Descriptor<T>):
-            Either<ServiceBindingBuilder<in T>, ScopedBindingBuilder<in T>> {
+        private fun AbstractBinder.builder(descriptor: Descriptor<out Any>): Binder<Any> {
             val bean = descriptor.bean
-            return when (bean) {
-                is BeanFunction -> left(bindFactory(ServiceProvider(locator, bean.func)))
-                is BeanObject -> {
-                    right(bind(bean.impl))
-                }
-                is BeanSingleton<T> -> {
-                    if (bean.impl.isSubclassOf(Factory::class)) {
-                        @Suppress("UNCHECKED_CAST")
-                        val factoryClass: KClass<Factory<T>> = bean.impl as KClass<Factory<T>>
-                        left(bindFactory(factoryClass.java))
-                    } else
-                        left(bind(bean.impl.java))
-                }
-                else -> throw IllegalStateException("Unknown description")
+            return Binder(
+                when (bean) {
+                    is BeanFunction -> left(bindFactory(ServiceProvider(locator, bean.func)))
+                    is BeanObject -> {
+                        right(bind(bean.impl))
+                    }
+                    is BeanSingleton<out Any> -> {
+                        if (bean.impl.isSubclassOf(Factory::class)) {
+                            @Suppress("UNCHECKED_CAST")
+                            val factoryClass: KClass<Factory<Any>> = bean.impl as KClass<Factory<Any>>
+                            left(bindFactory(factoryClass.java))
+                        } else
+                            left(bind(bean.impl.java))
+                    }
+                    else -> throw IllegalStateException("Unknown description")
+                } as Either<ServiceBindingBuilder<out Any>, ScopedBindingBuilder<out Any>>
+            )
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        private class Binder<out T>(val binder: Either<ServiceBindingBuilder<out T>, ScopedBindingBuilder<out T>>) {
+            fun bind(clazz: Class<Any>) {
+                val arg = clazz as Class<in T>
+                return binder.fold({ it.to(arg) }, { it.to(arg) })
             }
+            fun bind(literal: TypeLiteral<Any>) =
+                binder.fold({ it.to(literal) }, { it.to(literal) })
+
+            fun named(name: String) =
+                binder.fold({ it.named(name) }, { it.named(name) })
+
+            fun initScope() =
+                binder.fold({ it.`in`(Singleton::class.java) }, { it })
         }
 
         private class ServiceProvider<T>(val locator: LocatorImpl, val func: (Locator) -> T) : Factory<T> {
@@ -178,6 +186,6 @@ class LocatorHK2Impl @Inject constructor(override val name: String, packages: Se
             override fun provide(): T = result
         }
 
-        class ContractTypeLiteral<T : Any>(val literal: org.glassfish.hk2.api.TypeLiteral<in T>) : Contract<T>()
+        class ContractTypeLiteral<T : Any>(val literal: TypeLiteral<in T>) : Contract<T>()
     }
 }

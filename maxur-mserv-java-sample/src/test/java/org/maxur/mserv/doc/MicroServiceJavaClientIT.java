@@ -1,9 +1,9 @@
 package org.maxur.mserv.doc;
 
 import org.junit.Test;
-import org.maxur.mserv.core.builder.Java;
 import org.maxur.mserv.core.domain.BaseService;
 import org.maxur.mserv.core.java.Locator;
+import org.maxur.mserv.core.runner.Java;
 import org.maxur.mserv.core.service.properties.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,7 +20,7 @@ public class MicroServiceJavaClientIT {
     @Test
     public void main() {
         // tag::launcher[]
-        Java.service()
+        Java.runner()
             .name(":name") // <1>
             .packages("org.maxur.mserv.sample") // <2>
             .properties("hocon") // <3>

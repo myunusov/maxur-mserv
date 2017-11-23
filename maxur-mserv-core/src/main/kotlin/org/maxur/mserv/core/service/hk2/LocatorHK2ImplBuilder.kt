@@ -6,7 +6,7 @@ import org.maxur.mserv.core.LocatorConfig
 import org.maxur.mserv.core.LocatorImpl
 import org.maxur.mserv.core.annotation.ServiceName
 import org.maxur.mserv.core.annotation.Value
-import org.maxur.mserv.core.builder.LocatorBuilder
+import org.maxur.mserv.core.runner.LocatorBuilder
 
 /**
  * @author myunusov

@@ -13,30 +13,17 @@ import org.maxur.mserv.core.kotlin.Locator
  */
 interface MicroService {
 
-    /**
-     * The service name
-     */
+    /** The service name */
     val name: String
 
-    /**
-     * The service version
-     */
+    /** The service version */
     val version: String
 
-    /**
-     * Start this Service
-     */
+    /** Start this Service */
     fun start()
 
-    /**
-     * Stop this Service
-     */
+    /** Stop this Service */
     fun stop()
-
-    /**
-     * Suspend this Service
-     */
-    fun pause()
 }
 
 /**
@@ -52,7 +39,7 @@ class BaseMicroService constructor(
         Runtime.getRuntime().addShutdownHook(object : Thread() {
             /** {@inheritDoc} */
             override fun run() {
-               this@BaseMicroService.stop()
+                this@BaseMicroService.stop()
             }
         })
     }
@@ -60,10 +47,6 @@ class BaseMicroService constructor(
     override var name: String = "Anonymous microService"
 
     override val version: String = MicroService::class.java.`package`.implementationVersion ?: ""
-
-    override fun suspend() {
-        embeddedService.stop()
-    }
 
     override fun shutdown() {
         embeddedService.stop()
