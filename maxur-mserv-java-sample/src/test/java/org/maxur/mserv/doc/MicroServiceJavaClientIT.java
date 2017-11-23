@@ -1,6 +1,5 @@
 package org.maxur.mserv.doc;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.maxur.mserv.core.domain.BaseService;
 import org.maxur.mserv.core.java.Locator;
@@ -19,7 +18,6 @@ public class MicroServiceJavaClientIT {
     private BaseService service1 = null;
 
     @Test
-    @Ignore
     public void main() {
         // tag::launcher[]
         Java.runner()
