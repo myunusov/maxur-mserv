@@ -191,10 +191,11 @@ class Guid<T> : Id<T>, Comparable<Guid<T>> {
         return String(chars)
     }
 
+    /** {@inheritDoc} */
     override fun asString() = toHexString()
-
+    /** {@inheritDoc} */
     override fun toString() = toHexString()
-
+    /** {@inheritDoc} */
     override fun equals(other: Any?): Boolean {
         if (this === other) {
             return true
@@ -208,7 +209,7 @@ class Guid<T> : Id<T>, Comparable<Guid<T>> {
             processIdentifier == id.processIdentifier &&
             timestamp == id.timestamp
     }
-
+    /** {@inheritDoc} */
     override fun hashCode(): Int {
         var result = timestamp
         result = 31 * result + machineIdentifier
@@ -216,7 +217,7 @@ class Guid<T> : Id<T>, Comparable<Guid<T>> {
         result = 31 * result + counter
         return result
     }
-
+    /** {@inheritDoc} */
     override fun compareTo(other: Guid<T>): Int {
         val byteArray = toByteArray()
         val otherByteArray = other.toByteArray()
