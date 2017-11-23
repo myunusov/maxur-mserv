@@ -3,11 +3,11 @@ package org.maxur.mserv.core
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.BeforeClass
 import org.junit.Test
-import org.maxur.mserv.core.builder.Java
-import org.maxur.mserv.core.builder.Kotlin
 import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.embedded.EmbeddedService
 import org.maxur.mserv.core.kotlin.Locator
+import org.maxur.mserv.core.runner.Java
+import org.maxur.mserv.core.runner.Kotlin
 import org.maxur.mserv.core.sample.SampleService
 import org.maxur.mserv.core.service.properties.Properties
 import java.util.function.Consumer
@@ -27,7 +27,7 @@ class MicroServiceIT {
 
     @Test
     fun kotlinMain() {
-        Kotlin.service {
+        Kotlin.runner {
             name = ":name"
             packages += "org.maxur.mserv.core.sample"
             properties += file { format = "hocon" }
@@ -57,7 +57,7 @@ class MicroServiceIT {
 
     @Test
     fun javaMain() {
-        Java.service()
+        Java.runner()
             .name(":name")
             .packages("org.maxur.mserv.core.sample")
             .properties("yaml")

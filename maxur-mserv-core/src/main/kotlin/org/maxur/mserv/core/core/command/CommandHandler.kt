@@ -11,7 +11,6 @@ interface CommandHandler {
     /** The Service Locator */
     val locator: Locator
 
-
     /** Handle the [command] */
     fun handle(command: Command)
 
@@ -20,7 +19,6 @@ interface CommandHandler {
 
     /** Wrap the command handler with delayed service. The [millis] is the length of time to delay in milliseconds */
     fun withDelay(millis: Long): CommandHandler = DeferredWrapper(this, millis)
-
 
     private class DeferredWrapper(
         /** The Wrapped command handler */

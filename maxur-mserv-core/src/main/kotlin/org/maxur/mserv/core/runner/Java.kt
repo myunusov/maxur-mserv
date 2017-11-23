@@ -1,4 +1,4 @@
-package org.maxur.mserv.core.builder
+package org.maxur.mserv.core.runner
 
 import org.maxur.mserv.core.MicroService
 import org.maxur.mserv.core.domain.BaseService
@@ -6,36 +6,36 @@ import org.maxur.mserv.core.domain.Holder
 import java.util.function.Consumer
 
 class Java {
-    companion object dsl {
+    companion object DSL {
         @JvmStatic
-        fun service(): JBuilder = JBuilder()
+        fun runner(): JRunner = JRunner()
     }
 }
 
 interface IJBuilder {
-    fun name(value: String): JBuilder
-    fun packages(value: String): JBuilder
+    fun name(value: String): JRunner
+    fun packages(value: String): JRunner
     fun properties(format: String): JPropertiesBuilder
-    fun properties(): JBuilder
-    fun properties(key: String, value: Any): JBuilder
-    fun withoutProperties(): JBuilder
-    fun service(type: String, properties: String): JBuilder
-    fun rest(): JBuilder
-    fun beforeStop(func: Consumer<in BaseService>): JBuilder
-    fun afterStart(func: Consumer<in BaseService>): JBuilder
-    fun onError(func: Consumer<Exception>): JBuilder
-    fun build(): MicroService
+    fun properties(): JRunner
+    fun properties(key: String, value: Any): JRunner
+    fun withoutProperties(): JRunner
+    fun service(type: String, properties: String): JRunner
+    fun rest(): JRunner
+    fun beforeStop(func: Consumer<in BaseService>): JRunner
+    fun afterStart(func: Consumer<in BaseService>): JRunner
+    fun onError(func: Consumer<Exception>): JRunner
+    fun next(): MicroService
     fun start()
 }
 
-class JBuilder : MicroServiceBuilder(), IJBuilder {
+class JRunner : MicroServiceRunner(), IJBuilder {
 
-    override fun name(value: String): JBuilder {
+    override fun name(value: String): JRunner {
         nameHolder = Holder.string(value)
         return this
     }
 
-    override fun packages(value: String): JBuilder {
+    override fun packages(value: String): JRunner {
         packages += value
         return this
     }
@@ -47,22 +47,22 @@ class JBuilder : MicroServiceBuilder(), IJBuilder {
         return JPropertiesBuilder(this, holder)
     }
 
-    override fun properties(): JBuilder {
+    override fun properties(): JRunner {
         properties += PropertiesBuilder.BasePropertiesBuilder()
         return this
     }
 
-    override fun properties(key: String, value: Any): JBuilder {
+    override fun properties(key: String, value: Any): JRunner {
         properties += Pair(key, value)
         return this
     }
 
-    override fun withoutProperties(): JBuilder {
+    override fun withoutProperties(): JRunner {
         properties += PropertiesBuilder.NullPropertiesBuilder
         return this
     }
 
-    override fun service(type: String, properties: String): JBuilder {
+    override fun service(type: String, properties: String): JRunner {
         val holder = ServiceBuilder()
         holder.type = type
         holder.properties = properties
@@ -70,22 +70,22 @@ class JBuilder : MicroServiceBuilder(), IJBuilder {
         return this
     }
 
-    override fun rest(): JBuilder {
+    override fun rest(): JRunner {
         service("grizzly", ":webapp")
         return this
     }
 
-    override fun beforeStop(func: Consumer<in BaseService>): JBuilder {
+    override fun beforeStop(func: Consumer<in BaseService>): JRunner {
         beforeStop.plusAssign(unitFunc(func))
         return this
     }
 
-    override fun afterStart(func: Consumer<in BaseService>): JBuilder {
+    override fun afterStart(func: Consumer<in BaseService>): JRunner {
         afterStart.plusAssign(unitFunc(func))
         return this
     }
 
-    override fun onError(func: Consumer<Exception>): JBuilder {
+    override fun onError(func: Consumer<Exception>): JRunner {
         onError.plusAssign(errorFunc(func))
         return this
     }
@@ -99,14 +99,10 @@ class JBuilder : MicroServiceBuilder(), IJBuilder {
         object : Function1<Exception, Unit> {
             override fun invoke(e: Exception) = func.accept(e)
         }
-
-    override fun start() {
-        build().start()
-    }
 }
 
 class JPropertiesBuilder(
-    private val parent: JBuilder,
+    private val parent: JRunner,
     private val builder: PropertiesBuilder.BasePropertiesBuilder
 ) : IJBuilder by parent {
 
