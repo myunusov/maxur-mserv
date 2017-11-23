@@ -27,8 +27,8 @@ install: true # skipping the installation step
 script:
   - mvn verify -Denv=dev -Pdebug,dep-jacoco,enforcer,kotlin
 
-#after_success:
-#  - bash <(curl -s https://codecov.io/bash)
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
 
 notifications:
   slack: maxur:bIyYFLYJ0n1toR66dIr5OSbD
