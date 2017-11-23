@@ -25,7 +25,7 @@ jobs:
 
       - run: mvn verify -Denv=dev -Pdebug,dep-jacoco,kotlin -X
 
-      - run: bash <(curl -s https://codecov.io/bash)
+#      - run: bash <(curl -s https://codecov.io/bash)
 
   test1:
     docker:
