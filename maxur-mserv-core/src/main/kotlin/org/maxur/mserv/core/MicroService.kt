@@ -3,7 +3,6 @@ package org.maxur.mserv.core
 import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.embedded.EmbeddedService
 import org.maxur.mserv.core.kotlin.Locator
-import java.util.concurrent.Executors
 
 /**
  * The micro-service
@@ -14,35 +13,17 @@ import java.util.concurrent.Executors
  */
 interface MicroService {
 
-    /**
-     * The service name
-     */
+    /** The service name */
     val name: String
 
-    /**
-     * The service version
-     */
+    /** The service version */
     val version: String
 
-    /**
-     * Start this Service
-     */
+    /** Start this Service */
     fun start()
 
-    /**
-     * Stop this Service
-     */
+    /** Stop this Service */
     fun stop()
-
-    /**
-     * Stop this Service
-     */
-    fun deferredStop()
-
-    /**
-     * Restart this Service
-     */
-    fun deferredRestart()
 }
 
 /**
@@ -50,8 +31,8 @@ interface MicroService {
  * @param locator Service Locator
  */
 class BaseMicroService constructor(
-        locator: Locator,
-        val embeddedService: EmbeddedService = locator.service(EmbeddedService::class)!!
+    locator: Locator,
+    private val embeddedService: EmbeddedService = locator.service(EmbeddedService::class)!!
 ) : BaseService(locator), MicroService {
 
     init {
@@ -67,33 +48,12 @@ class BaseMicroService constructor(
 
     override val version: String = MicroService::class.java.`package`.implementationVersion ?: ""
 
-    override fun deferredStop() = postpone({ stop() })
-
-    override fun deferredRestart() = postpone({ restart() })
-
-    private fun postpone(func: () -> Unit) {
-        val pool = Executors.newSingleThreadExecutor { runnable ->
-            val thread = Executors.defaultThreadFactory().newThread(runnable)
-            thread.isDaemon = false
-            thread
-        }
-        pool.submit {
-            Thread.sleep(1000)
-            func.invoke()
-        }
-        pool.shutdown()
-    }
-
-    override fun launch() {
-        embeddedService.start()
-    }
-
     override fun shutdown() {
         embeddedService.stop()
         locator.shutdown()
     }
 
-    override fun relaunch() {
-        embeddedService.restart()
+    override fun launch() {
+        embeddedService.start()
     }
 }

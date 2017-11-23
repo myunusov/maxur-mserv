@@ -7,74 +7,56 @@ import kotlin.reflect.KParameter
 import kotlin.reflect.KType
 import kotlin.reflect.full.isSubclassOf
 
-abstract class BaseService(val locator: Locator) {
-
+/** The Base Service */
+abstract class BaseService(
+    /** The Service Locator */
+    val locator: Locator) {
+    /** The hook on start */
     var afterStart: MutableList<KFunction<Any>> = ArrayList()
+    /** The hook on stop */
     var beforeStop: MutableList<KFunction<Any>> = ArrayList()
+    /** The hook on error */
     var onError: MutableList<KFunction<Any>> = ArrayList()
 
     protected var state: BaseService.State = BaseService.State.STOPPED
         private set
 
-    /**
-     * The service name
-     */
+    /** The service name */
     abstract var name: String
 
-    /**
-     * Start this Service
-     */
+    /** Start this Service */
     fun start() = state.start(this)
 
-    /**
-     * Immediately shuts down this Service.
-     */
+    /** Immediately shuts down this Service. */
     fun stop() = state.stop(this)
 
-    /**
-     * Immediately restart this Service.
-     */
-    fun restart() = state.restart(this)
-
-    /**
-     * shutdown this service.
-     */
+    /** Shutdown this service. */
     protected abstract fun shutdown()
 
-    /**
-     * launch this service.
-     */
+    /** Launch this service. */
     protected abstract fun launch()
 
-    /**
-     * relaunch this service.
-     */
-    protected abstract fun relaunch()
-
-    /**
-     * Represent State of micro-service
-     */
+    /** Represent State of micro-service */
     enum class State {
-        /**
-         *  Running application
-         */
+        /** Running application */
         STARTED {
+            /** {@inheritDoc} */
             override fun start(service: BaseService) = Unit
+            /** {@inheritDoc} */
             override fun stop(service: BaseService) = shutdown(service)
-            override fun restart(service: BaseService) = relaunch(service)
         },
-        /**
-         * Stop application
-         */
+        /** Stop application */
         STOPPED {
+            /** {@inheritDoc} */
             override fun start(service: BaseService) = launch(service)
+            /** {@inheritDoc} */
             override fun stop(service: BaseService) = Unit
-            override fun restart(service: BaseService) = launch(service)
         };
 
+        /** Start Service */
         abstract fun start(service: BaseService)
+        /** Stop Service */
         abstract fun stop(service: BaseService)
-        abstract fun restart(service: BaseService)
 
         protected fun shutdown(service: BaseService) = check(service, {
             beforeStop.forEach { call(it, service) }
@@ -86,13 +68,6 @@ abstract class BaseService(val locator: Locator) {
             launch()
             state = STARTED
             afterStart.forEach { call(it, service) }
-        })
-
-        protected fun relaunch(service: BaseService) = check(service, {
-            beforeStop.forEach { call(it, service) }
-            relaunch()
-            afterStart.forEach { call(it, service) }
-            state = STARTED
         })
 
         private inline fun check(service: BaseService, function: BaseService.() -> Unit) {
@@ -112,14 +87,12 @@ abstract class BaseService(val locator: Locator) {
         }
 
         private fun match(param: KParameter, vararg values: Any): Any? =
-                values.firstOrNull { isApplicable(param, it) } ?: Locator.bean(param)
+            values.firstOrNull { isApplicable(param, it) } ?: Locator.bean(param)
 
         @Suppress("UNCHECKED_CAST")
         private fun isApplicable(type: KType, clazz: KClass<out Any>) =
-                clazz.isSubclassOf(type.classifier as KClass<Any>)
+            clazz.isSubclassOf(type.classifier as KClass<Any>)
 
         private fun isApplicable(param: KParameter, value: Any) = isApplicable(param.type, value::class)
-
     }
-
 }

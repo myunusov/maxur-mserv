@@ -34,5 +34,4 @@ data class Resource(val path: String) {
     }
 
     private fun isParenOf(path: String) = path.count { it == '/' } == this.path.count { it == '/' }
-
 }

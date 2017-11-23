@@ -47,9 +47,9 @@ import java.util.jar.JarEntry
  * @author Maxim Yunusov
  */
 class StaticHttpHandler(
-        staticContent: StaticContent,
-        /** The Class Loader */
-        val classLoader: ClassLoader = StaticHttpHandler::class.java.classLoader
+    staticContent: StaticContent,
+    /** The Class Loader */
+    val classLoader: ClassLoader = StaticHttpHandler::class.java.classLoader
 ) : StaticHttpHandlerBase() {
 
     companion object {
@@ -61,10 +61,10 @@ class StaticHttpHandler(
     private val defaultPage: String = staticContent.page ?: "index.html"
 
     constructor(path: String, vararg roots: String) :
-            this(StaticContent(Path(path), roots.map { URI.create(it) }.toTypedArray()))
+        this(StaticContent(Path(path), roots.map { URI.create(it) }.toTypedArray()))
 
     constructor(path: String, vararg roots: URI) :
-            this(StaticContent(Path(path), arrayOf(*roots)))
+        this(StaticContent(Path(path), arrayOf(*roots)))
 
     /**
      * {@inheritDoc}
@@ -89,16 +89,16 @@ class StaticHttpHandler(
     }
 
     inner class CLFileResource(
-            val url: URL,
-            resourcePath: String,
-            private val file: File = respondedFile(url),
-            override val path: String = resourcePath
+        val url: URL,
+        resourcePath: String,
+        private val file: File = respondedFile(url),
+        override val path: String = resourcePath
     ) : Resource() {
 
         override fun mustBeRedirected(resourcePath: String): Boolean =
-                // TODO !this@StaticHttpHandler.isDirectorySlashOff &&
-                file.isDirectory &&
-                        !resourcePath.endsWith("/")
+            // TODO !this@StaticHttpHandler.isDirectorySlashOff &&
+            file.isDirectory &&
+                !resourcePath.endsWith("/")
 
         override fun isExist(): Boolean = file.exists()
         override fun process(request: Request, response: Response) {
@@ -165,9 +165,9 @@ class StaticHttpHandler(
 
         override fun process(request: Request, response: Response) {
             val jarFile = getJarFile(
-                    // we need that because url.getPath() may have url encoded symbols,
-                    // which are getting decoded when calling uri.getPath()
-                    URI(url.path).path
+                // we need that because url.getPath() may have url encoded symbols,
+                // which are getting decoded when calling uri.getPath()
+                URI(url.path).path
             )
             // if it's not a jar file - we don't know what to do with that
             // so not adding it to the file cache
@@ -250,7 +250,6 @@ class StaticHttpHandler(
             response.setStatus(HttpStatus.MOVED_PERMANENTLY_301)
             response.setHeader(Header.Location, response.encodeRedirectURL("$path/"))
         }
-
     }
 
     abstract inner class Resource {
@@ -259,11 +258,11 @@ class StaticHttpHandler(
 
         // url may point to a folder or a file
         fun handle(request: Request, response: Response): Boolean =
-                // If it's not HTTP GET - return method is not supported status
-                if (isGet(request))
-                    success(response, request)
-                else
-                    methodIsNotAllowed(path, request, response)
+            // If it's not HTTP GET - return method is not supported status
+            if (isGet(request))
+                success(response, request)
+            else
+                methodIsNotAllowed(path, request, response)
 
         private fun isGet(request: Request) = Method.GET == request.method
 
@@ -310,9 +309,9 @@ class StaticHttpHandler(
 
         private inner class NonBlockingDownloadHandler
         internal constructor(private val response: Response,
-                             private val outputStream: NIOOutputStream,
-                             private val inputStream: InputStream,
-                             private val chunkSize: Int
+            private val outputStream: NIOOutputStream,
+            private val inputStream: InputStream,
+            private val chunkSize: Int
         ) : WriteHandler {
             private val mm: MemoryManager<*> = response.getRequest().context.memoryManager
             @Throws(Exception::class)
@@ -368,10 +367,10 @@ class StaticHttpHandler(
             private fun indirectAllocateBuffer(): Buffer? {
                 val buffer: Buffer = mm.allocate(chunkSize)
                 val len: Int =
-                        if (buffer.isComposite) readCompositeBuffer(buffer)
-                        else inputStream.read(buffer.array(),
-                                buffer.position() + buffer.arrayOffset(),
-                                chunkSize)
+                    if (buffer.isComposite) readCompositeBuffer(buffer)
+                    else inputStream.read(buffer.array(),
+                        buffer.position() + buffer.arrayOffset(),
+                        chunkSize)
                 if (len > 0) {
                     buffer.position(buffer.position() + len)
                 } else {
@@ -389,8 +388,8 @@ class StaticHttpHandler(
                     val subBuffer = buffers[i]
                     val subBufferLen = subBuffer.remaining()
                     val justReadLen = inputStream.read(subBuffer.array(),
-                            subBuffer.position() + subBuffer.arrayOffset(),
-                            subBufferLen)
+                        subBuffer.position() + subBuffer.arrayOffset(),
+                        subBufferLen)
                     if (justReadLen > 0) lenCounter += justReadLen
                     if (justReadLen < subBufferLen) break
                 }
@@ -432,10 +431,10 @@ class StaticHttpHandler(
 
         private fun makeRoots(staticContent: StaticContent): Set<Root> {
             val set = staticContent.roots
-                    .map { makeRoot(it) }
-                    .filterNotNull()
-                    .map { it.validate() }
-                    .toHashSet()
+                .map { makeRoot(it) }
+                .filterNotNull()
+                .map { it.validate() }
+                .toHashSet()
 
             if (set.isNotEmpty()) {
                 return set
@@ -445,16 +444,16 @@ class StaticHttpHandler(
         }
 
         private fun makeRoot(uri: URI): Root? =
-                when (uri.scheme) {
-                    null -> FileRoot(File(uri.toString()))
-                    "file" -> FileRoot(Paths.get(uri).toFile())
-                    "classpath" -> CLRoot(uri, classLoader)
-                    else -> null
-                }
+            when (uri.scheme) {
+                null -> FileRoot(File(uri.toString()))
+                "file" -> FileRoot(Paths.get(uri).toFile())
+                "classpath" -> CLRoot(uri, classLoader)
+                else -> null
+            }
 
         //@todo #2 DEV move "check-non-slash-terminated-folders" to web-app properties
         private val CHECK_NON_SLASH_TERMINATED_FOLDERS_PROP =
-                StaticHttpHandler::class.java.name + ".check-non-slash-terminated-folders"
+            StaticHttpHandler::class.java.name + ".check-non-slash-terminated-folders"
 
         /**
          * <tt>true</tt> (default) if we want to double-check the resource requests,
@@ -462,8 +461,8 @@ class StaticHttpHandler(
          * to retrieve a welcome resource from the folder.
          */
         private val CHECK_NON_SLASH_TERMINATED_FOLDERS =
-                System.getProperty(CHECK_NON_SLASH_TERMINATED_FOLDERS_PROP) == null ||
-                        java.lang.Boolean.getBoolean(CHECK_NON_SLASH_TERMINATED_FOLDERS_PROP)
+            System.getProperty(CHECK_NON_SLASH_TERMINATED_FOLDERS_PROP) == null ||
+                java.lang.Boolean.getBoolean(CHECK_NON_SLASH_TERMINATED_FOLDERS_PROP)
 
         fun find(resourcePath: String): Resource? {
             val path = resourcePath.trimStart('/')
@@ -471,8 +470,8 @@ class StaticHttpHandler(
                 return findDefaultPage(path)
             }
             return roots
-                    .map { it.lookupResource(path, true) }
-                    .firstOrNull()?.let {
+                .map { it.lookupResource(path, true) }
+                .firstOrNull()?.let {
                 return if (it.mustBeRedirected(resourcePath)) RedirectedResource(resourcePath)
                 else it
             } ?: if (CHECK_NON_SLASH_TERMINATED_FOLDERS) {
@@ -484,23 +483,22 @@ class StaticHttpHandler(
         }
 
         private fun findDefaultPage(folderPath: String): Resource? = roots
-                .map { it.lookupResource(folderPath + defaultPage, false) }
-                .firstOrNull()?.let {
+            .map { it.lookupResource(folderPath + defaultPage, false) }
+            .firstOrNull()?.let {
             return it
         }
-
     }
 
     inner class FileResource(
-            folder: File,
-            resourcePath: String,
-            private val file: File = File(folder, resourcePath)
+        folder: File,
+        resourcePath: String,
+        private val file: File = File(folder, resourcePath)
     ) : Resource() {
 
         override fun mustBeRedirected(resourcePath: String): Boolean =
-                // TODO !this@StaticHttpHandler.isDirectorySlashOff &&
-                file.isDirectory &&
-                        !resourcePath.endsWith("/")
+            // TODO !this@StaticHttpHandler.isDirectorySlashOff &&
+            file.isDirectory &&
+                !resourcePath.endsWith("/")
 
         override val path: String = file.path
 
@@ -525,8 +523,8 @@ class StaticHttpHandler(
     inner class CLRoot(val path: String, val classLoader: ClassLoader) : Root {
 
         constructor(uri: URI, classLoader: ClassLoader) : this(
-                uri.toString().substring("classpath".length + 1).trimStart('/'),
-                classLoader
+            uri.toString().substring("classpath".length + 1).trimStart('/'),
+            classLoader
         )
 
         override fun validate(): Root {
@@ -544,12 +542,12 @@ class StaticHttpHandler(
         }
 
         private fun make(path: String, url: URL, mayBeFolder: Boolean): StaticHttpHandler.Resource =
-                when (url.protocol) {
-                    "file" -> CLFileResource(url, path)
-                    "jar" -> JarResource(url)
-                    "bundle" -> BundleResource(url, mayBeFolder)
-                    else -> UnknownResource(url)
-                }
+            when (url.protocol) {
+                "file" -> CLFileResource(url, path)
+                "jar" -> JarResource(url)
+                "bundle" -> BundleResource(url, mayBeFolder)
+                else -> UnknownResource(url)
+            }
     }
 }
 

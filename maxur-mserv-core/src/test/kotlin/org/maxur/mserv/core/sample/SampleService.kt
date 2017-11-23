@@ -15,6 +15,5 @@ class SampleService @Inject constructor(@Value(key = "webapp") val webapp: WebAp
     fun setNewName(@Value(key = "name") value: String) {
         name = value
     }
-
 }
 

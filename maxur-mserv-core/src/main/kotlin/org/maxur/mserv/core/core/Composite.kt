@@ -19,5 +19,4 @@ abstract class Composite<T>(protected val list: MutableList<T> = ArrayList()) {
     operator fun plusAssign(value: T) {
         add(value)
     }
-
 }

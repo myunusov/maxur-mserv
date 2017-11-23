@@ -3,8 +3,8 @@ package org.maxur.mserv.core
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.BeforeClass
 import org.junit.Test
-import org.maxur.mserv.core.builder.LocatorBuilder
 import org.maxur.mserv.core.kotlin.Locator
+import org.maxur.mserv.core.runner.LocatorBuilder
 import kotlin.concurrent.thread
 import kotlin.reflect.KParameter
 import kotlin.reflect.KType
@@ -205,6 +205,9 @@ class LocatorImplTest {
 
         @Suppress("UNCHECKED_CAST")
         class FakeLocator(val str: String, override val name: String = "fake $str") : LocatorImpl {
+
+            override fun inject(injectMe: Any) {
+            }
 
             override fun config(): LocatorConfig = object : LocatorConfig(this) {
                 override fun <T : Any> makeDescriptor(bean: Bean<T>, contract: Contract<T>?): Descriptor<T> =

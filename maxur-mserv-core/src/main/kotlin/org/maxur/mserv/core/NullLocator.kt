@@ -7,6 +7,9 @@ package org.maxur.mserv.core
 object NullLocator : LocatorImpl {
 
     /** {@inheritDoc} */
+    override fun inject(injectMe: Any) {}
+
+    /** {@inheritDoc} */
     override val name: String = "null-locator"
 
     /** {@inheritDoc} */

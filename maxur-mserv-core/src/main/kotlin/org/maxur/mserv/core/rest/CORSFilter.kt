@@ -17,5 +17,4 @@ class CORSFilter : ContainerResponseFilter {
         responseContext.headers.add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
         responseContext.headers.add("Access-Control-Max-Age", "1209600")
     }
-
 }

@@ -1,4 +1,4 @@
-package org.maxur.mserv.core.builder
+package org.maxur.mserv.core.runner
 
 import org.maxur.mserv.core.core.Builder
 import org.maxur.mserv.core.core.CompositeBuilder
@@ -46,15 +46,15 @@ class ServiceBuilder : Builder<EmbeddedService?> {
 
     private fun makeServiceHolder(): Holder<EmbeddedService> = Holder.creator { locator ->
         val factory: EmbeddedServiceFactory? = locator.service(type)
-        factory ?.make(propertiesHolder) ?: throw IllegalStateException("Service '$type' is not configured\n")
+        factory?.make(propertiesHolder) ?: throw IllegalStateException("Service '$type' is not configured\n")
     }
 
     private fun propertiesKey(value: String): Holder<Any> {
         val key =
-                if (value.startsWith(":"))
-                    value.substringAfter(":")
-                else
-                    throw IllegalArgumentException("A Key Name must be started with ':'")
+            if (value.startsWith(":"))
+                value.substringAfter(":")
+            else
+                throw IllegalArgumentException("A Key Name must be started with ':'")
         return Holder.creator { locator, clazz -> locator.property(key, clazz)!! }
     }
 
@@ -88,5 +88,4 @@ internal class CompositeServiceBuilder : CompositeBuilder<EmbeddedService>() {
             else -> CompositeService(it)
         }
     }
-
 }

@@ -2,10 +2,12 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: library/maven:alpine
     working_directory: ~/repo
     environment:
-      MAVEN_OPTS: -Xmx3200m
+      MAVEN_OPTS: -Xmx4096m
+    parallelism: 2
+    resource_class: large
     steps:
       - checkout
 
@@ -21,16 +23,13 @@ jobs:
             - ~/.m2
           key: v1-dependencies-{{ checksum "pom.xml" }}
 
-      - run: mvn verify -Denv=dev -Pdebug,dep-jacoco,kotlin
-
-      - store_test_results:
-          path: maxur-mserv-core/target/surefire-reports
+      - run: mvn verify -Denv=dev -Pdebug,dep-jacoco,kotlin -X
 
       - run: bash <(curl -s https://codecov.io/bash)
 
   test1:
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: library/maven:alpine
     working_directory: ~/repo
     steps:
 

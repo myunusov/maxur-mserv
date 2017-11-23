@@ -1,9 +1,9 @@
 package org.maxur.mserv.sample
 
-import org.maxur.mserv.core.builder.Kotlin
-import org.maxur.mserv.core.builder.hocon
 import org.maxur.mserv.core.domain.BaseService
 import org.maxur.mserv.core.embedded.WebServer
+import org.maxur.mserv.core.runner.Kotlin
+import org.maxur.mserv.core.runner.hocon
 import org.maxur.mserv.core.service.properties.Properties
 import org.maxur.mserv.sample.params.ConfigParams
 import org.slf4j.LoggerFactory
@@ -27,7 +27,7 @@ object Launcher {
      */
     @JvmStatic
     fun main(args: Array<String>) {
-        Kotlin.service {
+        Kotlin.runner {
             name = ":name"
             packages += "org.maxur.mserv.sample"
             properties += hocon()

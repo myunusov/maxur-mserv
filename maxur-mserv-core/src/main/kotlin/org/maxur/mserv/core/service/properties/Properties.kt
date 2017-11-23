@@ -69,11 +69,10 @@ interface Properties {
     fun <P> read(key: String, clazz: Class<P>): P?
 
     fun URI.withoutScheme() =
-            if (scheme.isNullOrEmpty())
-                toString()
-            else
-                toString().substring(scheme.length + 1).trimStart('/')
-
+        if (scheme.isNullOrEmpty())
+            toString()
+        else
+            toString().substring(scheme.length + 1).trimStart('/')
 }
 
 class MapProperties(val map: MutableMap<String, Any>) : Properties {

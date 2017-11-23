@@ -10,15 +10,15 @@ import org.junit.platform.runner.JUnitPlatform
 import org.junit.runner.RunWith
 import org.maxur.mserv.core.LocatorImpl
 import org.maxur.mserv.core.TestLocatorHolder
-import org.maxur.mserv.core.builder.Java
-import org.maxur.mserv.core.builder.Kotlin.service
-import org.maxur.mserv.core.builder.PredefinedPropertiesBuilder
-import org.maxur.mserv.core.builder.PropertiesBuilder
-import org.maxur.mserv.core.builder.hocon
-import org.maxur.mserv.core.builder.json
-import org.maxur.mserv.core.builder.yaml
 import org.maxur.mserv.core.kotlin.Locator
 import org.maxur.mserv.core.relativePathByResourceName
+import org.maxur.mserv.core.runner.Java
+import org.maxur.mserv.core.runner.Kotlin.runner
+import org.maxur.mserv.core.runner.PredefinedPropertiesBuilder
+import org.maxur.mserv.core.runner.PropertiesBuilder
+import org.maxur.mserv.core.runner.hocon
+import org.maxur.mserv.core.runner.json
+import org.maxur.mserv.core.runner.yaml
 import org.maxur.mserv.core.service.properties.Properties
 import org.maxur.mserv.core.service.properties.PropertiesSource
 import java.net.URL
@@ -29,7 +29,7 @@ val properties: Properties? get() = Locator.bean(Properties::class)
 val source: PropertiesSource? get() = Locator.bean(Properties::class)?.sources?.firstOrNull()
 
 @RunWith(JUnitPlatform::class)
-class MicroServiceBuilderSpec : Spek({
+class MicroServiceRunnerSpec : Spek({
 
     val function: Map<String, (PredefinedPropertiesBuilder.() -> Unit) -> PropertiesBuilder> = mapOf(
         "Hocon" to ::hocon,
@@ -49,9 +49,9 @@ class MicroServiceBuilderSpec : Spek({
 
         context("without properties") {
             it("should return new micro-service") {
-                val service = service {
+                val service = runner {
                     withoutProperties()
-                }
+                }.next()
                 assertThat(service).isNotNull()
                 val source = source
                 assertThat(source).isNotNull()
@@ -59,9 +59,9 @@ class MicroServiceBuilderSpec : Spek({
             it("should return new micro-service for java client") {
                 val service =
                     // tag::withoutproperties[]
-                    Java.service()
+                    Java.runner()
                         .withoutProperties() // <1>
-                        .build()
+                        .next()
                 // end::withoutproperties[]
                 assertThat(service).isNotNull()
                 val source = source
@@ -71,11 +71,11 @@ class MicroServiceBuilderSpec : Spek({
 
         context("with properties object") {
             it("should return new micro-service") {
-                val service = service {
+                val service = runner {
                     properties += "name" to "Test Service"
                     properties += "url" to URL("file:///")
                     properties += "count" to 0
-                }
+                }.next()
                 assertThat(service).isNotNull()
                 val source = source
                 assertThat(source).isNotNull()
@@ -88,11 +88,11 @@ class MicroServiceBuilderSpec : Spek({
             }
             it("should return new micro-service for java client") {
                 val service =
-                        Java.service()
-                                .properties("name", "Test Service")
-                                .properties("url", URL("file:///"))
-                                .properties("count", 0)
-                                .build()
+                    Java.runner()
+                        .properties("name", "Test Service")
+                        .properties("url", URL("file:///"))
+                        .properties("count", 0)
+                        .next()
                 assertThat(service).isNotNull()
                 val source = source
                 assertThat(source).isNotNull()
@@ -116,9 +116,9 @@ class MicroServiceBuilderSpec : Spek({
                     describe("With '$name' properties") {
 
                         it("should return new micro-service with named properties source") {
-                            val service = service {
+                            val service = runner {
                                 properties += function[name]!!.invoke({})
-                            }
+                            }.next()
                             assertThat(service).isNotNull()
                             val source = source
                             assertThat(source).isNotNull()
@@ -131,9 +131,9 @@ class MicroServiceBuilderSpec : Spek({
                         }
 
                         it("should return new micro-service with default properties source") {
-                            val service = service {
+                            val service = runner {
                                 properties += file { format = name }
-                            }
+                            }.next()
                             assertThat(service).isNotNull()
                             val source = source
                             assertThat(source).isNotNull()
@@ -146,9 +146,9 @@ class MicroServiceBuilderSpec : Spek({
                         }
 
                         it("should return new micro-service with default properties source for java client") {
-                            val service = Java.service()
+                            val service = Java.runner()
                                 .properties(name)
-                                .build()
+                                .next()
                             assertThat(service).isNotNull()
                             val source = source
                             assertThat(source).isNotNull()
@@ -159,9 +159,7 @@ class MicroServiceBuilderSpec : Spek({
                             }
                             Locator.stop()
                         }
-
                     }
-
                 }
         }
 
@@ -179,11 +177,11 @@ class MicroServiceBuilderSpec : Spek({
                             throw IllegalStateException("file application.$ext is not found")
 
                         it("should return new micro-service with named properties source") {
-                            val service = service {
+                            val service = runner {
                                 properties += function[name]!!.invoke({
                                     url = propertyFile
                                 })
-                            }
+                            }.next()
                             assertThat(service).isNotNull()
                             val source = source
                             assertThat(source).isNotNull()
@@ -196,12 +194,12 @@ class MicroServiceBuilderSpec : Spek({
                         }
 
                         it("should return new micro-service with properties") {
-                            val service = service {
+                            val service = runner {
                                 properties += file {
                                     format = name
                                     url = propertyFile
                                 }
-                            }
+                            }.next()
                             assertThat(service).isNotNull()
                             val source = source
                             assertThat(source).isNotNull()
@@ -214,10 +212,10 @@ class MicroServiceBuilderSpec : Spek({
                         }
 
                         it("should return new micro-service with properties for java client") {
-                            val service = Java.service()
+                            val service = Java.runner()
                                 .properties(name)
                                 .url(propertyFile)
-                                .build()
+                                .next()
                             assertThat(service).isNotNull()
                             val source = source
                             assertThat(source).isNotNull()
@@ -243,11 +241,11 @@ class MicroServiceBuilderSpec : Spek({
                     describe("With '$name' properties") {
 
                         it("should return new micro-service with named properties source") {
-                            val service = service {
+                            val service = runner {
                                 properties += function[name]!!.invoke({
                                     rootKey = "USER"
                                 })
-                            }
+                            }.next()
                             assertThat(service).isNotNull()
                             val source = source
                             assertThat(source).isNotNull()
@@ -260,12 +258,12 @@ class MicroServiceBuilderSpec : Spek({
                         }
 
                         it("should return new micro-service with properties") {
-                            val service = service {
+                            val service = runner {
                                 properties += file {
                                     format = name
                                     rootKey = "USER"
                                 }
-                            }
+                            }.next()
                             assertThat(service).isNotNull()
                             val source = source
                             assertThat(source).isNotNull()
@@ -278,10 +276,10 @@ class MicroServiceBuilderSpec : Spek({
                         }
 
                         it("should return new micro-service with properties for java client") {
-                            val service = Java.service()
+                            val service = Java.runner()
                                 .properties(name)
                                 .rootKey("USER")
-                                .build()
+                                .next()
                             assertThat(service).isNotNull()
                             val source = source
                             assertThat(source).isNotNull()
@@ -292,9 +290,7 @@ class MicroServiceBuilderSpec : Spek({
                             }
                             Locator.stop()
                         }
-
                     }
-
                 }
         }
 
@@ -305,7 +301,7 @@ class MicroServiceBuilderSpec : Spek({
 
                     it("should throw error on unknown format") {
                         assertFailsWith<IllegalStateException> {
-                            service {
+                            runner {
                                 properties += file {
                                     format = "Error"
                                     url = "file:///file.cfg"
@@ -316,7 +312,7 @@ class MicroServiceBuilderSpec : Spek({
                     }
                     it("should throw error on unknown url scheme") {
                         assertFailsWith<IllegalStateException> {
-                            service {
+                            runner {
                                 properties += file {
                                     format = name
                                     url = "error:///file.cfg"
@@ -327,16 +323,16 @@ class MicroServiceBuilderSpec : Spek({
                     }
                     it("should throw error on unknown url scheme for java client") {
                         assertFailsWith<IllegalStateException> {
-                            Java.service()
+                            Java.runner()
                                 .properties(name)
                                 .url("error:///file.cfg")
-                                .build()
+                                .next()
                             Locator.bean(Properties::class)
                         }
                     }
                     it("should throw error on unknown file") {
                         assertFailsWith<IllegalStateException> {
-                            service {
+                            runner {
                                 properties += file {
                                     format = name
                                     url = "file:///error.cfg"
@@ -347,16 +343,16 @@ class MicroServiceBuilderSpec : Spek({
                     }
                     it("should throw error on unknown file for java client") {
                         assertFailsWith<IllegalStateException> {
-                            Java.service()
+                            Java.runner()
                                 .properties(name)
                                 .url("file:///error.cfg")
-                                .build()
+                                .next()
                             Locator.bean(Properties::class)
                         }
                     }
                     it("should throw error on unknown root key") {
                         assertFailsWith<IllegalStateException> {
-                            service {
+                            runner {
                                 properties += file {
                                     format = name
                                     rootKey = "ERROR"
@@ -367,16 +363,14 @@ class MicroServiceBuilderSpec : Spek({
                     }
                     it("should throw error on unknown root key for java client") {
                         assertFailsWith<IllegalStateException> {
-                            Java.service()
+                            Java.runner()
                                 .properties(name)
                                 .rootKey("ERROR")
-                                .build()
+                                .next()
                             Locator.bean(Properties::class)
                         }
                     }
-
                 }
-
             }
         }
 
@@ -386,7 +380,7 @@ class MicroServiceBuilderSpec : Spek({
 
         context("Build micro-service with default properties") {
             it("should return new micro-service") {
-                val service = service { }
+                val service = runner { }.next()
                 assertThat(service).isNotNull()
                 val source = source
                 assertThat(source).isNotNull()
@@ -398,14 +392,13 @@ class MicroServiceBuilderSpec : Spek({
 
     describe("a rest micro-service") {
         it("should return new micro-service") {
-            val service = service {
+            val service = runner {
                 withoutProperties()
                 rest { }
             }
             assertThat(service).isNotNull()
         }
     }
-
 })
 
 private fun condition(function: (String) -> Boolean, description: String): Condition<String>

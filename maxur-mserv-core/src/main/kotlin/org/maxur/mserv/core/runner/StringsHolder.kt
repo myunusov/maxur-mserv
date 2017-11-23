@@ -1,4 +1,4 @@
-package org.maxur.mserv.core.builder
+package org.maxur.mserv.core.runner
 
 /**
  * Hold list of string.
@@ -21,5 +21,4 @@ class StringsHolder(val strings: MutableSet<String> = mutableSetOf()) {
 
     /** {@inheritDoc} */
     override fun toString(): String = strings.joinToString(",")
-
 }

@@ -13,5 +13,4 @@ interface Builder<T> {
      * @param locator The Service Locator.
      */
     fun build(locator: Locator): T
-
 }

@@ -72,5 +72,4 @@ abstract class RestResourceConfig : ResourceConfig() {
             return true
         }
     }
-
 }

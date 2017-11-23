@@ -91,5 +91,4 @@ class Locator @Inject constructor(impl: LocatorImpl) : LocatorImpl by impl {
 
     /** {@inheritDoc} */
     override fun equals(other: Any?): Boolean = other is org.maxur.mserv.core.kotlin.Locator && other.name.equals(name)
-
 }

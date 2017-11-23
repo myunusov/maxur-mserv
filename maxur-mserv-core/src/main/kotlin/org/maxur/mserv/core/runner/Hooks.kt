@@ -1,4 +1,4 @@
-package org.maxur.mserv.core.builder
+package org.maxur.mserv.core.runner
 
 import org.maxur.mserv.core.domain.BaseService
 import kotlin.reflect.KFunction

@@ -118,8 +118,6 @@ class StaticHttpHandlerSpec : Spek({
                 verify(response).sendError(404)
             }
         }
-
     }
-
 })
 

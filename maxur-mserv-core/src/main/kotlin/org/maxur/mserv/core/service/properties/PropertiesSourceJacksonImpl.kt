@@ -17,19 +17,19 @@ import java.nio.file.Paths
 
 class PropertiesFactoryJsonImpl : PropertiesFactory() {
     override fun make(uri: URI?, rootKey: String?): Result<Exception, Properties> =
-            tryTo { PropertiesSourceJacksonImpl(JsonFactory(), "json", uri, rootKey) }
+        tryTo { PropertiesSourceJacksonImpl(JsonFactory(), "json", uri, rootKey) }
 }
 
 class PropertiesFactoryYamlImpl : PropertiesFactory() {
     override fun make(uri: URI?, rootKey: String?): Result<Exception, Properties> =
-            tryTo { PropertiesSourceJacksonImpl(YAMLFactory(), "yaml", uri, rootKey) }
+        tryTo { PropertiesSourceJacksonImpl(YAMLFactory(), "yaml", uri, rootKey) }
 }
 
 internal class PropertiesSourceJacksonImpl(
-        factory: JsonFactory,
-        defaultExt: String,
-        uri: URI? = null,
-        rootKey: String? = null
+    factory: JsonFactory,
+    defaultExt: String,
+    uri: URI? = null,
+    rootKey: String? = null
 ) : Properties, PropertiesSource() {
 
     override val rootKey = rootKey ?: "/"
@@ -39,9 +39,9 @@ internal class PropertiesSourceJacksonImpl(
     private val mapper = ObjectMapperProvider.config(ObjectMapper(factory))
 
     private var root: JsonNode = (
-            if (rootKey == null) rootNode(this.uri) else rootNode(this.uri)?.get(this.rootKey))
-            ?: throw IllegalStateException(
-            "The properties source '${this.uri}' not found. You need create one with '${this.rootKey}' section"
+        if (rootKey == null) rootNode(this.uri) else rootNode(this.uri)?.get(this.rootKey))
+        ?: throw IllegalStateException(
+        "The properties source '${this.uri}' not found. You need create one with '${this.rootKey}' section"
     )
 
     private fun rootNode(uri: URI): JsonNode? = when (uri.scheme) {
@@ -49,12 +49,12 @@ internal class PropertiesSourceJacksonImpl(
         "file" -> mapper.readTree(Paths.get(uri).toFile())
         "classpath" -> inputStreamByResource(uri)?.let { mapper.readTree(it) }
         else -> throw IllegalArgumentException(
-                """Unsupported schema '${uri.scheme}' to properties source. Must be one of [file, classpath]"""
+            """Unsupported schema '${uri.scheme}' to properties source. Must be one of [file, classpath]"""
         )
     }
 
     private fun inputStreamByResource(uri: URI): InputStream? =
-            this::class.java.getResourceAsStream("/" + uri.withoutScheme())
+        this::class.java.getResourceAsStream("/" + uri.withoutScheme())
 
     override fun asString(key: String): String? = node(key).asText()
     override fun asLong(key: String): Long? = node(key).asLong()
@@ -69,6 +69,5 @@ internal class PropertiesSourceJacksonImpl(
     }
 
     private fun node(key: String) = root.get(key) ?:
-            throw IllegalStateException("Configuration parameter '$key' is not found.")
-
+        throw IllegalStateException("Configuration parameter '$key' is not found.")
 }

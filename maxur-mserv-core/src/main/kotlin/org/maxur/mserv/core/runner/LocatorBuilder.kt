@@ -1,4 +1,4 @@
-package org.maxur.mserv.core.builder
+package org.maxur.mserv.core.runner
 
 import org.maxur.mserv.core.LocatorConfig
 import org.maxur.mserv.core.LocatorImpl
@@ -46,5 +46,4 @@ abstract class LocatorBuilder() {
     protected abstract fun make(): LocatorImpl
 
     protected abstract fun configure(locator: LocatorImpl, function: LocatorConfig.() -> Unit): LocatorConfig
-
 }

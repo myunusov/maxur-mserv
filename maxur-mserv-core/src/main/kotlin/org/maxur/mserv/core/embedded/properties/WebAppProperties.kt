@@ -16,22 +16,21 @@ import java.net.URI
  * @since <pre>12.06.2017</pre>
  */
 class WebAppProperties(
-        @JsonProperty("url") val url: URI,
-        @JsonProperty("rest", required = false) val rest: RestService?,
-        @JsonProperty("static-content", required = false) val staticContent: Array<StaticContent>?,
-        @JsonProperty("with-hal-browser", required = false) val withHalBrowser: Boolean = false,
-        @JsonProperty("with-swagger-ui", required = false) val withSwaggerUi: Boolean = false
+    @JsonProperty("url") val url: URI,
+    @JsonProperty("rest", required = false) val rest: RestService?,
+    @JsonProperty("static-content", required = false) val staticContent: Array<StaticContent>?,
+    @JsonProperty("with-hal-browser", required = false) val withHalBrowser: Boolean = false,
+    @JsonProperty("with-swagger-ui", required = false) val withSwaggerUi: Boolean = false
 ) {
 
     val restPath: Path = rest?.path ?: Path("api")
 
     companion object {
         val SWAGGER_URL = Resource("/META-INF/resources/webjars/swagger-ui/").subfolder ?:
-                throw IllegalStateException("Swagger UI is not found in class path")
+            throw IllegalStateException("Swagger UI is not found in class path")
 
         val HAL_URL = Resource("/META-INF/resources/webjars/hal-browser/").subfolder ?:
-                throw IllegalStateException("HAL Browser is not found in class path")
-
+            throw IllegalStateException("HAL Browser is not found in class path")
     }
 
     fun staticContent(restConfig: RestResourceConfig): ArrayList<StaticContent> {
@@ -53,19 +52,19 @@ class WebAppProperties(
 
     private fun swaggerContent(): StaticContent {
         return StaticContent(
-                Path("docs"),
-                arrayOf(SWAGGER_URL),
-                "index.html",
-                "index.html?url=/api/swagger.json"
+            Path("docs"),
+            arrayOf(SWAGGER_URL),
+            "index.html",
+            "index.html?url=/api/swagger.json"
         )
     }
 
     private fun halContent(): StaticContent {
         return StaticContent(
-                Path("hal"),
-                arrayOf(HAL_URL),
-                "browser.html",
-                "#/api/service"
+            Path("hal"),
+            arrayOf(HAL_URL),
+            "browser.html",
+            "#/api/service"
         )
     }
 
@@ -76,6 +75,5 @@ class WebAppProperties(
         config.resourcePackage = packages.joinToString(",")
         config.scan = true
     }
-
 }
 

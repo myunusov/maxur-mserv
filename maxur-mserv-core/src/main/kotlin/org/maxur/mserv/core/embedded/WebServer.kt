@@ -14,6 +14,5 @@ interface WebServer : EmbeddedService {
     val baseUri: URI
 
     fun entries(): WebEntries
-
 }
 

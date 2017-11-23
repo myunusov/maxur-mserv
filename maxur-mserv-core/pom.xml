@@ -74,7 +74,7 @@
         <HK2Utilities.version>1.4.1</HK2Utilities.version>
         <hibernate-validator.version>5.4.1.Final</hibernate-validator.version>
 
-        <ktlint.version>0.9.1</ktlint.version>
+        <ktlint.version>0.12.1</ktlint.version>
         <junit-platform.version>1.0.0-RC2</junit-platform.version>
         <slf4j.version>1.7.25</slf4j.version>
 
@@ -142,8 +142,18 @@
                                 <phase>verify</phase>
                                 <configuration>
                                     <target name="ktlint">
-                                        <java taskname="ktlint" dir="${basedir}" fork="true" failonerror="false" classname="com.github.shyiko.ktlint.Main" classpathref="maven.plugin.classpath">
+                                        <java taskname="ktlint"
+                                              dir="${basedir}"
+                                              fork="true"
+                                              failonerror="true"
+                                              classname="com.github.shyiko.ktlint.Main"
+                                              classpathref="maven.plugin.classpath"
+                                        >
                                             <arg value="src/**/*.kt" />
+                                            <!-- to generate report in checkstyle format prepend following args: -->
+                                            <arg value="--reporter=plain"/>
+                                            <arg value="--reporter=checkstyle,output=${project.build.directory}/ktlint.xml"/>
+                                            <!-- see https://github.com/shyiko/ktlint#usage for more -->
                                         </java>
                                     </target>
                                 </configuration>
@@ -155,7 +165,13 @@
                                 <id>ktlint-format</id>
                                 <configuration>
                                     <target name="ktlint">
-                                        <java taskname="ktlint" dir="${basedir}" fork="true" failonerror="false" classname="com.github.shyiko.ktlint.Main" classpathref="maven.plugin.classpath">
+                                        <java taskname="ktlint"
+                                              dir="${basedir}"
+                                              fork="true"
+                                              failonerror="true"
+                                              classname="com.github.shyiko.ktlint.Main"
+                                              classpathref="maven.plugin.classpath"
+                                        >
                                             <arg value="-F" />
                                             <arg value="src/**/*.kt" />
                                         </java>

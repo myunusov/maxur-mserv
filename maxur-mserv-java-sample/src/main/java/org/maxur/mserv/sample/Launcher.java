@@ -1,8 +1,8 @@
 package org.maxur.mserv.sample;
 
-import org.maxur.mserv.core.builder.Java;
 import org.maxur.mserv.core.domain.BaseService;
 import org.maxur.mserv.core.java.Locator;
+import org.maxur.mserv.core.runner.Java;
 import org.maxur.mserv.core.service.properties.Properties;
 import org.maxur.mserv.sample.params.ConfigParams;
 import org.slf4j.Logger;
@@ -26,7 +26,7 @@ public final class Launcher {
      * @param args - arguments of command.
      */
     public static void main(String[] args) {
-        Java.service()
+        Java.runner()
             .name(":name")
             .packages("org.maxur.mserv.sample")
             .properties("hocon")
