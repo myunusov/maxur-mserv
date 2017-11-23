@@ -48,6 +48,10 @@ class BaseMicroService constructor(
     private val embeddedService: EmbeddedService = locator.service(EmbeddedService::class)!!
 ) : BaseService(locator), MicroService {
 
+    override var name: String = "Anonymous microService"
+
+    override val version: String = MicroService::class.java.`package`.implementationVersion ?: ""
+
     init {
         Runtime.getRuntime().addShutdownHook(object : Thread() {
             /** {@inheritDoc} */
@@ -56,10 +60,6 @@ class BaseMicroService constructor(
             }
         })
     }
-
-    override var name: String = "Anonymous microService"
-
-    override val version: String = MicroService::class.java.`package`.implementationVersion ?: ""
 
     override fun suspend() {
         embeddedService.stop()
