@@ -1,7 +1,10 @@
 package org.maxur.mserv.frame
 
+import org.maxur.mserv.core.command.Event
 import org.maxur.mserv.frame.domain.BaseService
 import org.maxur.mserv.frame.embedded.EmbeddedService
+import org.maxur.mserv.frame.event.MicroserviceStartedEvent
+import org.maxur.mserv.frame.event.MicroserviceStoppedEvent
 import org.maxur.mserv.frame.kotlin.Locator
 
 /**
@@ -20,10 +23,10 @@ interface MicroService {
     val version: String
 
     /** Start this Service */
-    fun start()
+    fun start(): List<Event>
 
     /** Stop this Service */
-    fun stop()
+    fun stop(): List<Event>
 }
 
 /**
@@ -48,12 +51,16 @@ class BaseMicroService constructor(
         })
     }
 
-    override fun shutdown() {
-        embeddedService.stop()
+    override fun shutdown(): List<Event> {
+        val events = ArrayList(embeddedService.stop())
         locator.shutdown()
+        events.add(MicroserviceStoppedEvent())
+        return events
     }
 
-    override fun launch() {
-        embeddedService.start()
+    override fun launch(): List<Event> {
+        val events = ArrayList(embeddedService.start())
+        events.add(MicroserviceStartedEvent())
+        return events
     }
 }

@@ -11,50 +11,39 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * Repository of Entity.
  */
-interface EntityRepository {
+abstract class EntityRepository {
 
-    /**
-     * Constructs a new instance using the given [date].
-     */
-    fun <T> nextId(date: Date = Date()): Guid<T>
+    companion object {
+        /** Mask of tree bytes */
+        val LOW_ORDER_THREE_BYTES = 0x00ffffff
+    }
+
+    private val nextCounter = AtomicInteger(SecureRandom().nextInt())
 
     /**
      * Constructs a new instances using the given [date] and [counter].
      * @throws IllegalArgumentException if the high order byte of counter is not zero
      */
-    fun <T> nextId(date: Date, counter: Int): Guid<T>
+    abstract fun <T> nextId(date: Date = Date(), counter: Int = nextCounter()): Guid<T>
 
     /**
      * Constructs a new instances using the given [timestamp], and [counter].
      * @throws IllegalArgumentException if the high order byte of machineIdentifier or counter is not zero
      */
-    fun <T> nextId(timestamp: Int, counter: Int): Guid<T>
+    abstract fun <T> nextId(timestamp: Int, counter: Int = nextCounter()): Guid<T>
+
+    private fun nextCounter(): Int = nextCounter.getAndIncrement() and LOW_ORDER_THREE_BYTES
 }
 
 /**
  * Implementation of EntityRepository for standalone service.
  */
-class LocalEntityRepository(machineIdentifier: Int? = null, processIdentifier: Short? = null) : EntityRepository {
-
-    companion object {
-        private val LOW_ORDER_THREE_BYTES = 0x00ffffff
-    }
-
-    private val nextCounter = AtomicInteger(SecureRandom().nextInt())
+class LocalEntityRepository(machineIdentifier: Int? = null, processIdentifier: Short? = null) : EntityRepository() {
 
     /** Gets the process identifier. */
-    val processIdentifier = processIdentifier ?: createProcessIdentifier()
+    private val processIdentifier = processIdentifier ?: createProcessIdentifier()
     /** Gets the generated machine identifier. */
-    val machineIdentifier = machineIdentifier ?: createMachineIdentifier()
-
-    /** {@inheritDoc} */
-    override fun <T> nextId(date: Date) = Guid<T>(
-        dateToTimestampSeconds(date),
-        machineIdentifier,
-        processIdentifier,
-        nextCounter.getAndIncrement(),
-        false
-    )
+    private val machineIdentifier = machineIdentifier ?: createMachineIdentifier()
 
     /** {@inheritDoc} */
     override fun <T> nextId(date: Date, counter: Int) = Guid<T>(

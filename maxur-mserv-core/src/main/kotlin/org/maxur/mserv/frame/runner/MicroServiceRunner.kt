@@ -2,6 +2,9 @@ package org.maxur.mserv.frame.runner
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.maxur.mserv.core.CompositeBuilder
+import org.maxur.mserv.core.EntityRepository
+import org.maxur.mserv.core.LocalEntityRepository
+import org.maxur.mserv.core.command.Event
 import org.maxur.mserv.frame.BaseMicroService
 import org.maxur.mserv.frame.LocatorConfig
 import org.maxur.mserv.frame.MicroService
@@ -10,6 +13,7 @@ import org.maxur.mserv.frame.embedded.EmbeddedService
 import org.maxur.mserv.frame.embedded.EmbeddedServiceFactory
 import org.maxur.mserv.frame.embedded.grizzly.WebServerGrizzlyFactoryImpl
 import org.maxur.mserv.frame.kotlin.Locator
+import org.maxur.mserv.frame.service.EventBus
 import org.maxur.mserv.frame.service.hk2.LocatorHK2ImplBuilder
 import org.maxur.mserv.frame.service.jackson.ObjectMapperProvider
 import org.maxur.mserv.frame.service.properties.Properties
@@ -48,9 +52,9 @@ abstract class MicroServiceRunner(
     protected var nameHolder = Holder.string("Anonymous")
 
     /** Start Microservice */
-    fun start() {
+    fun start(): List<Event> {
         val service = next()
-        service.start()
+        return service.start()
     }
 
     /**
@@ -84,5 +88,7 @@ abstract class MicroServiceRunner(
         bind(PropertiesFactoryHoconImpl::class).to(PropertiesFactory::class).named("hocon")
         bind(PropertiesFactoryJsonImpl::class).to(PropertiesFactory::class).named("json")
         bind(PropertiesFactoryYamlImpl::class).to(PropertiesFactory::class).named("yaml")
+        bind(LocalEntityRepository::class).to(EntityRepository::class)
+        bind(EventBus::class)
     }
 }

@@ -10,6 +10,7 @@ import org.glassfish.grizzly.ssl.SSLEngineConfigurator
 import org.glassfish.jersey.process.JerseyProcessingUncaughtExceptionHandler
 import org.glassfish.jersey.server.ResourceConfig
 import org.glassfish.jersey.server.spi.Container
+import org.maxur.mserv.core.command.Event
 import org.maxur.mserv.frame.domain.BaseService
 import org.maxur.mserv.frame.domain.Holder
 import org.maxur.mserv.frame.embedded.EmbeddedService
@@ -19,6 +20,8 @@ import org.maxur.mserv.frame.embedded.WebEntries
 import org.maxur.mserv.frame.embedded.WebServer
 import org.maxur.mserv.frame.embedded.properties.StaticContent
 import org.maxur.mserv.frame.embedded.properties.WebAppProperties
+import org.maxur.mserv.frame.event.WebServerStartedEvent
+import org.maxur.mserv.frame.event.WebServerStoppedEvent
 import org.maxur.mserv.frame.kotlin.Locator
 import org.maxur.mserv.frame.rest.RestResourceConfig
 import org.slf4j.bridge.SLF4JBridgeHandler
@@ -87,12 +90,14 @@ open class WebServerGrizzlyImpl(private val config: WebAppConfig, locator: Locat
     override var name: String = "Unknown web service"
         get() = httpServer.serverConfiguration.title()
 
-    override fun launch() {
+    override fun launch(): List<Event> {
         httpServer.start()
+        return listOf(WebServerStartedEvent())
     }
 
-    override fun shutdown() {
+    override fun shutdown(): List<Event> {
         httpServer.shutdownNow()
+        return listOf(WebServerStoppedEvent())
     }
 
     private fun httpServer(): HttpServer {

@@ -1,5 +1,6 @@
 package org.maxur.mserv.frame.runner
 
+import org.maxur.mserv.core.command.Event
 import org.maxur.mserv.frame.MicroService
 import org.maxur.mserv.frame.domain.BaseService
 import org.maxur.mserv.frame.domain.Holder
@@ -25,7 +26,7 @@ interface IJBuilder {
     fun afterStart(func: Consumer<in BaseService>): JRunner
     fun onError(func: Consumer<Exception>): JRunner
     fun next(): MicroService
-    fun start()
+    fun start(): List<Event>
 }
 
 class JRunner : MicroServiceRunner(), IJBuilder {

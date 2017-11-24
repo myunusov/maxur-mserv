@@ -1,9 +1,15 @@
 package org.maxur.mserv.core
 
-class EventStream<T : Any> {
-    val events = HashSet<Event<T>>()
+/** The events stream */
+class EventStream : Iterable<EventEnvelope> {
 
-    fun add(event: Event<T>) {
+    private val events = HashSet<EventEnvelope>()
+
+    /** {@inheritDoc} */
+    override fun iterator() = events.iterator()
+
+    /** Post new event */
+    fun post(event: EventEnvelope) {
         events.add(event)
     }
 }

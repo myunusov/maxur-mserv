@@ -1,15 +1,40 @@
 package org.maxur.mserv.core.command
 
-import org.maxur.mserv.core.EventStream
+import io.swagger.annotations.ApiModelProperty
+import org.hibernate.validator.constraints.NotBlank
+import javax.validation.constraints.Pattern
 
-interface Command {
-
+/** The Command with some Application Logic */
+abstract class Command(
+    /** The command type */
+    @ApiModelProperty(
+        dataType = "string",
+        name = "type",
+        value = "type of the command",
+        notes = "Type of the command",
+        required = true,
+        allowableValues = "stop, restart",
+        example = "restart"
+    )
+    @NotBlank
+    @Pattern(regexp = "^(stop|restart)$")
     val type: String
+) {
+    private val events = ArrayList<Event>()
 
-    fun execute(): EventStream<out Any> {
+    /** Execute command */
+    fun execute(): List<Event> {
         run()
-        return EventStream()
+        return events
     }
 
-    fun run()
+    protected fun post(event: Event) {
+        this.events.add(event)
+    }
+
+    protected fun post(events: List<Event>) {
+        this.events.addAll(events)
+    }
+
+    protected abstract fun run()
 }

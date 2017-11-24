@@ -1256,6 +1256,7 @@
                 <groupId>org.jetbrains.kotlin</groupId>
                 <configuration>
                     <jvmTarget>${project.target.compile}</jvmTarget>
+                    <languageVersion>1.1</languageVersion>
                 </configuration>
                 <executions>
                     <execution>

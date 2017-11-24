@@ -1,5 +1,7 @@
 package org.maxur.mserv.frame.domain
 
+import org.maxur.mserv.core.command.Event
+import org.maxur.mserv.frame.event.MicroserviceFailedEvent
 import org.maxur.mserv.frame.kotlin.Locator
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
@@ -31,17 +33,17 @@ abstract class BaseService(
     fun stop() = state.stop(this)
 
     /** Shutdown this service. */
-    protected abstract fun shutdown()
+    protected abstract fun shutdown(): List<Event>
 
     /** Launch this service. */
-    protected abstract fun launch()
+    protected abstract fun launch(): List<Event>
 
     /** Represent State of micro-service */
     enum class State {
         /** Running application */
         STARTED {
             /** {@inheritDoc} */
-            override fun start(service: BaseService) = Unit
+            override fun start(service: BaseService) = emptyList<Event>()
 
             /** {@inheritDoc} */
             override fun stop(service: BaseService) = shutdown(service)
@@ -52,36 +54,39 @@ abstract class BaseService(
             override fun start(service: BaseService) = launch(service)
 
             /** {@inheritDoc} */
-            override fun stop(service: BaseService) = Unit
+            override fun stop(service: BaseService) = emptyList<Event>()
         };
 
         /** Start Service */
-        abstract fun start(service: BaseService)
+        abstract fun start(service: BaseService): List<Event>
 
         /** Stop Service */
-        abstract fun stop(service: BaseService)
+        abstract fun stop(service: BaseService): List<Event>
 
-        protected fun shutdown(service: BaseService) = check(service, {
-            beforeStop.forEach { call(it, service) }
-            shutdown()
-            state = STOPPED
-        })
+        protected fun shutdown(service: BaseService): List<Event> = try {
+            service.beforeStop.forEach { call(it, service) }
+            val events = service.shutdown()
+            service.state = STOPPED
+            events
+        } catch (e: Exception) {
+            handleError(service, e)
+        }
 
-        protected fun launch(service: BaseService) = check(service, {
-            launch()
-            state = STARTED
-            afterStart.forEach { call(it, service) }
-        })
+        protected fun launch(service: BaseService): List<Event> = try {
+            val events = service.launch()
+            service.state = STARTED
+            service.afterStart.forEach { call(it, service) }
+            events
+        } catch (e: Exception) {
+            handleError(service, e)
+        }
 
-        private inline fun check(service: BaseService, function: BaseService.() -> Unit) {
-            try {
-                service.apply(function)
-            } catch (e: Exception) {
-                if (service.onError.isEmpty())
-                    throw e
-                else
-                    service.onError.forEach { call(it, service, e) }
-            }
+        private fun handleError(service: BaseService, error: Exception): List<Event> {
+            if (service.onError.isEmpty())
+                throw error
+            else
+                service.onError.forEach { call(it, service, error) }
+            return listOf(MicroserviceFailedEvent())
         }
 
         private fun call(func: KFunction<Any>, vararg values: Any) {
