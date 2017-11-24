@@ -4,9 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.jvnet.hk2.annotations.Service;
-import org.maxur.mserv.core.annotation.Value;
-import org.maxur.mserv.core.embedded.properties.WebAppProperties;
-import org.maxur.mserv.core.service.jackson.ObjectMapperProvider;
+import org.maxur.mserv.frame.annotation.Value;
+import org.maxur.mserv.frame.embedded.properties.WebAppProperties;
+import org.maxur.mserv.frame.service.jackson.ObjectMapperProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

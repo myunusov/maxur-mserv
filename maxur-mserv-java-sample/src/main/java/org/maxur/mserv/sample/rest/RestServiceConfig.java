@@ -6,8 +6,8 @@ import io.swagger.annotations.License;
 import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.annotations.Tag;
 import org.jvnet.hk2.annotations.Service;
-import org.maxur.mserv.core.annotation.Value;
-import org.maxur.mserv.core.rest.RestResourceConfig;
+import org.maxur.mserv.frame.annotation.Value;
+import org.maxur.mserv.frame.rest.RestResourceConfig;
 
 import javax.inject.Inject;
 
