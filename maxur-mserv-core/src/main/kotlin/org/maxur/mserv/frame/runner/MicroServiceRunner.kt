@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.maxur.mserv.core.CompositeBuilder
 import org.maxur.mserv.core.EntityRepository
 import org.maxur.mserv.core.LocalEntityRepository
+import org.maxur.mserv.core.command.BaseCommandHandler
+import org.maxur.mserv.core.command.CommandHandler
 import org.maxur.mserv.core.command.Event
 import org.maxur.mserv.frame.BaseMicroService
 import org.maxur.mserv.frame.LocatorConfig
@@ -13,7 +15,8 @@ import org.maxur.mserv.frame.embedded.EmbeddedService
 import org.maxur.mserv.frame.embedded.EmbeddedServiceFactory
 import org.maxur.mserv.frame.embedded.grizzly.WebServerGrizzlyFactoryImpl
 import org.maxur.mserv.frame.kotlin.Locator
-import org.maxur.mserv.frame.service.EventBus
+import org.maxur.mserv.frame.service.bus.EventBus
+import org.maxur.mserv.frame.service.bus.EventBusGuavaImpl
 import org.maxur.mserv.frame.service.hk2.LocatorHK2ImplBuilder
 import org.maxur.mserv.frame.service.jackson.ObjectMapperProvider
 import org.maxur.mserv.frame.service.properties.Properties
@@ -89,6 +92,7 @@ abstract class MicroServiceRunner(
         bind(PropertiesFactoryJsonImpl::class).to(PropertiesFactory::class).named("json")
         bind(PropertiesFactoryYamlImpl::class).to(PropertiesFactory::class).named("yaml")
         bind(LocalEntityRepository::class).to(EntityRepository::class)
-        bind(EventBus::class)
+        bind(EventBusGuavaImpl::class).to(EventBus::class)
+        bind(BaseCommandHandler::class).to(CommandHandler::class)
     }
 }

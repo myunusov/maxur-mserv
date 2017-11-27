@@ -1,11 +1,9 @@
 package org.maxur.mserv.core.command
 
-import org.jvnet.hk2.annotations.Contract
 import org.maxur.mserv.frame.kotlin.Locator
 import java.util.concurrent.Executors
 
 /** The Command Handler */
-@Contract
 interface CommandHandler {
 
     /** The Service Locator */
