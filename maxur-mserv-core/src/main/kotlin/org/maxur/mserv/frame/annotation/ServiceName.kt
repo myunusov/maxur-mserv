@@ -8,4 +8,4 @@ package org.maxur.mserv.frame.annotation
  * @since <pre>05.09.2017</pre>
  */
 @Target(AnnotationTarget.FIELD, AnnotationTarget.VALUE_PARAMETER)
-annotation class ServiceName()
+annotation class ServiceName
