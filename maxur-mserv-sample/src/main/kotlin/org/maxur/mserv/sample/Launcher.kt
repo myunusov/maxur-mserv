@@ -1,10 +1,10 @@
 package org.maxur.mserv.sample
 
-import org.maxur.mserv.core.domain.BaseService
-import org.maxur.mserv.core.embedded.WebServer
-import org.maxur.mserv.core.runner.Kotlin
-import org.maxur.mserv.core.runner.hocon
-import org.maxur.mserv.core.service.properties.Properties
+import org.maxur.mserv.frame.domain.BaseService
+import org.maxur.mserv.frame.embedded.WebServer
+import org.maxur.mserv.frame.runner.Kotlin
+import org.maxur.mserv.frame.runner.hocon
+import org.maxur.mserv.frame.service.properties.Properties
 import org.maxur.mserv.sample.params.ConfigParams
 import org.slf4j.LoggerFactory
 

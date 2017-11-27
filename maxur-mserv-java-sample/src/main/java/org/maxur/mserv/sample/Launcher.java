@@ -1,9 +1,9 @@
 package org.maxur.mserv.sample;
 
-import org.maxur.mserv.core.domain.BaseService;
-import org.maxur.mserv.core.java.Locator;
-import org.maxur.mserv.core.runner.Java;
-import org.maxur.mserv.core.service.properties.Properties;
+import org.maxur.mserv.frame.domain.BaseService;
+import org.maxur.mserv.frame.java.Locator;
+import org.maxur.mserv.frame.runner.Java;
+import org.maxur.mserv.frame.service.properties.Properties;
 import org.maxur.mserv.sample.params.ConfigParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

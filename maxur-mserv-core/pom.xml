@@ -288,7 +288,7 @@
                             <apiSources>
                                 <apiSource>
                                     <springmvc>false</springmvc>
-                                    <locations>org.maxur.mserv.core.rest</locations>
+                                    <locations>org.maxur.mserv.frame.rest</locations>
                                     <schemes>http</schemes>
                                     <host>baseurl</host>
                                     <basePath>/</basePath>
@@ -1256,6 +1256,7 @@
                 <groupId>org.jetbrains.kotlin</groupId>
                 <configuration>
                     <jvmTarget>${project.target.compile}</jvmTarget>
+                    <languageVersion>1.1</languageVersion>
                 </configuration>
                 <executions>
                     <execution>

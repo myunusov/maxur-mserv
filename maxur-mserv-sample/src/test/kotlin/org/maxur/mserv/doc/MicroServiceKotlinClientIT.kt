@@ -2,11 +2,11 @@ package org.maxur.mserv.doc
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import org.maxur.mserv.core.domain.BaseService
-import org.maxur.mserv.core.embedded.EmbeddedService
-import org.maxur.mserv.core.kotlin.Locator
-import org.maxur.mserv.core.runner.Kotlin
-import org.maxur.mserv.core.service.properties.Properties
+import org.maxur.mserv.frame.domain.BaseService
+import org.maxur.mserv.frame.embedded.EmbeddedService
+import org.maxur.mserv.frame.kotlin.Locator
+import org.maxur.mserv.frame.runner.Kotlin
+import org.maxur.mserv.frame.service.properties.Properties
 
 class MicroServiceKotlinClientIT {
 
