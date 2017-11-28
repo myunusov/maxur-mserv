@@ -1,8 +1,10 @@
 package org.maxur.mserv.frame.service.bus
 
+import com.google.common.eventbus.AsyncEventBus
 import com.google.common.eventbus.DeadEvent
 import com.google.common.eventbus.Subscribe
-import org.maxur.mserv.core.EventEnvelope
+import org.maxur.mserv.core.command.Event
+import org.maxur.mserv.frame.event.MicroserviceStoppedEvent
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
@@ -20,7 +22,13 @@ class EventBusGuavaImpl : EventBus {
         0L, TimeUnit.MILLISECONDS,
         LinkedBlockingQueue())
 
-    private val eventBus = com.google.common.eventbus.AsyncEventBus(executor)
+    private val eventBus = object: AsyncEventBus(executor) {
+        override fun post(event: Any) {
+            super.post(event)
+            if (event is MicroserviceStoppedEvent)
+                executor.shutdownNow()
+        }
+    }
 
     init {
         register(DeadEventsListener())
@@ -35,18 +43,16 @@ class EventBusGuavaImpl : EventBus {
     }
 
     /** {@inheritDoc} */
-    override fun post(list: List<EventEnvelope>) {
+    override fun post(list: List<Event>) {
         list.forEach { eventBus.post(it) }
     }
 }
 
 class DeadEventsListener {
-
+    //TODO Process it
     @Subscribe
     @Suppress("unused")
     fun handleDeadEvent(deadEvent: DeadEvent) {
-        // TODO process this event
-        val enveloper = deadEvent.event as EventEnvelope
-        println("Event: ${enveloper.event::class.simpleName}")
+                println("Event: ${deadEvent.event::class.simpleName}")
     }
 }
