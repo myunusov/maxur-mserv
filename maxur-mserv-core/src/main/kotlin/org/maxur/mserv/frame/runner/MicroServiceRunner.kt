@@ -20,7 +20,7 @@ abstract class MicroServiceRunner(
     /** Builder of Service Locator instance.*/
     private val locatorBuilder: LocatorBuilder = LocatorHK2ImplBuilder(),
     private val builder: MicroServiceBuilder = MicroServiceBuilderBase(locatorBuilder)
-): MicroServiceBuilder by builder {
+) : MicroServiceBuilder by builder {
 
     /** Start Microservice */
     fun start() {
