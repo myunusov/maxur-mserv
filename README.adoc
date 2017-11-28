@@ -153,15 +153,19 @@ public final class Launcher {
     private static final  Logger log = LoggerFactory.getLogger(Launcher.class);
 
     public static void main(String[] args) {
-        Java.builder()
-            .title(":name")
+        Java.runner()
+            .name(":name")
             .packages("org.maxur.mserv.sample")
             .properties("hocon")
             .rest()
-            .beforeStart(service -> log.info("Service is started"))
-            .afterStop(service -> log.info("Service is stopped"))
+            .afterStart(Launcher::afterStart)
+            .beforeStop(service -> log.info("Service is stopped"))
             .onError(exception -> log.error(exception.getMessage(), exception) )
             .start();
+    }
+
+    private static void afterStart(final BaseService service) {
+        log.info("{} is started", service.getName());
     }
 }
 ----
@@ -173,26 +177,23 @@ object Launcher {
 
     private fun log() = LoggerFactory.getLogger(Launcher::class.java)
 
-    @JvmStatic fun main(args: Array<String>) {
-        Kotlin.builder {
-            title = ":name"
-            packages = "org.maxur.mserv.sample"
-            properties {
-                format = "hocon"
-            }
+    @JvmStatic
+    fun main(args: Array<String>) {
+        Kotlin.runner {
+            name = ":name"
+            packages += "org.maxur.mserv.sample"
+            properties += hocon()
             services += rest {
                 afterStart += this@Launcher::afterWebServiceStart
             }
-            beforeStart += this@Launcher::beforeStart
-            afterStart += { service ->  log().info("${service.name} is started") }
-            afterStop += { _ ->  log().info("Microservice is stopped") }
-            onError += { exception ->  log().error(exception.message, exception) }
+            afterStart += this@Launcher::afterStart
+            beforeStop += { _ -> log().info("Microservice is stopped") }
+            onError += { exception -> log().error(exception.message, exception) }
         }.start()
     }
 
-    fun beforeStart(configuration: Configuration, propertiesService: PropertiesService) {
-        log().info("Properties Source is '${propertiesService.source.format}'\n")
-        log().info(configuration.toString())
+    fun afterStart(configParams: ConfigParams, config: Properties, service: BaseService) {
+        log().info("${service.name} is started")
     }
 
     fun afterWebServiceStart(service: WebServer) {
