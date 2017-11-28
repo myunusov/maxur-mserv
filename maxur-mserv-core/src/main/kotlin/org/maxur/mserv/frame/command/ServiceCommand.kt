@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import io.swagger.annotations.ApiModel
 import org.maxur.mserv.core.command.Command
 import org.maxur.mserv.frame.MicroService
-import org.maxur.mserv.frame.runner.MicroServiceRunner
+import org.maxur.mserv.frame.service.MicroServiceBuilder
 import javax.inject.Inject
 
 /** The service command */
@@ -15,10 +15,6 @@ import javax.inject.Inject
 @JsonDeserialize(using = ServiceCommandDeserializer::class)
 abstract class ServiceCommand protected constructor(type: String) : Command(type) {
 
-    /** The microservice */
-    @Inject
-    protected lateinit var service: MicroService
-
     companion object {
         internal fun stop() = Stop()
         internal fun restart() = Restart()
@@ -26,6 +22,10 @@ abstract class ServiceCommand protected constructor(type: String) : Command(type
 
     /** Stop Microservice Command */
     class Stop : ServiceCommand {
+
+        /** The microservice */
+        @Inject
+        protected lateinit var service: MicroService
 
         internal constructor() : super("stop")
 
@@ -42,21 +42,44 @@ abstract class ServiceCommand protected constructor(type: String) : Command(type
     /** Restart Microservice Command */
     class Restart : ServiceCommand {
 
+        /** The microservice runner */
+        @Inject
+        private lateinit var builder: MicroServiceBuilder
+
         /** The microservice */
         @Inject
-        private lateinit var runner: MicroServiceRunner
+        protected lateinit var service: MicroService
 
         internal constructor() : super("restart")
 
-        constructor(service: MicroService, runner: MicroServiceRunner) : this() {
+        constructor(service: MicroService, runner: MicroServiceBuilder) : this() {
             this.service = service
-            this.runner = runner
+            this.builder = runner
         }
 
         /** {@inheritDoc} */
         override fun run() {
             post(service.stop())
-            post(runner.start())
+            post(builder.build().start())
+        }
+    }
+
+    /** Restart Microservice Command */
+    class Start : ServiceCommand {
+
+        /** The microservice runner */
+        @Inject
+        private lateinit var service: MicroService
+
+        internal constructor() : super("start")
+
+        constructor(service: MicroService) : this() {
+            this.service = service
+        }
+
+        /** {@inheritDoc} */
+        override fun run() {
+            post(service.start())
         }
     }
 }

@@ -7,7 +7,7 @@ import org.maxur.mserv.frame.service.bus.EventBus
 import javax.inject.Inject
 
 /** The Command Handler (Base implementation) */
-open class BaseCommandHandler @Inject constructor(
+class BaseCommandHandler @Inject constructor(
     /** {@inheritDoc} */
     override val locator: Locator,
     private val repository: EntityRepository,

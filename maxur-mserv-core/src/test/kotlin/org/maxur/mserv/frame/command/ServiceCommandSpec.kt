@@ -12,8 +12,10 @@ import org.maxur.mserv.frame.event.MicroserviceStartedEvent
 import org.maxur.mserv.frame.event.MicroserviceStoppedEvent
 import org.maxur.mserv.frame.event.WebServerStartedEvent
 import org.maxur.mserv.frame.event.WebServerStoppedEvent
+import org.maxur.mserv.frame.kotlin.Locator
 import org.maxur.mserv.frame.runner.KRunner
 import org.maxur.mserv.frame.runner.Kotlin
+import org.maxur.mserv.frame.service.MicroServiceBuilder
 
 class ServiceCommandSpec : Spek({
 
@@ -35,8 +37,8 @@ class ServiceCommandSpec : Spek({
 
         context("restart command") {
             it("should create new id") {
-                val service = runner!!.next()
-                val command = ServiceCommand.Restart(service, runner!!)
+                val service = runner!!.build()
+                val command = ServiceCommand.Restart(service, Locator.bean(MicroServiceBuilder::class)!!)
                 service.start()
                 val stream = command.execute()
                 Assertions.assertThat(stream.map { it::class })
@@ -52,7 +54,7 @@ class ServiceCommandSpec : Spek({
 
         context("stop command ") {
             it("should create new id") {
-                val service = runner!!.next()
+                val service = runner!!.build()
                 val command = ServiceCommand.Stop(service)
                 service.start()
                 val stream = command.execute()
