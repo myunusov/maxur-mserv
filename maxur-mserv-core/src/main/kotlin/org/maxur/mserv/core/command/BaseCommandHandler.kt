@@ -17,11 +17,7 @@ class BaseCommandHandler @Inject constructor(
     override fun handle(command: Command) {
         eventBus.post(
             command.execute()
-                .map {
-                    // TODO immutable
-                    it.id=repository.nextId(it.occurredOn.nano)
-                    it
-                }
+                .map { it.identifyAs(repository.nextId(it.occurredOn.nano)) }
                 .toList()
         )
     }

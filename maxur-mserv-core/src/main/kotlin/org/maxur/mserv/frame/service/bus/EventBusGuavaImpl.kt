@@ -43,8 +43,13 @@ class EventBusGuavaImpl : EventBus {
     }
 
     /** {@inheritDoc} */
-    override fun post(list: List<Event>) {
+    override fun publish(list: List<Event>) {
         list.forEach { eventBus.post(it) }
+    }
+
+    /** {@inheritDoc} */
+    override fun store(list: List<Event>) {
+        //TODO Is not implemented yet
     }
 }
 

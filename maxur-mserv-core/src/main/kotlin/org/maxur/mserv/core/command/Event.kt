@@ -10,6 +10,20 @@ import java.time.Instant
  * @since <pre>24.11.2017</pre>
  */
 abstract class Event {
-    lateinit var id: Id<out Event>
+
+    /** This Identifier of Events. It's not mandatory property */
+    var id: Id<Event> = Id.Unknown
+        get() = field
+        private set(value) {
+            field = value
+        }
+
     val occurredOn = Instant.now()
+
+    /* XXX May be immutable */
+    /** Identify this Event as [identifier] */
+    fun identifyAs(identifier: Id<Event>): Event {
+        this.id = identifier
+        return this
+    }
 }
