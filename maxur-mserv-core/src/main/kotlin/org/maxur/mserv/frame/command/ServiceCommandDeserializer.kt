@@ -10,7 +10,10 @@ class ServiceCommandDeserializer : JsonDeserializer<ServiceCommand>() {
 
     /** {@inheritDoc} */
     override fun deserialize(parser: JsonParser, context: DeserializationContext): ServiceCommand {
-        val type = parser.codec.readTree<JsonNode>(parser).get("type").asText()
+        val type = parser.codec.readTree<JsonNode>(parser).get("type")?.asText()
+        if (type == null) {
+            throw IllegalArgumentException("Command type is not found")
+        }
         return when (type.toUpperCase()) {
             "STOP" -> ServiceCommand.stop()
             "RESTART" -> ServiceCommand.restart()
