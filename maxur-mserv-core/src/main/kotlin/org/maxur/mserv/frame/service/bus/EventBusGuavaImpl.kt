@@ -22,7 +22,7 @@ class EventBusGuavaImpl : EventBus {
         0L, TimeUnit.MILLISECONDS,
         LinkedBlockingQueue())
 
-    private val eventBus = object: AsyncEventBus(executor) {
+    private val eventBus = object : AsyncEventBus(executor) {
         override fun post(event: Any) {
             super.post(event)
             if (event is MicroserviceStoppedEvent)
@@ -58,6 +58,6 @@ class DeadEventsListener {
     @Subscribe
     @Suppress("unused")
     fun handleDeadEvent(deadEvent: DeadEvent) {
-                println("Event: ${deadEvent.event::class.simpleName}")
+        println("Event: ${deadEvent.event::class.simpleName}")
     }
 }
