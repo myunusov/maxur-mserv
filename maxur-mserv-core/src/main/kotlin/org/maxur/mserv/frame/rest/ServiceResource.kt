@@ -31,11 +31,10 @@ class ServiceResource @Inject constructor(val service: MicroService) {
     @Produces("application/hal+json")
     @ApiOperation(value = "Represent this service",
         response = ServiceView::class, produces = "application/hal+json")
-    @ApiResponses(value = *arrayOf(
+    @ApiResponses(value = [
         ApiResponse(code = 200, message = "Successful operation"),
         ApiResponse(code = 500, message = "Internal server error")
-    )
-    )
+    ])
     fun service(): ServiceView = ServiceView(service)
 }
 

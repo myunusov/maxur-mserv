@@ -42,11 +42,10 @@ class RunningCommandResource @Inject constructor(
     @Produces("application/hal+json")
     @ApiOperation(value = "Represent this service running commands",
         response = ServiceView::class, produces = "application/hal+json")
-    @ApiResponses(value = *arrayOf(
+    @ApiResponses(value = [
         ApiResponse(code = 200, message = "Successful operation"),
         ApiResponse(code = 500, message = "Internal server error")
-    )
-    )
+    ])
     fun commands(): RunningCommandsView = RunningCommandsView()
 
     /** Add new command to queue */
@@ -57,21 +56,20 @@ class RunningCommandResource @Inject constructor(
         value = "Insert new command",
         notes = "Commands for stop or restart service"
     )
-    @ApiResponses(value = *arrayOf(
+    @ApiResponses(value = [
         ApiResponse(code = 204, message = "Successful operation"),
         ApiResponse(code = 400, message = "On invalid command"),
         ApiResponse(code = 500, message = "Internal server error")
-    )
-    )
+    ])
     fun runCommand(
         @ApiParam(
             name = "command",
             type = "object",
             value = "New service command",
             required = true,
-            examples = Example(value = ExampleProperty(
-                mediaType = "application/json", value = "{ \"type\": \"restart\" }"
-            ))
+            examples = Example(value = [
+                ExampleProperty(mediaType = "application/json", value = "{ \"type\": \"restart\" }")
+            ])
         )
         @Valid command: org.maxur.mserv.frame.command.ServiceCommand
     ) = handler
