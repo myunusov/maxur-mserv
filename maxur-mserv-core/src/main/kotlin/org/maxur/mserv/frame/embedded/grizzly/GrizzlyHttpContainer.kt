@@ -5,10 +5,9 @@ import org.glassfish.grizzly.http.server.HttpHandler
 import org.glassfish.grizzly.http.server.Request
 import org.glassfish.grizzly.http.server.Response
 import org.glassfish.hk2.api.ServiceLocator
-import org.glassfish.hk2.api.TypeLiteral
-import org.glassfish.hk2.utilities.binding.AbstractBinder
 import org.glassfish.jersey.grizzly2.httpserver.internal.LocalizationMessages.EXCEPTION_SENDING_ERROR_RESPONSE
 import org.glassfish.jersey.internal.PropertiesDelegate
+import org.glassfish.jersey.internal.inject.AbstractBinder
 import org.glassfish.jersey.internal.inject.ReferencingFactory
 import org.glassfish.jersey.internal.util.collection.Ref
 import org.glassfish.jersey.process.internal.RequestScoped
@@ -35,8 +34,8 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Provider
 import javax.ws.rs.core.Application
+import javax.ws.rs.core.GenericType
 import javax.ws.rs.core.SecurityContext
-import kotlin.reflect.KClass
 
 /**
  * Jersey {@code Container} implementation based on Grizzly {@link org.glassfish.grizzly.http.server.HttpHandler}.
@@ -47,8 +46,12 @@ class GrizzlyHttpContainer internal constructor(
 
     companion object {
         val log: Logger = LoggerFactory.getLogger(GrizzlyHttpContainer::class.java)
-        val requestRef: TypeLiteral<Ref<Request>> = object : TypeLiteral<Ref<Request>>() {}
-        val responseRef: TypeLiteral<Ref<Response>> = object : TypeLiteral<Ref<Response>>() {}
+
+        val RequestTYPE = object : GenericType<Ref<Request>>() {
+        }.type
+
+        val ResponseTYPE = object : GenericType<Ref<Response>>() {
+        }.type
     }
 
     private val containerRequestFactory = ContainerRequestFactory(appHandler.configuration!!)
@@ -86,18 +89,21 @@ class GrizzlyHttpContainer internal constructor(
         constructor(referenceFactory: Provider<Ref<Response>>) : ReferencingFactory<Response>(referenceFactory)
 
         override fun configure() {
-            bindFactories(GrizzlyRequestReferencingFactory::class, Request::class, requestRef)
-            bindFactories(GrizzlyResponseReferencingFactory::class, Response::class, responseRef)
-        }
+            bindFactory(GrizzlyRequestReferencingFactory::class.java).to(Request::class.java)
+                .proxy(false).`in`(RequestScoped::class.java)
+            bindFactory(ReferencingFactory.referenceFactory<Request>()).to(object : GenericType<Ref<Request>>() {
 
-        private fun <T : Any> bindFactories(
-            refFactoryClass: KClass<out ReferencingFactory<T>>,
-            clazz: KClass<T>,
-            ref: TypeLiteral<Ref<T>>
-        ) {
-            bindFactory(refFactoryClass.java).to(clazz.java).proxy(false).`in`(RequestScoped::class.java)
-            bindFactory(ReferencingFactory.referenceFactory<T>()).to(ref).`in`(RequestScoped::class.java)
+            })
+                .`in`(RequestScoped::class.java)
+
+            bindFactory(GrizzlyResponseReferencingFactory::class.java).to(Response::class.java)
+                .proxy(true).proxyForSameScope(false).`in`(RequestScoped::class.java)
+            bindFactory(ReferencingFactory.referenceFactory<Response>()).to(object : GenericType<Ref<Response>>() {
+
+            })
+                .`in`(RequestScoped::class.java)
         }
+        
     }
 
     /** {@inheritDoc} */
@@ -206,8 +212,8 @@ private class ContainerRequestFactory(val configuration: ResourceConfig) {
         requestContext.setWriter(ResponseWriter(response, configSetStatusOverSendError!!))
 
         requestContext.requestScopedInitializer = RequestScopedInitializer { locator ->
-            locator.getService<Ref<Request>>(GrizzlyHttpContainer.requestRef.type).set(request)
-            locator.getService<Ref<Response>>(GrizzlyHttpContainer.responseRef.type).set(response)
+            locator.getInstance<Ref<Request>>(GrizzlyHttpContainer.RequestTYPE).set(request)
+            locator.getInstance<Ref<Response>>(GrizzlyHttpContainer.ResponseTYPE).set(response)
         }
         return requestContext
     }

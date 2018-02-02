@@ -3,7 +3,6 @@ package org.maxur.mserv.frame.rest
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider
 import org.glassfish.hk2.utilities.binding.AbstractBinder
-import org.glassfish.jersey.ServiceLocatorProvider
 import org.glassfish.jersey.jackson.JacksonFeature
 import org.glassfish.jersey.media.multipart.MultiPartFeature
 import org.glassfish.jersey.server.ResourceConfig
@@ -16,8 +15,6 @@ import java.util.logging.Level
 import java.util.logging.LogManager
 import java.util.logging.Logger
 import javax.ws.rs.core.Application
-import javax.ws.rs.core.Feature
-import javax.ws.rs.core.FeatureContext
 import kotlin.reflect.KClass
 
 /**
@@ -48,7 +45,6 @@ abstract class AbstractResourceAT : JerseyTest() {
                 register(provider)
                 register(JacksonFeature::class.java)
                 register(RuntimeExceptionHandler::class.java)
-                register(ServiceLocatorFeature())
                 register(ServiceEventListener("/"))
                 register(MultiPartFeature::class.java)
                 register(object : AbstractBinder() {
@@ -64,10 +60,4 @@ abstract class AbstractResourceAT : JerseyTest() {
 
     protected abstract fun configurator(): (AbstractBinder) -> Unit
 
-    private class ServiceLocatorFeature : Feature {
-        override fun configure(context: FeatureContext): Boolean {
-            ServiceLocatorProvider.getServiceLocator(context)
-            return true
-        }
-    }
 }

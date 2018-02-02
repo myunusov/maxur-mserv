@@ -2,10 +2,13 @@ package org.maxur.mserv.frame.command
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import io.swagger.annotations.ApiModel
+import io.swagger.annotations.ApiModelProperty
+import org.hibernate.validator.constraints.NotBlank
 import org.maxur.mserv.core.command.Command
 import org.maxur.mserv.frame.MicroService
 import org.maxur.mserv.frame.service.MicroServiceBuilder
 import javax.inject.Inject
+import javax.validation.constraints.Pattern
 
 /** The service command */
 @ApiModel(
@@ -13,7 +16,20 @@ import javax.inject.Inject
     description = "This class represents the service command"
 )
 @JsonDeserialize(using = ServiceCommandDeserializer::class)
-abstract class ServiceCommand protected constructor(type: String) : Command(type) {
+abstract class ServiceCommand protected constructor(
+    /** The command type */
+    @ApiModelProperty(
+        dataType = "string",
+        name = "type",
+        value = "type of the command",
+        notes = "Type of the command",
+        required = true,
+        allowableValues = "stop, restart",
+        example = "restart"
+    )
+    @NotBlank
+    @Pattern(regexp = "^(stop|restart)$")
+    val type: String) : Command() {
 
     companion object {
         internal fun stop() = Stop()

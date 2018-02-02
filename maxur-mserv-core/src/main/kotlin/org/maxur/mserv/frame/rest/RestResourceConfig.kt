@@ -1,15 +1,12 @@
 package org.maxur.mserv.frame.rest
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider
-import org.glassfish.jersey.ServiceLocatorProvider
 import org.glassfish.jersey.jackson.JacksonFeature
 import org.glassfish.jersey.media.multipart.MultiPartFeature
 import org.glassfish.jersey.server.ResourceConfig
 import org.glassfish.jersey.server.ServerProperties
 import org.jvnet.hk2.annotations.Contract
 import org.maxur.mserv.frame.service.jackson.ObjectMapperProvider
-import javax.ws.rs.core.Feature
-import javax.ws.rs.core.FeatureContext
 
 /**
  * @author myunusov
@@ -28,7 +25,6 @@ abstract class RestResourceConfig : ResourceConfig() {
         register(jacksonProvider())
         register(JacksonFeature::class.java)
         register(RuntimeExceptionHandler::class.java)
-        register(ServiceLocatorFeature())
         register(ServiceEventListener("/"))
         register(MultiPartFeature::class.java)
     }
@@ -62,14 +58,5 @@ abstract class RestResourceConfig : ResourceConfig() {
         return provider
     }
 
-    /**
-     * service locator feature
-     */
-    private class ServiceLocatorFeature : Feature {
 
-        override fun configure(context: FeatureContext): Boolean {
-            ServiceLocatorProvider.getServiceLocator(context)
-            return true
-        }
-    }
 }

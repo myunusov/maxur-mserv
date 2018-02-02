@@ -2,11 +2,11 @@
 
 package org.maxur.mserv.frame.embedded.grizzly
 
-import jersey.repackaged.com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.glassfish.grizzly.http.server.HttpServer
 import org.glassfish.grizzly.http.server.NetworkListener
 import org.glassfish.grizzly.http.server.ServerConfiguration
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator
+import org.glassfish.jersey.internal.guava.ThreadFactoryBuilder
 import org.glassfish.jersey.process.JerseyProcessingUncaughtExceptionHandler
 import org.glassfish.jersey.server.ResourceConfig
 import org.glassfish.jersey.server.spi.Container
