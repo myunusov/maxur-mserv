@@ -54,31 +54,32 @@
 
         <!-- swagger-core needs AnnotatedMember.annotations() There is not in v. 2.9.0-->
         <jackson.version>2.9.4</jackson.version>
-        <jackson-dataformat-hal.version>1.0.1</jackson-dataformat-hal.version>
+        <jackson-dataformat-hal.version>1.0.2</jackson-dataformat-hal.version>
+        <jackson-dataformat-hocon.version>1.1.1</jackson-dataformat-hocon.version>
 
         <jersey.version>2.25.1</jersey.version>
 
         <hk2.version>2.5.0-b56</hk2.version>
+        <HK2Utilities.version>1.4.1</HK2Utilities.version>
 
         <swagger.version>1.5.18</swagger.version>
         <swagger-ui.version>3.9.3</swagger-ui.version>
-
         <hal-browser.version>3325375</hal-browser.version>
 
         <javax.servlet-api.version>4.0.0</javax.servlet-api.version>
-        <grizzly.version>2.4.1</grizzly.version>
+        <javax.el-api.version>3.0.0</javax.el-api.version>
+        <grizzly.version>2.4.3</grizzly.version>
 
+        <slf4j.version>1.7.25</slf4j.version>
         <hocon.config.version>1.3.1</hocon.config.version>
+        <hibernate-validator.version>6.0.7.Final</hibernate-validator.version>
+
         <spek.version>1.1.5</spek.version>
         <mockito-kotlin.version>1.5.0</mockito-kotlin.version>
-        <mockito.version>2.8.47</mockito.version>
+        <mockito.version>2.13.0</mockito.version>
+        <junit-platform.version>1.0.3</junit-platform.version>
 
-        <HK2Utilities.version>1.4.1</HK2Utilities.version>
-        <hibernate-validator.version>5.4.1.Final</hibernate-validator.version>
-
-        <ktlint.version>0.12.1</ktlint.version>
-        <junit-platform.version>1.0.2</junit-platform.version>
-        <slf4j.version>1.7.25</slf4j.version>
+        <ktlint.version>0.15.0</ktlint.version>
 
         <gmaven-plugin.version>1.5</gmaven-plugin.version>
         <maven-surefire-plugin.version>2.20.1</maven-surefire-plugin.version>
@@ -89,7 +90,7 @@
         <groovy-all.version>2.4.12</groovy-all.version>
         <resty.version>0.3.2</resty.version>
         <ant.version>1.10.1</ant.version>
-        <jackson-dataformat-hocon.version>1.1.1</jackson-dataformat-hocon.version>
+
     </properties>
 
     <profiles>
@@ -895,6 +896,11 @@
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
             <version>${javax.servlet-api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.el</groupId>
+            <artifactId>javax.el-api</artifactId>
+            <version>${javax.el-api.version}</version>
         </dependency>
 
         <!-- logging -->
