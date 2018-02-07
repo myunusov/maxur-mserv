@@ -9,8 +9,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.glassfish.hk2.utilities.binding.AbstractBinder
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.maxur.mserv.core.command.Command
 import org.maxur.mserv.core.command.CommandHandler
+import org.maxur.mserv.frame.command.ServiceCommand
 import org.mockito.ArgumentCaptor
 import org.mockito.Captor
 import org.mockito.junit.MockitoJUnitRunner
@@ -28,7 +28,7 @@ class RunningCommandResourceIT : AbstractResourceAT() {
     }
 
     @Captor
-    private lateinit var captor: ArgumentCaptor<Command>
+    private lateinit var captor: ArgumentCaptor<ServiceCommand>
 
     override fun resourceClass(): KClass<out Any> = RunningCommandResource::class
 

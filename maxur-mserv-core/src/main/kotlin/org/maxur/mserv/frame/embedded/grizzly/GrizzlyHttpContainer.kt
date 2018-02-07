@@ -387,4 +387,3 @@ private class ContainerRequestFactory(val configuration: ResourceConfig) {
         }
     }
 }
-

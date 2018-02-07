@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.maxur</groupId>
         <artifactId>maxur-base</artifactId>
         <version>1.01</version>
-        <relativePath />
+        <relativePath/>
     </parent>
 
     <artifactId>maxur-mserv-core</artifactId>
@@ -22,7 +23,7 @@
     <ciManagement>
         <system>CircleCI</system>
         <url>https://circleci.com/gh/myunusov/maxur-mserv/</url>
-        <notifiers />
+        <notifiers/>
     </ciManagement>
 
     <distributionManagement>
@@ -40,54 +41,56 @@
     </distributionManagement>
 
     <properties>
+        <kotlin-language-version>1.2</kotlin-language-version>
         <env>dev</env>
         <maxur-mserv.root.path>${basedir}/..</maxur-mserv.root.path>
         <release.version>${project.version}</release.version>
 
-        <kotlin.version>1.1.60</kotlin.version>
-        <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
+        <kotlin.version>1.2.21</kotlin.version>
+        <kotlin.compiler.incremental>false</kotlin.compiler.incremental>
         <kotlin.compiler.jvmTarget>${project.jdk}</kotlin.compiler.jvmTarget>
 
         <dokka.version>0.9.15</dokka.version>
 
         <!-- swagger-core needs AnnotatedMember.annotations() There is not in v. 2.9.0-->
-        <jackson.version>2.8.9</jackson.version>
-        <jackson-dataformat-hal.version>1.0.1</jackson-dataformat-hal.version>
+        <jackson.version>2.9.4</jackson.version>
+        <jackson-dataformat-hal.version>1.0.2</jackson-dataformat-hal.version>
+        <jackson-dataformat-hocon.version>1.1.1</jackson-dataformat-hocon.version>
 
         <jersey.version>2.25.1</jersey.version>
 
-        <hk2.version>2.5.0-b33</hk2.version>
+        <hk2.version>2.5.0-b56</hk2.version>
+        <HK2Utilities.version>1.4.1</HK2Utilities.version>
 
-        <swagger.version>1.5.16</swagger.version>
-        <swagger-ui.version>3.1.5</swagger-ui.version>
-
+        <swagger.version>1.5.18</swagger.version>
+        <swagger-ui.version>3.9.3</swagger-ui.version>
         <hal-browser.version>3325375</hal-browser.version>
 
         <javax.servlet-api.version>4.0.0</javax.servlet-api.version>
-        <grizzly.version>2.4.1</grizzly.version>
+        <javax.el-api.version>3.0.0</javax.el-api.version>
+        <grizzly.version>2.4.3</grizzly.version>
 
-        <hocon.config.version>1.3.1</hocon.config.version>
-        <spek.version>1.1.4</spek.version>
-        <mockito-kotlin.version>1.5.0</mockito-kotlin.version>
-        <mockito.version>2.8.47</mockito.version>
-
-        <HK2Utilities.version>1.4.1</HK2Utilities.version>
-        <hibernate-validator.version>5.4.1.Final</hibernate-validator.version>
-
-        <ktlint.version>0.12.1</ktlint.version>
-        <junit-platform.version>1.0.0-RC2</junit-platform.version>
         <slf4j.version>1.7.25</slf4j.version>
+        <hocon.config.version>1.3.1</hocon.config.version>
+        <hibernate-validator.version>6.0.7.Final</hibernate-validator.version>
+
+        <spek.version>1.1.5</spek.version>
+        <mockito-kotlin.version>1.5.0</mockito-kotlin.version>
+        <mockito.version>2.13.0</mockito.version>
+        <junit-platform.version>1.0.3</junit-platform.version>
+
+        <ktlint.version>0.15.0</ktlint.version>
 
         <gmaven-plugin.version>1.5</gmaven-plugin.version>
-        <maven-surefire-plugin.version>2.20</maven-surefire-plugin.version>
-        <maven-failsafe-plugin.version>2.20</maven-failsafe-plugin.version>
+        <maven-surefire-plugin.version>2.20.1</maven-surefire-plugin.version>
+        <maven-failsafe-plugin.version>2.20.1</maven-failsafe-plugin.version>
         <swagger-maven-plugin.version>3.1.5</swagger-maven-plugin.version>
         <swagger2markup-maven-plugin.version>1.3.3</swagger2markup-maven-plugin.version>
         <asciidoctor-maven-plugin.version>1.5.5</asciidoctor-maven-plugin.version>
         <groovy-all.version>2.4.12</groovy-all.version>
         <resty.version>0.3.2</resty.version>
         <ant.version>1.10.1</ant.version>
-        <jackson-dataformat-hocon.version>1.1.1</jackson-dataformat-hocon.version>
+
     </properties>
 
     <profiles>
@@ -119,8 +122,8 @@
                                         <exclude>${snapshot.allowed.artifacts}</exclude>
                                     </excludes>
                                 </requireReleaseDeps>
-                                <requireUpperBoundDeps />
-                                <DependencyConvergence />
+                                <requireUpperBoundDeps/>
+                                <DependencyConvergence/>
                             </rules>
                             <fail>true</fail>
                         </configuration>
@@ -149,7 +152,7 @@
                                               classname="com.github.shyiko.ktlint.Main"
                                               classpathref="maven.plugin.classpath"
                                         >
-                                            <arg value="src/**/*.kt" />
+                                            <arg value="src/**/*.kt"/>
                                             <!-- to generate report in checkstyle format prepend following args: -->
                                             <arg value="--reporter=plain"/>
                                             <arg value="--reporter=checkstyle,output=${project.build.directory}/ktlint.xml"/>
@@ -172,8 +175,8 @@
                                               classname="com.github.shyiko.ktlint.Main"
                                               classpathref="maven.plugin.classpath"
                                         >
-                                            <arg value="-F" />
-                                            <arg value="src/**/*.kt" />
+                                            <arg value="-F"/>
+                                            <arg value="src/**/*.kt"/>
                                         </java>
                                     </target>
                                 </configuration>
@@ -371,8 +374,8 @@
                                 <project-version>${project.version}</project-version>
                                 <imagesDir>src/doc/images</imagesDir>
                                 <!-- set the idprefix to blank -->
-                                <idprefix />
-                                <experimental />
+                                <idprefix/>
+                                <experimental/>
                                 <icons>font</icons>
                                 <sectanchors>true</sectanchors>
                                 <idseparator>-</idseparator>
@@ -483,7 +486,7 @@
         <!-- kotlin -->
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib-jre8</artifactId>
+            <artifactId>kotlin-stdlib-jdk8</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
         <dependency>
@@ -656,12 +659,26 @@
                     <artifactId>javax.inject</artifactId>
                     <groupId>org.glassfish.hk2.external</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>javax.el</artifactId>
+                    <groupId>org.glassfish.web</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>javax.el-api</artifactId>
+                    <groupId>javax.el</groupId>
+                </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.el</artifactId>
+            <version>3.0.0</version>
         </dependency>
 
         <!-- hibernate -->
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>${hibernate-validator.version}</version>
         </dependency>
@@ -894,6 +911,11 @@
             <artifactId>javax.servlet-api</artifactId>
             <version>${javax.servlet-api.version}</version>
         </dependency>
+        <dependency>
+            <groupId>javax.el</groupId>
+            <artifactId>javax.el-api</artifactId>
+            <version>${javax.el-api.version}</version>
+        </dependency>
 
         <!-- logging -->
         <dependency>
@@ -1122,7 +1144,14 @@
     <build>
         <sourceDirectory>src/main/kotlin</sourceDirectory>
         <testSourceDirectory>src/test/kotlin</testSourceDirectory>
+
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-help-plugin</artifactId>
+                <version>2.2</version>
+            </plugin>
+
             <plugin>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>hk2-inhabitant-generator</artifactId>
@@ -1227,6 +1256,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
+                    <argLine>-Xms1024m -Xmx2048m</argLine>
                     <includes>
                         <include>**/*Spec.*</include>
                         <include>**/*Test.*</include>
@@ -1252,11 +1282,12 @@
             </plugin>
 
             <plugin>
-                <artifactId>kotlin-maven-plugin</artifactId>
                 <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <version>${kotlin.version}</version>
                 <configuration>
                     <jvmTarget>${project.target.compile}</jvmTarget>
-                    <languageVersion>1.1</languageVersion>
+                    <languageVersion>${kotlin-language-version}</languageVersion>
                 </configuration>
                 <executions>
                     <execution>
@@ -1313,7 +1344,6 @@
                     <providerSelection>2.0</providerSelection>
                     <source><![CDATA[
                         import us.monoid.web.Resty
-
                         def result = new Resty()
                                 .xml("http://repo1.maven.org/maven2/org/maxur/maxur-mserv-core/maven-metadata.xml")
                                 .get("metadata/versioning/latest")

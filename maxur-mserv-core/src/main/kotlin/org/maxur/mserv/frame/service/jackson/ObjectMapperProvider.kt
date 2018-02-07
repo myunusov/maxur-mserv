@@ -19,15 +19,11 @@ import dk.nykredit.jackson.dataformat.hal.JacksonHALModule
  */
 object ObjectMapperProvider {
 
-    /**
-     *   Instance of [ObjectMapper].
-     */
+    /** Instance of [ObjectMapper]. */
     @JvmStatic
     val objectMapper = config(jacksonObjectMapper())
 
-    /**
-     * Configure [ObjectMapper] instance
-     */
+    /** Configure [ObjectMapper] instance */
     fun config(mapper: ObjectMapper): ObjectMapper = mapper.apply { configuration() }
 
     private fun ObjectMapper.configuration() {

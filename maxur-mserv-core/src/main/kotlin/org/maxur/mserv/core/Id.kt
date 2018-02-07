@@ -2,6 +2,8 @@
 
 package org.maxur.mserv.core
 
+import org.maxur.mserv.core.command.Event
+
 /**
  * The typed Identifier.
  *
@@ -11,4 +13,9 @@ interface Id<T> {
 
     /** This identifier as String. */
     val value: String
+
+    /** Unknown identifier (null object) */
+    object Unknown : Id<Event> {
+        override val value = "Unknown"
+    }
 }

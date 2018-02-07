@@ -38,4 +38,3 @@ private class Wrapper<Type : Any>(val value: Type?) : Holder<Type>() {
     override fun get(): Type? = value
     override fun get(locator: Locator, clazz: KClass<out Type>): Type? = value
 }
-
