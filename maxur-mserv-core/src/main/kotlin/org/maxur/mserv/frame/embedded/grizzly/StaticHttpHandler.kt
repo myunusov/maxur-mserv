@@ -151,11 +151,7 @@ class StaticHttpHandler(
             var jarEntry: JarEntry = jarUrlConnection.jarEntry
             var iinputStream: InputStream? = jarFile.getInputStream(jarEntry)
             if (jarEntry.isDirectory || iinputStream == null) { // it's probably a folder
-                val welcomeResource = if (jarEntry.name.endsWith("/"))
-                    "${jarEntry.name}$defaultPage"
-                else
-                    "${jarEntry.name}/$defaultPage"
-                jarEntry = jarFile.getJarEntry(welcomeResource)
+                jarEntry = jarFile.getJarEntry(welcomeResourcePath(jarEntry))
                 if (jarEntry != null) {
                     iinputStream = jarFile.getInputStream(jarEntry)
                 }
@@ -194,6 +190,12 @@ class StaticHttpHandler(
             if (file.exists() && file.isFile) return file
             throw FileNotFoundException("The jar file was not found")
         }
+    }
+
+    private fun welcomeResourcePath(jarEntry: JarEntry): String {
+        val welcomeResource = if (jarEntry.name.endsWith("/"))
+            "${jarEntry.name}$defaultPage" else "${jarEntry.name}/$defaultPage"
+        return welcomeResource
     }
 
     // OSGi resource

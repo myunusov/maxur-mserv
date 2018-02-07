@@ -84,8 +84,7 @@ abstract class BaseService(
         private fun handleError(service: BaseService, error: Exception): List<Event> {
             if (service.onError.isEmpty())
                 throw error
-            else
-                service.onError.forEach { call(it, service, error) }
+            service.onError.forEach { call(it, service, error) }
             return listOf(MicroserviceFailedEvent())
         }
 

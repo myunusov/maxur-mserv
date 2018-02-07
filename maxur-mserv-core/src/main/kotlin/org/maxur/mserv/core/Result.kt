@@ -45,8 +45,7 @@ fun <V> tryTo(action: () -> V): Result<Exception, V> =
  * @param function The function result to result
  * @return new result
  */
-inline infix fun <E : Throwable, V, V2> Result<E, V>.map(function: (V) -> V2): Result<E, V2>
-        = when (this) {
+inline infix fun <E : Throwable, V, V2> Result<E, V>.map(function: (V) -> V2): Result<E, V2> = when (this) {
     is ErrorResult -> this
     is Value -> Value(function(this.value))
 }
@@ -56,8 +55,7 @@ inline infix fun <E : Throwable, V, V2> Result<E, V>.map(function: (V) -> V2): R
  * @param function The function
  * @return new result
  */
-inline infix fun <E : Throwable, E2 : Throwable, V> Result<E, V>.mapError(f: (E) -> E2): Result<E2, V>
-        = when (this) {
+inline infix fun <E : Throwable, E2 : Throwable, V> Result<E, V>.mapError(f: (E) -> E2): Result<E2, V> = when (this) {
     is ErrorResult -> ErrorResult(f(error))
     is Value -> this
 }
@@ -67,8 +65,7 @@ inline infix fun <E : Throwable, E2 : Throwable, V> Result<E, V>.mapError(f: (E)
  * @param function The function value to value
  * @return new result
  */
-inline infix fun <E : Throwable, V, V2> Result<E, V>.flatMap(function: (V) -> Result<E, V2>): Result<E, V2>
-        = when (this) {
+inline infix fun <E : Throwable, V, V2> Result<E, V>.flatMap(function: (V) -> Result<E, V2>): Result<E, V2> = when (this) {
     is ErrorResult -> this
     is Value -> function(value)
 }
@@ -79,8 +76,7 @@ inline infix fun <E : Throwable, V, V2> Result<E, V>.flatMap(function: (V) -> Re
  * @param valueFunction the right function
  * @return new result
  */
-inline fun <E : Throwable, V, A> Result<E, V>.fold(errorFunction: (E) -> A, valueFunction: (V) -> A): A
-        = when (this) {
+inline fun <E : Throwable, V, A> Result<E, V>.fold(errorFunction: (E) -> A, valueFunction: (V) -> A): A = when (this) {
     is ErrorResult -> errorFunction(this.error)
     is Value -> valueFunction(this.value)
 }

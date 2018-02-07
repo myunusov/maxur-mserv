@@ -15,4 +15,3 @@ class EventStream : Iterable<Event> {
         events.add(event)
     }
 }
-
