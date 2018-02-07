@@ -47,7 +47,7 @@
         <release.version>${project.version}</release.version>
 
         <kotlin.version>1.2.21</kotlin.version>
-        <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
+        <kotlin.compiler.incremental>false</kotlin.compiler.incremental>
         <kotlin.compiler.jvmTarget>${project.jdk}</kotlin.compiler.jvmTarget>
 
         <dokka.version>0.9.15</dokka.version>
@@ -67,7 +67,7 @@
         <hal-browser.version>3325375</hal-browser.version>
 
         <javax.servlet-api.version>4.0.0</javax.servlet-api.version>
-        <javax.el-api.version>2.2.4</javax.el-api.version>
+        <javax.el-api.version>3.0.0</javax.el-api.version>
         <grizzly.version>2.4.3</grizzly.version>
 
         <slf4j.version>1.7.25</slf4j.version>
@@ -664,7 +664,7 @@
 
         <!-- hibernate -->
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>${hibernate-validator.version}</version>
         </dependency>
@@ -1268,8 +1268,9 @@
             </plugin>
 
             <plugin>
-                <artifactId>kotlin-maven-plugin</artifactId>
                 <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <version>${kotlin.version}</version>
                 <configuration>
                     <jvmTarget>${project.target.compile}</jvmTarget>
                     <languageVersion>${kotlin-language-version}</languageVersion>
